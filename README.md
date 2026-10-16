@@ -25,7 +25,7 @@ The full blueprint is [SPEC.md](SPEC.md); parts, wiring and assembly are in [HAR
 
 - **Camera app** (`src/inkstant/camera_app`): Picamera2, the e-paper driver, the status light, sleep and battery saver, the slideshow, share mode. Runs as `inkstant.service`.
 - **Gallery** (`src/inkstant/gallery`): a small web app for viewing, downloading and deleting photos, and for settings. Runs only while sharing.
-- **Setup script** (`install/`): turns a fresh Raspberry Pi OS Lite card into a camera, and can update, reconfigure or uninstall it.
+- **Setup script** (`setup.sh`, which downloads and runs `install/`): turns a fresh Raspberry Pi OS Lite card into a camera, and can update, reconfigure or uninstall it.
 - **Tools** (`tools/`): a desktop simulator, bench tests for real hardware, the palette tuner, and the release builder.
 
 ## Building one
@@ -33,35 +33,15 @@ The full blueprint is [SPEC.md](SPEC.md); parts, wiring and assembly are in [HAR
 1. **Assemble the hardware** as [HARDWARE.md](HARDWARE.md) describes. Switch the PiSugar on, and put a display module in if you have one.
 2. **Flash** Raspberry Pi OS Lite (64-bit) with Raspberry Pi Imager. In Imager's settings, set the host name, user and password, your home Wi-Fi and its country, the time zone, and turn on SSH.
 3. **First boot:** wait about two minutes, then `ssh <user>@<hostname>.local`.
-4. **Get the software onto the Pi**, in one of these ways:
-   - **From a release** (once one is published):
-     ```bash
-     curl -fsSLO https://github.com/EnriqueNeyra/inkstant-camera/releases/latest/download/inkstant.tar.gz
-     ```
-     ```bash
-     curl -fsSLO https://github.com/EnriqueNeyra/inkstant-camera/releases/latest/download/SHA256SUMS
-     ```
-     ```bash
-     sha256sum -c --ignore-missing SHA256SUMS && tar xzf inkstant.tar.gz
-     ```
-   - **From your computer**, with a checkout of this repository: build the tarball, copy it over, and unpack it on the Pi.
-     ```bash
-     python3 tools/build_release.py
-     ```
-     ```bash
-     scp dist/inkstant.tar.gz <user>@<hostname>.local:
-     ```
-     Then, on the Pi:
-     ```bash
-     tar xzf inkstant.tar.gz
-     ```
-   - **With git**, on the Pi: `sudo apt install -y git`, then `git clone https://github.com/EnriqueNeyra/inkstant-camera.git inkstant`.
-5. **Run the setup script** on the Pi. It takes 15 to 25 minutes on a 3A+, asks a few questions (press Enter for the defaults), and reboots at the end.
+4. **Run the setup script** on the Pi, in one command. It downloads the latest release (or, before the first release, the latest code on `main`), checks it, and installs it. It takes 15 to 25 minutes on a 3A+, asks a few questions (press Enter for the defaults), and reboots at the end.
    ```bash
-   sudo ./inkstant/install/install.sh --dev
+   curl -fsSL https://raw.githubusercontent.com/EnriqueNeyra/inkstant-camera/main/setup.sh | sudo bash -s -- --dev
    ```
-   `--dev` turns on developer mode, so the camera keeps joining your home Wi-Fi and SSH keeps working after the reboot. Leave it off for everyday use, or turn it off later in the gallery (Settings → Advanced). Re-running the script is always safe.
-6. **After the reboot:** the status light blinks while the camera starts, then stays on. Press the shutter: the photo develops on the print. Tap BTN: the print shows a QR code. Open the gallery from it, then Settings → Advanced → Setup check: every row should pass.
+   `--dev` turns on developer mode, so the camera keeps joining your home Wi-Fi and SSH keeps working after the reboot. Leave it off for everyday use (`… | sudo bash`), or turn it off later in the gallery (Settings → Advanced). Re-running it is always safe.
+   - `--ref <branch or tag>` installs that branch or tag instead of the latest release.
+   - From a checkout of this repository on the Pi, `sudo ./setup.sh --dev` installs the checkout.
+   - Every other option goes to the installer: `sudo ./setup.sh --help`, and `install/install.sh --help` for the full list.
+5. **After the reboot:** the status light blinks while the camera starts, then stays on. Press the shutter: the photo develops on the print. Tap BTN: the print shows a QR code. Open the gallery from it, then Settings → Advanced → Setup check: every row should pass.
 
 If something fails, the script stops with the step and the last lines of its log (`/var/log/inkstant-install.log`); [SPEC.md §15.10](SPEC.md) lists the usual causes. `inkstant-ctl selftest` runs the setup check from SSH, and `journalctl -u inkstant` shows the camera app's log.
 
