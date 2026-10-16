@@ -16,18 +16,96 @@ An instant camera that never runs out of film. Each photo "develops" on a colour
 - Waveshare 3.6" e-Paper HAT+ (E): Spectra 6, 600 × 400
 - PiSugar 3 Plus battery: 5000 mAh, real-time clock, power and share buttons
 - 12 mm metal push button with an LED ring, used as the shutter and status light
-- Mill-Max Maxnetic 10-pin magnetic connector, so the print slides in and out
+- A 10-pin magnetic pogo connector, so the print slides in and out
 - 3D-printed case
 
 ## Software
 
-Planned:
+The full blueprint is [SPEC.md](SPEC.md); parts, wiring and assembly are in [HARDWARE.md](HARDWARE.md).
 
-- Raspberry Pi OS Lite.
-- A Python app using Picamera2 for the camera.
-- A web gallery for viewing and downloading photos.
-- One setup script that installs and configures everything.
+- **Camera app** (`src/inkstant/camera_app`): Picamera2, the e-paper driver, the status light, sleep and battery saver, the slideshow, share mode. Runs as `inkstant.service`.
+- **Gallery** (`src/inkstant/gallery`): a small web app for viewing, downloading and deleting photos, and for settings. Runs only while sharing.
+- **Setup script** (`install/`): turns a fresh Raspberry Pi OS Lite card into a camera, and can update, reconfigure or uninstall it.
+- **Tools** (`tools/`): a desktop simulator, bench tests for real hardware, the palette tuner, and the release builder.
+
+## Building one
+
+1. **Assemble the hardware** as [HARDWARE.md](HARDWARE.md) describes. Switch the PiSugar on, and put a display module in if you have one.
+2. **Flash** Raspberry Pi OS Lite (64-bit) with Raspberry Pi Imager. In Imager's settings, set the host name, user and password, your home Wi-Fi and its country, the time zone, and turn on SSH.
+3. **First boot:** wait about two minutes, then `ssh <user>@<hostname>.local`.
+4. **Get the software onto the Pi**, in one of these ways:
+   - **From a release** (once one is published):
+     ```bash
+     curl -fsSLO https://github.com/EnriqueNeyra/inkstant-camera/releases/latest/download/inkstant.tar.gz
+     ```
+     ```bash
+     curl -fsSLO https://github.com/EnriqueNeyra/inkstant-camera/releases/latest/download/SHA256SUMS
+     ```
+     ```bash
+     sha256sum -c --ignore-missing SHA256SUMS && tar xzf inkstant.tar.gz
+     ```
+   - **From your computer**, with a checkout of this repository: build the tarball, copy it over, and unpack it on the Pi.
+     ```bash
+     python3 tools/build_release.py
+     ```
+     ```bash
+     scp dist/inkstant.tar.gz <user>@<hostname>.local:
+     ```
+     Then, on the Pi:
+     ```bash
+     tar xzf inkstant.tar.gz
+     ```
+   - **With git**, on the Pi: `sudo apt install -y git`, then `git clone https://github.com/EnriqueNeyra/inkstant-camera.git inkstant`.
+5. **Run the setup script** on the Pi. It takes 15 to 25 minutes on a 3A+, asks a few questions (press Enter for the defaults), and reboots at the end.
+   ```bash
+   sudo ./inkstant/install/install.sh --dev
+   ```
+   `--dev` turns on developer mode, so the camera keeps joining your home Wi-Fi and SSH keeps working after the reboot. Leave it off for everyday use, or turn it off later in the gallery (Settings → Advanced). Re-running the script is always safe.
+6. **After the reboot:** the status light blinks while the camera starts, then stays on. Press the shutter: the photo develops on the print. Tap BTN: the print shows a QR code. Open the gallery from it, then Settings → Advanced → Setup check: every row should pass.
+
+If something fails, the script stops with the step and the last lines of its log (`/var/log/inkstant-install.log`); [SPEC.md §15.10](SPEC.md) lists the usual causes. `inkstant-ctl selftest` runs the setup check from SSH, and `journalctl -u inkstant` shows the camera app's log.
+
+### Bench tests on the real hardware
+
+`tools/bench/` has one script per hardware test (SPEC.md §19.5). Stop the camera app first, run them with `sudo python3`, and start it again afterwards:
+
+```bash
+sudo systemctl stop inkstant
+```
+```bash
+sudo python3 /opt/inkstant/current/tools/bench/camera_fullres.py
+```
+```bash
+sudo systemctl start inkstant
+```
+
+| Script | Checks |
+|---|---|
+| `camera_fullres.py` | Full-resolution capture, camera memory, JPEG and screen-image times, sleep and wake |
+| `shutter_latency.py` | Shutter delay at 5, 10 and 14 fps (`--auto` without a button); suggests the frame rate |
+| `settle.py` | Focus, exposure and colour settling, with and without the tuning override |
+| `epd_show.py` | The display: test chart, step timings, no module, pull-out mid-update |
+| `inputs.py` | Shutter, module detect and BUSY edges; `--light` steps through every light pattern |
+| `pisugar_probe.py` | PiSugar socket, settings, firmware, clock, alarm, BTN taps, watchdog |
+| `poweroff_test.sh`, `wake_cycle.sh`, `boot_timing.sh` | Delayed power cut, slideshow wake from the clock, boot-to-ready time |
+| `share_e2e.md` | A checklist for share mode on an iPhone and an Android phone |
+
+Results are saved in `/var/lib/inkstant/bench`. `tools/palette_tuner.py` tunes the dithering colours on the real panel.
+
+## Development
+
+```bash
+uv venv --python 3.13 .venv && uv pip install --python .venv -r requirements-dev.txt
+```
+```bash
+.venv/bin/python -m pytest
+```
+```bash
+.venv/bin/python tools/sim.py --port 8080
+```
+
+The simulator runs the real camera app with fake hardware: type `s` for the shutter, `b` / `d` for BTN taps, `m` to slide a module in or out, and open `http://localhost:8080` for the gallery. The screen is written to `sim/display.png`.
 
 ## Status
 
-In the design stage. Next come the parts and bench tests, then the software and the case.
+Software written and tested against fake hardware and a fake system; next come the bench tests on the assembled camera (SPEC.md §19.6), then tuning the frame rate and palette.

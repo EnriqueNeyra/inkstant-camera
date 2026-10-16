@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Inkstant{% endblock %}
+{% block body %}
+<main class="errorpage">
+  <h1>{{ title }}</h1>
+  <p>{{ message }}</p>
+  <p><a class="btn primary" href="/">Go to photos</a></p>
+</main>
+{% endblock %}
+{% block script %}{{ asset('common.js') }}{% endblock %}

@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+/sim/
+/dist/
+/build/
+.claude/scheduled_tasks.lock

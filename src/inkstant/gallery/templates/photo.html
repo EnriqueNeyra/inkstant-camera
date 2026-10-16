@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Photo · Inkstant{% endblock %}
+{% block bodyclass %}page-photo{% endblock %}
+{% block body %}
+<noscript>
+  <main class="nojs-photo">
+    <p><a href="/">‹ Photos</a></p>
+    <img src="/photos/{{ p.id }}.jpg" alt="Photo {{ p.day or '' }} {{ p.time or '' }}" width="4608" height="2592">
+    <p><a href="/photos/{{ p.id }}.jpg?dl=1">Download</a></p>
+  </main>
+</noscript>
+<main id="photo-root" data-id="{{ p.id }}" data-seq="{{ p.seq }}" data-size="{{ p.size }}" data-day="{{ p.day or '' }}" data-time="{{ p.time or '' }}"></main>
+{% include "dialogs.html" %}
+{% include "viewer.html" %}
+{% endblock %}
+{% block script %}{{ asset('photo.js') }}{% endblock %}

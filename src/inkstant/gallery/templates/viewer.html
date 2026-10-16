@@ -1,0 +1,28 @@
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-labelledby="v-when">
+  <div class="vstage" id="v-stage">
+    <img class="vthumb" id="v-thumb" alt="">
+    <img class="vfull" id="v-full" alt="">
+  </div>
+  <div class="vtop">
+    <button class="tbtn" type="button" id="v-close" aria-label="Close"><svg class="i"><use href="#i-close"/></svg></button>
+    <span class="when" id="v-when"></span>
+    <button class="tbtn" type="button" id="v-info-btn" aria-label="Info"><svg class="i"><use href="#i-info"/></svg></button>
+  </div>
+  <p class="counter" id="v-counter" aria-live="polite"></p>
+  <p class="tip" id="v-tip" hidden>Press and hold the photo to save it to your phone. <button class="tbtn" type="button" id="v-tip-ok">OK</button></p>
+  <div class="vbot">
+    <button class="act" type="button" id="v-show"><svg class="i"><use href="#i-display"/></svg>Show on camera<small id="v-show-why"></small></button>
+    <a class="act" id="v-download" href="#"><svg class="i"><use href="#i-download"/></svg>Download</a>
+    <button class="act danger" type="button" id="v-delete"><svg class="i"><use href="#i-trash"/></svg>Delete</button>
+  </div>
+  <div class="vgone" id="v-gone" hidden>
+    <p>This photo was deleted.</p>
+    <button class="btn quiet" type="button" id="v-gone-close">Close</button>
+  </div>
+</div>
+<dialog class="sheet" id="info-sheet" aria-labelledby="info-title">
+  <div class="grab" aria-hidden="true"></div>
+  <h3 id="info-title">Photo info</h3>
+  <dl class="info" id="info-list"></dl>
+  <button class="btn quiet" type="button" data-close>Close</button>
+</dialog>

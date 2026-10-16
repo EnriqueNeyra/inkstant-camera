@@ -1,0 +1,29 @@
+<dialog class="sheet" id="download-sheet" aria-labelledby="dl-title">
+  <div class="grab" aria-hidden="true"></div>
+  <h3 id="dl-title">Download photos</h3>
+  <p class="meta" id="dl-meta"></p>
+  <p class="howto" id="dl-howto"></p>
+  <p class="howto warnline" id="dl-big" hidden>This is a big download. Keep this page open and the phone awake until it finishes.</p>
+  <form method="post" action="/download.zip" id="dl-form">
+    <input type="hidden" name="ids" id="dl-ids">
+    <input type="hidden" name="set" id="dl-set">
+    <input type="hidden" name="day" id="dl-day">
+    <button class="btn primary wide" type="submit">Download ZIP</button>
+  </form>
+  <button class="btn plain wide" type="button" data-close>Cancel</button>
+</dialog>
+<dialog class="dlg" id="delete-dialog" aria-labelledby="del-title">
+  <h3 id="del-title">Delete photos?</h3>
+  <p>They'll be removed from the camera. Copies already saved on a phone aren't affected.</p>
+  <p id="del-oncamera" hidden>The display module keeps showing it until it gets another photo.</p>
+  <div class="row">
+    <button class="btn quiet" type="button" data-close autofocus>Cancel</button>
+    <button class="btn danger" type="button" id="del-confirm">Delete</button>
+  </div>
+</dialog>
+<dialog class="sheet" id="month-sheet" aria-labelledby="month-title">
+  <div class="grab" aria-hidden="true"></div>
+  <h3 id="month-title">Jump to month</h3>
+  <ul class="months" id="month-list"></ul>
+  <button class="btn plain wide" type="button" data-close>Cancel</button>
+</dialog>
