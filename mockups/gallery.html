@@ -1,0 +1,584 @@
+<title>Inkstant Gallery Screens</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a contact sheet of phone frames, each one screen from SPEC.md §11, on a quiet page. */
+:root {
+  /* constants: light (L) and dark (D) values of the app tokens in SPEC.md §11.3.2 */
+  --L-bg:#EEF0F0; --L-surface:#FFFFFF; --L-surface-2:#E2E5E6; --L-line:#CDD2D4;
+  --L-ink:#16181A; --L-ink-2:#454B50; --L-ink-3:#62696E;
+  --L-accent:#3A3F9E; --L-accent-ink:#FFFFFF; --L-danger:#A3343A; --L-ok:#2C6643;
+  --L-warn-bg:#F2E6A2; --L-warn-ink:#3F3500; --L-err-bg:#F6DEDF; --L-err-ink:#7A1E23;
+  --L-info-bg:#E2E3F5; --L-info-ink:#272B6E; --L-scrim:rgba(16,18,20,.45);
+  --D-bg:#101214; --D-surface:#1A1D20; --D-surface-2:#25292D; --D-line:#353A3F;
+  --D-ink:#ECEEEF; --D-ink-2:#B3B9BD; --D-ink-3:#8E959A;
+  --D-accent:#A3A9F7; --D-accent-ink:#14163A; --D-danger:#F28E92; --D-ok:#82C9A0;
+  --D-warn-bg:#3A3415; --D-warn-ink:#F0DC82; --D-err-bg:#3D1C1F; --D-err-ink:#F7B9BC;
+  --D-info-bg:#22244A; --D-info-ink:#C9CCFA; --D-scrim:rgba(0,0,0,.6);
+
+  /* app tokens (light by default) */
+  --bg:var(--L-bg); --surface:var(--L-surface); --surface-2:var(--L-surface-2); --line:var(--L-line);
+  --ink:var(--L-ink); --ink-2:var(--L-ink-2); --ink-3:var(--L-ink-3);
+  --accent:var(--L-accent); --accent-ink:var(--L-accent-ink); --danger:var(--L-danger); --ok:var(--L-ok);
+  --warn-bg:var(--L-warn-bg); --warn-ink:var(--L-warn-ink); --err-bg:var(--L-err-bg); --err-ink:var(--L-err-ink);
+  --info-bg:var(--L-info-bg); --info-ink:var(--L-info-ink); --scrim:var(--L-scrim);
+  --viewer-bg:#000000; --viewer-ink:#F2F2F2;
+
+  /* the panel's six measured inks, in panel code order 0 1 2 3 5 6 */
+  --ink-k:#000000; --ink-w:#A1A4A5; --ink-y:#D0BE47; --ink-r:#9C484B; --ink-b:#3D3B5E; --ink-g:#3A5B46;
+
+  /* page chrome */
+  --page-bg:#E3E6E7; --page-fg:#16181A; --page-muted:#545B60; --bezel:#1C1F22; --page-line:#C9CED1;
+
+  /* type */
+  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:var(--D-bg); --surface:var(--D-surface); --surface-2:var(--D-surface-2); --line:var(--D-line);
+    --ink:var(--D-ink); --ink-2:var(--D-ink-2); --ink-3:var(--D-ink-3);
+    --accent:var(--D-accent); --accent-ink:var(--D-accent-ink); --danger:var(--D-danger); --ok:var(--D-ok);
+    --warn-bg:var(--D-warn-bg); --warn-ink:var(--D-warn-ink); --err-bg:var(--D-err-bg); --err-ink:var(--D-err-ink);
+    --info-bg:var(--D-info-bg); --info-ink:var(--D-info-ink); --scrim:var(--D-scrim);
+    --page-bg:#0A0B0C; --page-fg:#ECEEEF; --page-muted:#9AA1A6; --bezel:#2B2F33; --page-line:#2A2E32;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:var(--D-bg); --surface:var(--D-surface); --surface-2:var(--D-surface-2); --line:var(--D-line);
+  --ink:var(--D-ink); --ink-2:var(--D-ink-2); --ink-3:var(--D-ink-3);
+  --accent:var(--D-accent); --accent-ink:var(--D-accent-ink); --danger:var(--D-danger); --ok:var(--D-ok);
+  --warn-bg:var(--D-warn-bg); --warn-ink:var(--D-warn-ink); --err-bg:var(--D-err-bg); --err-ink:var(--D-err-ink);
+  --info-bg:var(--D-info-bg); --info-ink:var(--D-info-ink); --scrim:var(--D-scrim);
+  --page-bg:#0A0B0C; --page-fg:#ECEEEF; --page-muted:#9AA1A6; --bezel:#2B2F33; --page-line:#2A2E32;
+  color-scheme: dark;
+}
+/* the "Phones" switch forces a scheme on the frames only */
+.phone[data-scheme="light"] {
+  --bg:var(--L-bg); --surface:var(--L-surface); --surface-2:var(--L-surface-2); --line:var(--L-line);
+  --ink:var(--L-ink); --ink-2:var(--L-ink-2); --ink-3:var(--L-ink-3);
+  --accent:var(--L-accent); --accent-ink:var(--L-accent-ink); --danger:var(--L-danger); --ok:var(--L-ok);
+  --warn-bg:var(--L-warn-bg); --warn-ink:var(--L-warn-ink); --err-bg:var(--L-err-bg); --err-ink:var(--L-err-ink);
+  --info-bg:var(--L-info-bg); --info-ink:var(--L-info-ink); --scrim:var(--L-scrim);
+  color-scheme: light;
+}
+.phone[data-scheme="dark"] {
+  --bg:var(--D-bg); --surface:var(--D-surface); --surface-2:var(--D-surface-2); --line:var(--D-line);
+  --ink:var(--D-ink); --ink-2:var(--D-ink-2); --ink-3:var(--D-ink-3);
+  --accent:var(--D-accent); --accent-ink:var(--D-accent-ink); --danger:var(--D-danger); --ok:var(--D-ok);
+  --warn-bg:var(--D-warn-bg); --warn-ink:var(--D-warn-ink); --err-bg:var(--D-err-bg); --err-ink:var(--D-err-ink);
+  --info-bg:var(--D-info-bg); --info-ink:var(--D-info-ink); --scrim:var(--D-scrim);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--page-bg); color: var(--page-fg);
+  font: 400 1rem/1.45 var(--font-ui);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 48px;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 28px; }
+
+/* page header */
+.intro { display: grid; gap: 14px; max-width: 70ch; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.strip { display: inline-grid; grid-template-columns: repeat(6, 1fr); gap: 2px; }
+.strip i { display: block; width: 9px; height: 14px; border-radius: 1px; }
+.strip i:nth-child(1){background:var(--ink-k)} .strip i:nth-child(2){background:var(--ink-w)}
+.strip i:nth-child(3){background:var(--ink-y)} .strip i:nth-child(4){background:var(--ink-r)}
+.strip i:nth-child(5){background:var(--ink-b)} .strip i:nth-child(6){background:var(--ink-g)}
+.strip.lg i { width: 14px; height: 22px; }
+h1 { font-size: clamp(1.6rem, 3.6vw, 2.2rem); line-height: 1.1; margin: 0; letter-spacing: -0.01em; text-wrap: balance; font-weight: 700; }
+.intro p { margin: 0; color: var(--page-muted); }
+.inks { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .8125rem; color: var(--page-muted); font-variant-numeric: tabular-nums; }
+.inks span { display: inline-flex; align-items: center; gap: 6px; }
+.inks b { width: 12px; height: 12px; border-radius: 2px; display: inline-block; outline: 1px solid var(--page-line); }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: .875rem; color: var(--page-muted); }
+.seg { display: inline-flex; border: 1px solid var(--page-line); border-radius: 999px; padding: 2px; gap: 2px; }
+.seg button {
+  font: inherit; font-size: .875rem; color: var(--page-fg); background: transparent; border: 0;
+  border-radius: 999px; padding: 6px 12px; min-height: 32px; cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--page-fg); color: var(--page-bg); }
+.seg button:focus-visible, .phone button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* contact sheet */
+.sheet { display: grid; gap: 32px 24px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); }
+figure { margin: 0; display: grid; gap: 10px; justify-items: center; align-content: start; min-width: 0; }
+figcaption { width: min(100%, 360px); display: grid; gap: 2px; }
+figcaption strong { font-size: .9375rem; }
+figcaption span { font-size: .8125rem; color: var(--page-muted); }
+figcaption code { font-family: var(--font-mono); font-size: .75rem; }
+
+/* phone frame */
+.phone {
+  width: min(100%, 360px); height: 720px; border-radius: 34px; padding: 9px;
+  background: var(--bezel); box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 18px 40px -18px rgba(0,0,0,.45);
+}
+.screen {
+  position: relative; height: 100%; border-radius: 26px; overflow: hidden;
+  background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 1rem;
+  display: flex; flex-direction: column;
+}
+.sysbar { height: 30px; flex: none; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font-size: .75rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.screen.viewer .sysbar { color: var(--viewer-ink); }
+
+/* icons */
+svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+svg.i.sm { width: 16px; height: 16px; }
+
+/* app chrome */
+.bar { display: flex; align-items: center; gap: 4px; padding: 6px 8px 6px 16px; background: var(--bg); }
+.bar .title { display: flex; align-items: center; gap: 8px; font-weight: 650; font-size: 1.125rem; margin-right: auto; }
+.tbtn { font: inherit; font-size: 1rem; color: var(--accent); background: none; border: 0; min-height: 44px; min-width: 44px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; }
+.tbtn.ink { color: var(--ink); }
+.status { padding: 0 16px 10px; font-size: .875rem; color: var(--ink-2); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.status .dot { color: var(--ink-3); }
+.banner { margin: 0 12px 10px; padding: 10px 12px; border-radius: 8px; display: flex; gap: 10px; align-items: flex-start; font-size: .875rem; }
+.banner.warn { background: var(--warn-bg); color: var(--warn-ink); }
+.banner.err { background: var(--err-bg); color: var(--err-ink); }
+.scroll { flex: 1; overflow: hidden; position: relative; }
+.day { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 16px 8px; }
+.day b { font-size: 1.0625rem; font-weight: 600; }
+.day span { font-size: .875rem; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.day .tbtn { min-height: 32px; font-size: .9375rem; padding: 0; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+.tile { position: relative; aspect-ratio: 1; max-width: 100%; overflow: hidden; background: var(--surface-2); }
+.tile .ph { position: absolute; inset: 0; }
+.badge { position: absolute; left: 6px; bottom: 6px; display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px 3px 5px; border-radius: 999px; background: rgba(0,0,0,.62); color: #fff; font-size: .6875rem; font-weight: 600; letter-spacing: .02em; }
+.badge.dev::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #F0DC82; animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .25; } }
+.chk { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; background: rgba(0,0,0,.25); display: grid; place-items: center; color: transparent; }
+.tile.sel::after { content: ""; position: absolute; inset: 0; box-shadow: inset 0 0 0 3px var(--accent); background: rgba(0,0,0,.12); }
+.tile.sel .chk { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); z-index: 1; }
+.fade { position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: linear-gradient(transparent, var(--bg)); pointer-events: none; }
+
+/* select mode action bar */
+.actions { flex: none; display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 4px; padding: 8px 8px 20px; background: var(--surface); box-shadow: 0 -8px 24px -12px rgba(0,0,0,.35); border-top: 1px solid var(--line); }
+.act { font: inherit; font-size: .8125rem; background: none; border: 0; color: var(--accent); min-height: 52px; display: grid; justify-items: center; align-content: center; gap: 3px; border-radius: 8px; }
+.act small { font-size: .75rem; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.act.danger { color: var(--danger); }
+.act[disabled] { color: var(--ink-3); opacity: .55; }
+
+/* sheets, dialogs, toasts */
+.dim { position: absolute; inset: 0; background: var(--scrim); }
+.bottomsheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--surface); border-radius: 12px 12px 0 0; padding: 8px 18px 24px; display: grid; gap: 12px; box-shadow: 0 -12px 32px -10px rgba(0,0,0,.4); }
+.grab { width: 36px; height: 4px; border-radius: 4px; background: var(--line); justify-self: center; }
+.bottomsheet h3, .dialog h3 { margin: 4px 0 0; font-size: 1.125rem; font-weight: 650; text-wrap: balance; }
+.meta { color: var(--ink-2); font-size: .9375rem; font-variant-numeric: tabular-nums; }
+.howto { margin: 0; font-size: .9375rem; color: var(--ink-2); background: var(--surface-2); border-radius: 8px; padding: 10px 12px; }
+.btn { font: inherit; font-size: 1rem; font-weight: 600; min-height: 48px; border-radius: 8px; border: 0; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); }
+.btn.plain { background: transparent; color: var(--accent); }
+.btn.quiet { background: var(--surface-2); color: var(--ink); }
+.btn.danger { background: var(--danger); color: var(--surface); }
+.dialog { position: absolute; left: 22px; right: 22px; top: 50%; transform: translateY(-50%); background: var(--surface); border-radius: 12px; padding: 18px 18px 12px; display: grid; gap: 10px; box-shadow: 0 20px 48px -12px rgba(0,0,0,.5); }
+.dialog p { margin: 0; color: var(--ink-2); font-size: .9375rem; }
+.dialog .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+.toast { position: absolute; left: 14px; right: 14px; display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 14px; border-radius: 10px; background: #26292D; color: #F2F2F2; font-size: .875rem; box-shadow: 0 10px 28px -10px rgba(0,0,0,.6); }
+.toast .tbtn { color: #C9CCFA; min-height: 36px; font-size: .875rem; margin-left: auto; }
+
+/* viewer */
+.screen.viewer { background: var(--viewer-bg); color: var(--viewer-ink); }
+.vtop, .vbot { position: absolute; left: 0; right: 0; display: flex; align-items: center; z-index: 2; }
+.vtop { top: 30px; padding: 4px 6px 30px; background: linear-gradient(rgba(0,0,0,.65), transparent); justify-content: space-between; }
+.vtop .when { font-size: .9375rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.vtop .tbtn, .vbot .act { color: var(--viewer-ink); }
+.vbot { bottom: 0; padding: 30px 6px 22px; background: linear-gradient(transparent, rgba(0,0,0,.7)); display: grid; grid-template-columns: repeat(3, 1fr); }
+.vbot .act.danger { color: #F7A3A7; }
+.vphoto { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); aspect-ratio: 16 / 9; max-width: 100%; }
+.counter { position: absolute; top: 92px; left: 0; right: 0; text-align: center; font-size: .75rem; color: rgba(242,242,242,.7); z-index: 2; font-variant-numeric: tabular-nums; }
+
+/* settings */
+.settings { flex: 1; overflow: hidden; padding: 0 12px 16px; display: flex; flex-direction: column; gap: 6px; }
+.settings > * { flex-shrink: 0; }
+.glabel { font-size: .75rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); padding: 12px 6px 2px; }
+.group { background: var(--surface); border-radius: 8px; overflow: hidden; }
+.row2 { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 11px 14px; min-height: 48px; border-top: 1px solid var(--line); font-size: .9375rem; }
+.row2:first-child { border-top: 0; }
+.row2 .v { justify-self: end; color: var(--ink-2); display: inline-flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; text-align: right; }
+.row2.stack { grid-template-columns: 1fr; gap: 6px; }
+.meter { width: 96px; height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.ok { color: var(--ok); }
+.thumb { width: 38px; height: 25px; border-radius: 3px; position: relative; overflow: hidden; }
+.switch { width: 46px; height: 28px; border-radius: 999px; background: var(--surface-2); position: relative; border: 1px solid var(--line); }
+.switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.switch.on { background: var(--accent); border-color: var(--accent); }
+.switch.on::after { left: 20px; background: var(--accent-ink); }
+.segs { display: inline-grid; grid-template-columns: 1fr 1fr; background: var(--surface-2); border-radius: 8px; padding: 2px; font-size: .875rem; }
+.segs span { padding: 5px 10px; border-radius: 6px; text-align: center; color: var(--ink-2); }
+.segs span.on { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.foot { font-size: .8125rem; color: var(--ink-3); padding: 4px 6px 0; }
+.sub { font-size: .8125rem; color: var(--ink-3); }
+
+/* offline card */
+.card { position: absolute; left: 18px; right: 18px; top: 50%; transform: translateY(-50%); background: var(--surface); border-radius: 12px; padding: 22px 18px 16px; display: grid; gap: 10px; justify-items: start; box-shadow: 0 20px 48px -12px rgba(0,0,0,.5); }
+.card .ico { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-2); display: grid; place-items: center; color: var(--ink-2); }
+.card p { margin: 0; color: var(--ink-2); font-size: .9375rem; }
+.card .btn { width: 100%; }
+
+/* placeholder photos: gradient "scenes" standing in for real photos */
+.p1 { background: linear-gradient(180deg,#9cc2e6 0 52%,#e9d7a9 52% 70%,#6fa3b8 70%); }
+.p2 { background: radial-gradient(circle at 70% 35%,#ffe7a3 0 9%,transparent 10%),linear-gradient(180deg,#f2a66b,#c8586b 55%,#3b2f4f); }
+.p3 { background: linear-gradient(160deg,#3f6d4e,#7aa36a 45%,#c8d98f); }
+.p4 { background: radial-gradient(ellipse at 50% 110%,#2d3b2b 0 45%,transparent 46%),linear-gradient(180deg,#bcd3e8,#e8eef3); }
+.p5 { background: linear-gradient(135deg,#d9c3a5,#a07a5b 60%,#5d4636); }
+.p6 { background: radial-gradient(circle at 30% 40%,#f7d9c4 0 18%,transparent 19%),radial-gradient(circle at 62% 46%,#e9c2a5 0 16%,transparent 17%),linear-gradient(180deg,#7d8fa6,#4c5a6e); }
+.p7 { background: linear-gradient(180deg,#1f2a44,#3b4f7a 50%,#f0a35e 50.5% 54%,#1c1c24 54%); }
+.p8 { background: repeating-linear-gradient(90deg,#c9b38d 0 14%,#b39b74 14% 28%),#c9b38d; }
+.p9 { background: radial-gradient(circle at 50% 60%,#f4f1e8 0 22%,transparent 23%),linear-gradient(180deg,#8bb174,#567d48); }
+.p10 { background: linear-gradient(200deg,#e3e7ec,#9aa7b5 60%,#55606d); }
+.p11 { background: radial-gradient(circle at 40% 45%,#d84f4f 0 14%,transparent 15%),radial-gradient(circle at 60% 55%,#f2c14e 0 12%,transparent 13%),linear-gradient(180deg,#f3efe6,#d9d2c3); }
+.p12 { background: linear-gradient(180deg,#6aa4d4 0 40%,#e8e2d0 40% 46%,#b8a17c 46%); }
+.p13 { background: linear-gradient(120deg,#273b2f,#4f7a5a 50%,#a3c49a); }
+.p14 { background: radial-gradient(circle at 75% 25%,#fff4c2 0 7%,transparent 8%),linear-gradient(180deg,#87b6e0,#d6e7f3 60%,#9fb88a 60%); }
+.p15 { background: linear-gradient(180deg,#2b2233,#6b3c55 55%,#e2a46e); }
+
+@media (prefers-reduced-motion: reduce) { .badge.dev::before { animation: none; } }
+footer { color: var(--page-muted); font-size: .8125rem; border-top: 1px solid var(--page-line); padding-top: 14px; }
+footer code { font-family: var(--font-mono); font-size: .75rem; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18" cy="12" r="1.2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10 11v5M14 11v5"/></symbol>
+  <symbol id="i-display" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="1.5"/><path d="M12 8.5v6M9.5 12l2.5 2.5 2.5-2.5"/></symbol>
+  <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r=".8"/></symbol>
+  <symbol id="i-battery" viewBox="0 0 24 24"><rect x="2.5" y="7" width="17" height="10" rx="2"/><path d="M22 10.5v3"/><rect x="5" y="9.5" width="8.5" height="5" rx=".6" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3L6 13h5l-1 8 7-10h-5l1-8z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.2h.01"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-offline" viewBox="0 0 24 24"><path d="M3 3l18 18M5.5 12.5a9.5 9.5 0 0 1 4-2.3M8.5 16a5 5 0 0 1 4.5-1.3M2.5 9a14 14 0 0 1 4.3-2.8M12 5a14 14 0 0 1 9.5 4"/><circle cx="12" cy="19.5" r=".8"/></symbol>
+</svg>
+
+<div class="wrap">
+  <header class="intro">
+    <div class="brand"><span class="strip lg" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+    <h1>Inkstant gallery, screen by screen</h1>
+    <p>What a phone sees when it opens the camera's share-mode gallery, as specified in SPEC.md §11. Layout, colours, type and wording follow the spec. The photos are placeholders. System fonts only, because the camera's own Wi-Fi has no internet.</p>
+    <div class="inks" aria-label="The display panel's six inks, with their panel colour codes">
+      <span><b style="background:var(--ink-k)"></b>Black · 0</span>
+      <span><b style="background:var(--ink-w)"></b>White · 1</span>
+      <span><b style="background:var(--ink-y)"></b>Yellow · 2</span>
+      <span><b style="background:var(--ink-r)"></b>Red · 3</span>
+      <span><b style="background:var(--ink-b)"></b>Blue · 5</span>
+      <span><b style="background:var(--ink-g)"></b>Green · 6</span>
+    </div>
+    <div class="controls">
+      <span id="scheme-label">Phones:</span>
+      <div class="seg" role="group" aria-labelledby="scheme-label">
+        <button type="button" id="scheme-auto" data-scheme="" aria-pressed="true">Match this page</button>
+        <button type="button" id="scheme-light" data-scheme="light" aria-pressed="false">Light</button>
+        <button type="button" id="scheme-dark" data-scheme="dark" aria-pressed="false">Dark</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="sheet">
+    <!-- 1 Gallery -->
+    <figure>
+      <div class="phone"><div class="screen">
+        <div class="sysbar"><span>9:41</span><span>Inkstant-4F2A</span></div>
+        <div class="bar">
+          <span class="title"><span class="strip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>Inkstant</span>
+          <button class="tbtn" type="button">Select</button>
+          <button class="tbtn ink" type="button" aria-label="More"><svg class="i"><use href="#i-more"/></svg></button>
+          <button class="tbtn ink" type="button" aria-label="Settings"><svg class="i"><use href="#i-settings"/></svg></button>
+        </div>
+        <div class="status">1,284 photos <span class="dot">·</span> <svg class="i sm"><use href="#i-battery"/></svg> 72% <span class="dot">·</span> <svg class="i sm"><use href="#i-wifi"/></svg> Camera Wi-Fi</div>
+        <div class="banner warn" role="status"><svg class="i sm"><use href="#i-warn"/></svg><span>Storage low: about 240 photos left.</span></div>
+        <div class="scroll">
+          <div class="day"><b>Today</b><span>14</span></div>
+          <div class="grid">
+            <div class="tile"><div class="ph p2"></div><span class="badge dev">Developing</span></div>
+            <div class="tile"><div class="ph p1"></div></div>
+            <div class="tile"><div class="ph p6"></div></div>
+            <div class="tile"><div class="ph p14"></div><span class="badge"><svg class="i sm"><use href="#i-display"/></svg>On camera</span></div>
+            <div class="tile"><div class="ph p3"></div></div>
+            <div class="tile"><div class="ph p11"></div></div>
+            <div class="tile"><div class="ph p12"></div></div>
+            <div class="tile"><div class="ph p9"></div></div>
+            <div class="tile"><div class="ph p5"></div></div>
+          </div>
+          <div class="day"><b>Yesterday</b><span>6</span></div>
+          <div class="grid">
+            <div class="tile"><div class="ph p7"></div></div>
+            <div class="tile"><div class="ph p15"></div></div>
+            <div class="tile"><div class="ph p4"></div></div>
+            <div class="tile"><div class="ph p10"></div></div>
+            <div class="tile"><div class="ph p13"></div></div>
+            <div class="tile"><div class="ph p8"></div></div>
+          </div>
+          <div class="day"><b>Mon 12 Oct</b><span>23</span></div>
+          <div class="grid">
+            <div class="tile"><div class="ph p1"></div></div>
+            <div class="tile"><div class="ph p3"></div></div>
+            <div class="tile"><div class="ph p2"></div></div>
+          </div>
+          <div class="fade"></div>
+        </div>
+      </div></div>
+      <figcaption><strong>Gallery</strong><span>Newest first, grouped by the camera's date. The first 60 photos come with the page; more load as you scroll. Badges show which photo is on the display module and which is developing. <code>§11.4.1</code></span></figcaption>
+    </figure>
+
+    <!-- 2 Select mode -->
+    <figure>
+      <div class="phone"><div class="screen">
+        <div class="sysbar"><span>9:41</span><span>Inkstant-4F2A</span></div>
+        <div class="bar">
+          <button class="tbtn" type="button" style="margin-left:-8px">Cancel</button>
+          <span class="title" style="margin:0 auto;font-size:1rem">3 selected</span>
+          <button class="tbtn" type="button">Select all</button>
+        </div>
+        <div class="scroll">
+          <div class="day"><b>Today</b><button class="tbtn" type="button">Deselect</button></div>
+          <div class="grid">
+            <div class="tile sel"><div class="ph p2"></div><span class="chk"><svg class="i sm"><use href="#i-check"/></svg></span></div>
+            <div class="tile sel"><div class="ph p1"></div><span class="chk"><svg class="i sm"><use href="#i-check"/></svg></span></div>
+            <div class="tile"><div class="ph p6"></div><span class="chk"></span></div>
+            <div class="tile sel"><div class="ph p14"></div><span class="chk"><svg class="i sm"><use href="#i-check"/></svg></span></div>
+            <div class="tile"><div class="ph p3"></div><span class="chk"></span></div>
+            <div class="tile"><div class="ph p11"></div><span class="chk"></span></div>
+            <div class="tile"><div class="ph p12"></div><span class="chk"></span></div>
+            <div class="tile"><div class="ph p9"></div><span class="chk"></span></div>
+            <div class="tile"><div class="ph p5"></div><span class="chk"></span></div>
+          </div>
+          <div class="day"><b>Yesterday</b><button class="tbtn" type="button">Select</button></div>
+          <div class="grid">
+            <div class="tile"><div class="ph p7"></div><span class="chk"></span></div>
+            <div class="tile"><div class="ph p15"></div><span class="chk"></span></div>
+            <div class="tile"><div class="ph p4"></div><span class="chk"></span></div>
+            <div class="tile"><div class="ph p10"></div><span class="chk"></span></div>
+            <div class="tile"><div class="ph p13"></div><span class="chk"></span></div>
+            <div class="tile"><div class="ph p8"></div><span class="chk"></span></div>
+          </div>
+          <div class="fade"></div>
+        </div>
+        <div class="actions">
+          <button class="act" type="button"><svg class="i"><use href="#i-download"/></svg>Download<small>12 MB</small></button>
+          <button class="act" type="button" disabled><svg class="i"><use href="#i-display"/></svg>Show on camera</button>
+          <button class="act danger" type="button"><svg class="i"><use href="#i-trash"/></svg>Delete</button>
+        </div>
+      </div></div>
+      <figcaption><strong>Select mode</strong><span>Tap photos, or select a whole day from its header. Download shows the total size. Show on camera needs exactly one photo, so it's greyed out here. <code>§11.4.3</code></span></figcaption>
+    </figure>
+
+    <!-- 3 Download sheet -->
+    <figure>
+      <div class="phone"><div class="screen">
+        <div class="sysbar"><span>9:41</span><span>Inkstant-4F2A</span></div>
+        <div class="bar">
+          <button class="tbtn" type="button" style="margin-left:-8px">Cancel</button>
+          <span class="title" style="margin:0 auto;font-size:1rem">23 selected</span>
+          <button class="tbtn" type="button">Select all</button>
+        </div>
+        <div class="scroll">
+          <div class="day"><b>Mon 12 Oct</b><button class="tbtn" type="button">Deselect</button></div>
+          <div class="grid">
+            <div class="tile sel"><div class="ph p1"></div><span class="chk"><svg class="i sm"><use href="#i-check"/></svg></span></div>
+            <div class="tile sel"><div class="ph p3"></div><span class="chk"><svg class="i sm"><use href="#i-check"/></svg></span></div>
+            <div class="tile sel"><div class="ph p2"></div><span class="chk"><svg class="i sm"><use href="#i-check"/></svg></span></div>
+            <div class="tile sel"><div class="ph p12"></div><span class="chk"><svg class="i sm"><use href="#i-check"/></svg></span></div>
+            <div class="tile sel"><div class="ph p13"></div><span class="chk"><svg class="i sm"><use href="#i-check"/></svg></span></div>
+            <div class="tile sel"><div class="ph p9"></div><span class="chk"><svg class="i sm"><use href="#i-check"/></svg></span></div>
+          </div>
+        </div>
+        <div class="dim"></div>
+        <div class="bottomsheet" role="dialog" aria-labelledby="dl-title">
+          <span class="grab"></span>
+          <h3 id="dl-title">Download 23 photos</h3>
+          <div class="meta">92 MB · about 30 seconds</div>
+          <p class="howto">Safari saves one ZIP file to Files → Downloads. Open it there, then select the photos and tap Share → Save Images.</p>
+          <button class="btn primary" type="button"><svg class="i"><use href="#i-download"/></svg>Download ZIP</button>
+          <button class="btn plain" type="button">Cancel</button>
+        </div>
+      </div></div>
+      <figcaption><strong>Download sheet</strong><span>Size and time before anything starts, and instructions for the phone in hand (this is the iPhone version). A single photo skips the ZIP. <code>§11.4.4</code></span></figcaption>
+    </figure>
+
+    <!-- 4 Viewer -->
+    <figure>
+      <div class="phone"><div class="screen viewer">
+        <div class="sysbar"><span>9:41</span><span>Inkstant-4F2A</span></div>
+        <div class="vtop">
+          <button class="tbtn" type="button" aria-label="Close"><svg class="i"><use href="#i-close"/></svg></button>
+          <span class="when">Thu 15 Oct · 14:30</span>
+          <button class="tbtn" type="button" aria-label="Photo info"><svg class="i"><use href="#i-info"/></svg></button>
+        </div>
+        <div class="counter">Photo 4 of 1,284</div>
+        <div class="vphoto p14" role="img" aria-label="Photo, Thursday 15 October, 14:30"></div>
+        <div class="toast" style="bottom:118px"><svg class="i sm"><use href="#i-info"/></svg><span>Press and hold the photo to save it to your phone.</span><button class="tbtn" type="button">Got it</button></div>
+        <div class="vbot">
+          <button class="act" type="button"><svg class="i"><use href="#i-display"/></svg>Show on camera</button>
+          <button class="act" type="button"><svg class="i"><use href="#i-download"/></svg>Download</button>
+          <button class="act danger" type="button"><svg class="i"><use href="#i-trash"/></svg>Delete</button>
+        </div>
+      </div></div>
+      <figcaption><strong>Photo viewer</strong><span>Always dark. The full photo is a plain image, so press-and-hold saves it. Swipe for the next one; pinch-zoom stays on. The tip shows once per phone. <code>§11.4.2</code></span></figcaption>
+    </figure>
+
+    <!-- 5 Settings -->
+    <figure>
+      <div class="phone"><div class="screen">
+        <div class="sysbar"><span>9:41</span><span>Inkstant-4F2A</span></div>
+        <div class="bar" style="padding-left:4px">
+          <button class="tbtn" type="button"><svg class="i"><use href="#i-back"/></svg>Photos</button>
+          <span class="title" style="position:absolute;left:0;right:0;justify-content:center;pointer-events:none">Settings</span>
+        </div>
+        <div class="settings">
+          <div class="glabel">Camera</div>
+          <div class="group">
+            <div class="row2"><span>Battery</span><span class="v"><span class="meter" aria-hidden="true"><i style="width:72%"></i></span>72% <svg class="i sm ok"><use href="#i-bolt"/></svg></span></div>
+            <div class="row2"><span>Display</span><span class="v">Module in <span class="thumb p14" aria-hidden="true"></span></span></div>
+            <div class="row2"><span>Camera</span><span class="v">Ready</span></div>
+            <div class="row2"><span>Light</span><span class="v">What it means <svg class="i sm"><use href="#i-chevron"/></svg></span></div>
+            <div class="row2 stack"><div style="display:flex;justify-content:space-between;gap:12px"><span>Sharing</span><span class="v" style="color:var(--ink-2)">Camera Wi-Fi “Inkstant-4F2A”</span></div><span class="sub">Turns off after 10 min without use</span><button class="btn quiet" type="button" style="min-height:40px">Stop sharing</button></div>
+          </div>
+          <div class="glabel">Slideshow</div>
+          <div class="group">
+            <div class="row2"><span>Slideshow</span><span class="v"><span class="switch on" role="img" aria-label="On"></span></span></div>
+            <div class="row2"><span>Change picture every</span><span class="v">1 hour <svg class="i sm"><use href="#i-chevron"/></svg></span></div>
+            <div class="row2"><span>Order</span><span class="v"><span class="segs"><span class="on">Shuffle</span><span>Newest</span></span></span></div>
+            <div class="row2"><span>Quiet hours</span><span class="v"><span class="switch" role="img" aria-label="Off"></span></span></div>
+          </div>
+          <div class="glabel">Power</div>
+          <div class="group">
+            <div class="row2"><span>Sleep after</span><span class="v">5 min <svg class="i sm"><use href="#i-chevron"/></svg></span></div>
+            <div class="row2"><span>Turn off after</span><span class="v">10 min <svg class="i sm"><use href="#i-chevron"/></svg></span></div>
+            <div class="row2"><span>Battery saver</span><span class="v"><span class="switch" role="img" aria-label="Off"></span></span></div>
+            <div class="row2"><span>Turn on at 20%</span><span class="v"><span class="switch on" role="img" aria-label="On"></span></span></div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption><strong>Settings</strong><span>One page of grouped settings. Toggles and choices save as you change them. Power holds sleep, turn-off and the battery saver; below it: Wi-Fi, date &amp; time, storage, software, advanced. <code>§11.4.6</code></span></figcaption>
+    </figure>
+
+    <!-- 5b Settings, scrolled to Power -->
+    <figure>
+      <div class="phone"><div class="screen">
+        <div class="sysbar"><span>9:41</span><span>Inkstant-4F2A</span></div>
+        <div class="bar" style="padding-left:4px">
+          <button class="tbtn" type="button"><svg class="i"><use href="#i-back"/></svg>Photos</button>
+          <span class="title" style="position:absolute;left:0;right:0;justify-content:center;pointer-events:none">Settings</span>
+        </div>
+        <div class="settings">
+          <div aria-hidden="true" style="margin-top:-298px"></div>
+          <div class="glabel">Camera</div>
+          <div class="group">
+            <div class="row2"><span>Battery</span><span class="v"><span class="meter" aria-hidden="true"><i style="width:72%"></i></span>72% <svg class="i sm ok"><use href="#i-bolt"/></svg></span></div>
+            <div class="row2"><span>Display</span><span class="v">Module in <span class="thumb p14" aria-hidden="true"></span></span></div>
+            <div class="row2"><span>Camera</span><span class="v">Ready</span></div>
+            <div class="row2"><span>Light</span><span class="v">What it means <svg class="i sm"><use href="#i-chevron"/></svg></span></div>
+            <div class="row2 stack"><div style="display:flex;justify-content:space-between;gap:12px"><span>Sharing</span><span class="v" style="color:var(--ink-2)">Camera Wi-Fi “Inkstant-4F2A”</span></div><span class="sub">Turns off after 10 min without use</span><button class="btn quiet" type="button" style="min-height:40px">Stop sharing</button></div>
+          </div>
+          <div class="glabel">Slideshow</div>
+          <div class="group">
+            <div class="row2"><span>Slideshow</span><span class="v"><span class="switch on" role="img" aria-label="On"></span></span></div>
+            <div class="row2"><span>Change picture every</span><span class="v">1 hour <svg class="i sm"><use href="#i-chevron"/></svg></span></div>
+            <div class="row2"><span>Order</span><span class="v"><span class="segs"><span class="on">Shuffle</span><span>Newest</span></span></span></div>
+            <div class="row2"><span>Quiet hours</span><span class="v"><span class="switch" role="img" aria-label="Off"></span></span></div>
+          </div>
+          <div class="glabel">Power</div>
+          <div class="group">
+            <div class="row2"><span>Sleep after</span><span class="v">5 min <svg class="i sm"><use href="#i-chevron"/></svg></span></div>
+            <div class="row2"><span>Turn off after</span><span class="v">10 min <svg class="i sm"><use href="#i-chevron"/></svg></span></div>
+            <div class="row2"><span>Battery saver</span><span class="v"><span class="switch" role="img" aria-label="Off"></span></span></div>
+            <div class="row2"><span>Turn on at 20%</span><span class="v"><span class="switch on" role="img" aria-label="On"></span></span></div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption><strong>Settings: power</strong><span>The same page scrolled down. The camera sleeps after 5 idle minutes and turns off after 10. The battery saver turns itself on at 20%: sleep after 1 min, off after 5, the slowest frame rate, sharing stops after 5 min. <code>§11.4.6</code></span></figcaption>
+    </figure>
+
+    <!-- 6 Delete dialog -->
+    <figure>
+      <div class="phone"><div class="screen">
+        <div class="sysbar"><span>9:41</span><span>Inkstant-4F2A</span></div>
+        <div class="bar">
+          <button class="tbtn" type="button" style="margin-left:-8px">Cancel</button>
+          <span class="title" style="margin:0 auto;font-size:1rem">3 selected</span>
+          <button class="tbtn" type="button">Select all</button>
+        </div>
+        <div class="scroll">
+          <div class="day"><b>Today</b><button class="tbtn" type="button">Deselect</button></div>
+          <div class="grid">
+            <div class="tile sel"><div class="ph p2"></div><span class="chk"><svg class="i sm"><use href="#i-check"/></svg></span></div>
+            <div class="tile sel"><div class="ph p1"></div><span class="chk"><svg class="i sm"><use href="#i-check"/></svg></span></div>
+            <div class="tile"><div class="ph p6"></div><span class="chk"></span></div>
+            <div class="tile sel"><div class="ph p14"></div><span class="chk"><svg class="i sm"><use href="#i-check"/></svg></span></div>
+            <div class="tile"><div class="ph p3"></div><span class="chk"></span></div>
+            <div class="tile"><div class="ph p11"></div><span class="chk"></span></div>
+          </div>
+        </div>
+        <div class="dim"></div>
+        <div class="dialog" role="alertdialog" aria-labelledby="del-title">
+          <h3 id="del-title">Delete 3 photos?</h3>
+          <p>They'll be removed from the camera. Copies already saved on a phone aren't affected.</p>
+          <p>The display module keeps showing one of them until it gets another photo.</p>
+          <div class="row">
+            <button class="btn quiet" type="button">Cancel</button>
+            <button class="btn danger" type="button">Delete</button>
+          </div>
+        </div>
+      </div></div>
+      <figcaption><strong>Delete confirmation</strong><span>Deleting always asks first, so there's no undo. The extra line appears because one of the photos is on the display module. <code>§11.4.5</code></span></figcaption>
+    </figure>
+
+    <!-- 7 Offline -->
+    <figure>
+      <div class="phone"><div class="screen">
+        <div class="sysbar"><span>9:41</span><span>Inkstant-4F2A</span></div>
+        <div class="bar">
+          <span class="title"><span class="strip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>Inkstant</span>
+          <button class="tbtn" type="button">Select</button>
+          <button class="tbtn ink" type="button" aria-label="More"><svg class="i"><use href="#i-more"/></svg></button>
+          <button class="tbtn ink" type="button" aria-label="Settings"><svg class="i"><use href="#i-settings"/></svg></button>
+        </div>
+        <div class="status">1,284 photos</div>
+        <div class="scroll">
+          <div class="day"><b>Today</b><span>14</span></div>
+          <div class="grid">
+            <div class="tile"><div class="ph p2"></div></div><div class="tile"><div class="ph p1"></div></div><div class="tile"><div class="ph p6"></div></div>
+            <div class="tile"><div class="ph p14"></div></div><div class="tile"><div class="ph p3"></div></div><div class="tile"><div class="ph p11"></div></div>
+            <div class="tile"><div class="ph p12"></div></div><div class="tile"><div class="ph p9"></div></div><div class="tile"><div class="ph p5"></div></div>
+          </div>
+        </div>
+        <div class="dim"></div>
+        <div class="card" role="alert">
+          <span class="ico"><svg class="i"><use href="#i-offline"/></svg></span>
+          <h3 style="margin:0;font-size:1.125rem;font-weight:650">Can't reach the camera</h3>
+          <p>It may have turned off, or sharing stopped. Press the share button on the camera to start again, then reopen this page.</p>
+          <button class="btn primary" type="button"><svg class="i"><use href="#i-wifi"/></svg>Try again</button>
+          <span class="sub">Trying again every 10 seconds</span>
+        </div>
+      </div></div>
+      <figcaption><strong>Can't reach the camera</strong><span>Shown after two missed status checks, on any page. It goes away by itself when the camera answers again. <code>§11.4.9</code></span></figcaption>
+    </figure>
+  </main>
+
+  <footer>Spec: <code>SPEC.md §11</code> (screens, behaviour, words) and <code>SPEC.md §10</code> (server, routes, security). This page's source: <code>mockups/gallery.html</code>.</footer>
+</div>
+
+<script>
+(function () {
+  var buttons = document.querySelectorAll('.seg button');
+  var phones = document.querySelectorAll('.phone');
+  function apply(scheme) {
+    phones.forEach(function (p) {
+      if (scheme) { p.setAttribute('data-scheme', scheme); } else { p.removeAttribute('data-scheme'); }
+    });
+    buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.scheme === scheme)); });
+  }
+  buttons.forEach(function (b) { b.addEventListener('click', function () { apply(b.dataset.scheme); }); });
+})();
+</script>

@@ -1,0 +1,64 @@
+# Tests, lint and shell checks on every push and pull request (SPEC.md §19).
+# A pushed tag v<VERSION> also builds the release and attaches it to a GitHub release (§16.1).
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - name: Install
+        run: python -m pip install -r requirements-dev.txt
+      - name: Lint
+        run: ruff check .
+      - name: Shell scripts
+        run: shellcheck install/*.sh tools/bench/*.sh system/system-shutdown/inkstant-poweroff
+      - name: Tests
+        run: python -m pytest
+      - name: configure.py stays standard-library only
+        run: |
+          python -I - <<'EOF'
+          import ast, sys
+          src = open("install/configure.py").read()
+          allowed = set(sys.stdlib_module_names) | {"inkstant"}
+          bad = sorted({(n.module or "").split(".")[0] for n in ast.walk(ast.parse(src)) if isinstance(n, ast.ImportFrom)}
+                       | {a.name.split(".")[0] for n in ast.walk(ast.parse(src)) if isinstance(n, ast.Import) for a in n.names})
+          bad = [m for m in bad if m and m not in allowed]
+          sys.exit(f"configure.py imports non-stdlib modules: {bad}" if bad else 0)
+          EOF
+      - name: Release builds
+        run: python tools/build_release.py
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: test
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Tag matches VERSION
+        run: test "v$(cat VERSION)" = "${GITHUB_REF_NAME}"
+      - name: Build
+        run: python tools/build_release.py
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" dist/inkstant.tar.gz dist/SHA256SUMS --title "${GITHUB_REF_NAME}" --generate-notes

@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Settings · Inkstant{% endblock %}
+{% block bodyclass %}page-settings{% endblock %}
+{% block body %}
+<header class="appbar">
+  <div class="bar">
+    <a class="tbtn" href="/"><svg class="i"><use href="#i-back"/></svg>Photos</a>
+    <h1 class="ctitle">Settings</h1>
+  </div>
+  <div class="banners" id="banners"></div>
+</header>
+<main class="settings" id="settings-root" aria-busy="true">
+  <noscript><p class="foot">Settings need JavaScript.</p></noscript>
+
+  <h2 class="glabel">Camera</h2>
+  <div class="group">
+    <div class="row2"><span>Battery</span><span class="v" id="s-battery">–</span></div>
+    <div class="row2"><span>Display</span><span class="v" id="s-display">–</span></div>
+    <div class="row2"><span>Camera</span><span class="v" id="s-camera">–</span></div>
+    <div class="row2 stack" id="s-sharing-row">
+      <div class="rowhead"><span>Sharing</span><span class="v" id="s-sharing">–</span></div>
+      <span class="sub" id="s-sharing-sub"></span>
+      <button class="btn quiet" type="button" id="s-stop-sharing">Stop sharing</button>
+    </div>
+    <button class="row2 linkrow" type="button" id="s-light"><span>Light</span><span class="v">What it means <svg class="i sm"><use href="#i-chevron"/></svg></span></button>
+  </div>
+
+  <h2 class="glabel">Slideshow</h2>
+  <div class="group">
+    <label class="row2"><span>Slideshow</span><span class="v"><input type="checkbox" role="switch" class="switch" data-key="slideshow.enabled"></span></label>
+    <label class="row2"><span>Change picture every</span><span class="v"><select data-key="slideshow.interval_min" data-type="int"></select></span></label>
+    <div class="row2"><span id="order-label">Order</span><span class="v"><span class="segs" role="radiogroup" aria-labelledby="order-label">
+      <label><input type="radio" name="order" value="shuffle" data-key="slideshow.order"><span>Shuffle</span></label>
+      <label><input type="radio" name="order" value="newest" data-key="slideshow.order"><span>Newest first</span></label>
+    </span></span></div>
+    <label class="row2"><span>Quiet hours</span><span class="v"><input type="checkbox" role="switch" class="switch" id="quiet-toggle"></span></label>
+    <div class="row2" id="quiet-times" hidden>
+      <span>From <input type="time" id="quiet-start" value="23:00"></span>
+      <span class="v">to <input type="time" id="quiet-end" value="07:00"></span>
+    </div>
+  </div>
+  <p class="foot">While the camera is off it wakes to show the next photo. With the slideshow off, the screen turns white when the camera turns off; slide the module out first to keep its photo.</p>
+
+  <h2 class="glabel">Power</h2>
+  <div class="group">
+    <label class="row2"><span>Sleep after</span><span class="v"><select data-key="sleep_min" data-type="int-or-null"></select></span></label>
+    <p class="row2 note" id="sleep-note" hidden>The camera turns off before it would sleep.</p>
+    <label class="row2"><span>Turn off after</span><span class="v"><select data-key="auto_off_min" data-type="int"></select></span></label>
+    <div class="row2 stack">
+      <label class="rowhead"><span>Battery saver</span><span class="v"><input type="checkbox" role="switch" class="switch" data-key="battery_saver.enabled" id="saver-toggle"></span></label>
+      <span class="sub" id="saver-sub"></span>
+    </div>
+    <label class="row2"><span id="saver-auto-label">Turn on at 20%</span><span class="v"><input type="checkbox" role="switch" class="switch" data-key="battery_saver.auto"></span></label>
+    <label class="row2"><span>Stop sharing after</span><span class="v"><select data-key="share_timeout_min" data-type="int"></select></span></label>
+    <label class="row2"><span>Turn off at</span><span class="v"><select data-key="low_battery_shutdown_pct" data-type="int"></select></span></label>
+    <div class="row2 stack">
+      <label class="rowhead"><span>Limit charging to about 80%</span><span class="v"><input type="checkbox" role="switch" class="switch" data-key="charge_limit"></span></label>
+      <span class="sub">Helps the battery last more years. Each charge runs about a fifth shorter.</span>
+    </div>
+  </div>
+  <p class="foot">Asleep, the camera takes about a second longer to shoot. The battery saver sleeps after 1 min, turns off after 5, focuses a little slower, and stops sharing after 5 min.</p>
+
+  <h2 class="glabel">Wi-Fi</h2>
+  <div class="group">
+    <div class="row2 stack">
+      <span>Home networks</span>
+      <ul class="nets" id="nets"></ul>
+      <button class="btn quiet" type="button" id="add-net">Add network</button>
+      <span class="sub" id="nets-full" hidden>Forget one to add another.</span>
+    </div>
+    <div class="row2 stack">
+      <div class="rowhead"><span>Camera Wi-Fi</span><button class="tbtn" type="button" id="change-hotspot">Change</button></div>
+      <span class="sub mono" id="hs-name"></span>
+      <span class="sub">Password: <span class="mono" id="hs-pass">••••••••</span> <button class="tbtn small" type="button" id="hs-show">Show</button></span>
+    </div>
+  </div>
+  <p class="foot">Changes apply the next time sharing starts. Double-tap the share button on the camera to use the camera's Wi-Fi even at home.</p>
+
+  <h2 class="glabel">Date &amp; time</h2>
+  <div class="group">
+    <div class="row2"><span>Camera time</span><span class="v mono" id="s-time">–</span></div>
+    <div class="row2 stack">
+      <button class="btn quiet" type="button" id="use-phone-time">Use this phone's time</button>
+      <span class="sub" id="s-drift" hidden></span>
+    </div>
+  </div>
+
+  <h2 class="glabel">Storage</h2>
+  <div class="group">
+    <div class="row2 stack">
+      <span class="meter wide"><i id="s-storage-bar"></i></span>
+      <span class="sub" id="s-storage"></span>
+      <span class="sub" id="s-storage-2"></span>
+    </div>
+  </div>
+
+  <h2 class="glabel">Software</h2>
+  <div class="group">
+    <div class="row2"><span>Version</span><span class="v mono" id="s-version">{{ version }}</span></div>
+    <div class="row2 stack">
+      <button class="btn quiet" type="button" id="check-update">Check for updates</button>
+      <span class="sub" id="update-sub"></span>
+      <button class="btn primary" type="button" id="start-update" hidden>Update</button>
+    </div>
+  </div>
+
+  <details class="adv">
+    <summary class="glabel">Advanced</summary>
+    <div class="group">
+      <label class="row2"><span>Developer mode</span><span class="v"><input type="checkbox" role="switch" class="switch" id="dev-toggle"></span></label>
+      <div class="row2 stack">
+        <div class="rowhead"><span>Setup check</span><button class="tbtn" type="button" id="run-check">Run again</button></div>
+        <ul class="checks" id="checks"></ul>
+      </div>
+      <div class="row2"><span>Logs</span><span class="v"><a class="tbtn" href="/api/logs" download>Download logs</a></span></div>
+      <div class="row2 stack"><span>About</span><span class="sub mono" id="s-about"></span></div>
+    </div>
+  </details>
+</main>
+
+<dialog class="dlg" id="net-dialog" aria-labelledby="net-title">
+  <form method="dialog" id="net-form" novalidate>
+    <h3 id="net-title">Add home network</h3>
+    <p class="sub" id="net-24" hidden>This camera can only join 2.4 GHz networks.</p>
+    <label class="field">Network name<input name="ssid" id="net-ssid" autocapitalize="none" autocorrect="off" spellcheck="false" required maxlength="64"></label>
+    <span class="ferr" id="net-ssid-err"></span>
+    <label class="field">Password<span class="pw"><input name="password" id="net-pass" type="password" autocapitalize="none" autocorrect="off" spellcheck="false"><button class="tbtn small" type="button" data-toggle="net-pass">Show</button></span></label>
+    <span class="ferr" id="net-pass-err"></span>
+    <label class="check"><input type="checkbox" id="net-open"> This network has no password</label>
+    <div class="row">
+      <button class="btn quiet" type="button" data-close>Cancel</button>
+      <button class="btn primary" type="submit" id="net-save">Save</button>
+    </div>
+  </form>
+</dialog>
+<dialog class="dlg" id="hs-dialog" aria-labelledby="hs-title">
+  <form method="dialog" id="hs-form" novalidate>
+    <h3 id="hs-title">Change camera Wi-Fi</h3>
+    <label class="field">Name<input id="hs-ssid" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="64"></label>
+    <span class="ferr" id="hs-ssid-err"></span>
+    <label class="field">Password<span class="pw"><input id="hs-password" type="password" autocapitalize="none" autocorrect="off" spellcheck="false"><button class="tbtn small" type="button" data-toggle="hs-password">Show</button></span></label>
+    <span class="ferr" id="hs-password-err"></span>
+    <p class="sub">Phones that joined before will need the new password.</p>
+    <div class="row">
+      <button class="btn quiet" type="button" data-close>Cancel</button>
+      <button class="btn primary" type="submit">Save</button>
+    </div>
+  </form>
+</dialog>
+<dialog class="dlg" id="update-dialog" aria-labelledby="upd-title">
+  <h3 id="upd-title">Update the camera?</h3>
+  <p>The camera downloads the update, installs it and restarts. This takes about 5 to 10 minutes. Keep it charging, or above 30%. The camera's buttons pause until it's done; pressing power turns it off once the update finishes. This page stops working while it restarts.</p>
+  <div class="row">
+    <button class="btn quiet" type="button" data-close>Cancel</button>
+    <button class="btn primary" type="button" id="upd-confirm">Update</button>
+  </div>
+</dialog>
+<dialog class="dlg" id="dev-dialog" aria-labelledby="dev-title">
+  <h3 id="dev-title">Turn on developer mode?</h3>
+  <p>The camera will join your home Wi-Fi every time it starts, so you can reach it over SSH. This uses more battery.</p>
+  <div class="row">
+    <button class="btn quiet" type="button" data-close>Cancel</button>
+    <button class="btn primary" type="button" id="dev-confirm">Turn on</button>
+  </div>
+</dialog>
+<dialog class="dlg" id="forget-dialog" aria-labelledby="forget-title">
+  <h3 id="forget-title">Forget network?</h3>
+  <p id="forget-text"></p>
+  <div class="row">
+    <button class="btn quiet" type="button" data-close>Cancel</button>
+    <button class="btn danger" type="button" id="forget-confirm">Forget</button>
+  </div>
+</dialog>
+<dialog class="sheet" id="light-sheet" aria-labelledby="light-title">
+  <div class="grab" aria-hidden="true"></div>
+  <h3 id="light-title">What the light means</h3>
+  <ul class="legend">
+    <li><span class="lamp" data-p="off"></span><span><b>Off</b> The camera is off. Also off during a slideshow wake. At the end of a shutdown, it's safe to pull the module.</span></li>
+    <li><span class="lamp" data-p="solid"></span><span><b>Solid</b> Ready to shoot.</span></li>
+    <li><span class="lamp" data-p="wait"></span><span><b>Slow blink</b> Wait: starting up, developing a photo, waking to take one, turning off, or updating.</span></li>
+    <li><span class="lamp" data-p="wink"></span><span><b>A short wink</b> The shutter press was accepted.</span></li>
+    <li><span class="lamp" data-p="share"></span><span><b>Long on, short off</b> Sharing is on.</span></li>
+    <li><span class="lamp" data-p="asleep"></span><span><b>A short flash every 4 s</b> Asleep: press the shutter to shoot.</span></li>
+    <li><span class="lamp" data-p="problem"></span><span><b>Three quick blinks</b> A problem; this page explains it.</span></li>
+  </ul>
+  <h4 class="sublabel">Played once, then back to the above</h4>
+  <ul class="legend">
+    <li><span class="lamp" data-p="nomodule"></span><span><b>Fast blink for 2 s</b> No display module.</span></li>
+    <li><span class="lamp" data-p="battery"></span><span><b>Three double blinks</b> Battery low.</span></li>
+  </ul>
+  <button class="btn quiet wide" type="button" data-close>Close</button>
+</dialog>
+{% endblock %}
+{% block script %}{{ asset('settings.js') }}{% endblock %}

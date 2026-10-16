@@ -1,0 +1,8 @@
+# Runs when inkstant.service gives up after 5 crashes in 2 minutes (SPEC.md §13.3):
+# switch the slideshow alarm off and power off, instead of draining the battery.
+[Unit]
+Description=Inkstant failsafe power-off
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/inkstant-ctl failsafe

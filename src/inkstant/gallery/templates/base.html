@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>{% block title %}Inkstant{% endblock %}</title>
+<link rel="stylesheet" href="{{ asset('app.css') }}">
+<link rel="icon" href="{{ asset('icon.svg') }}" type="image/svg+xml">
+</head>
+<body class="{% block bodyclass %}{% endblock %}" data-version="{{ version }}">
+{% include "icons.html" %}
+{% block body %}{% endblock %}
+<div id="banners-float" hidden></div>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+<div class="offline" id="offline" hidden>
+  <div class="card" role="alertdialog" aria-labelledby="offline-title" aria-describedby="offline-text">
+    <span class="ico"><svg class="i"><use href="#i-wifi"/></svg></span>
+    <h2 id="offline-title">Can't reach the camera</h2>
+    <p id="offline-text">It may have turned off, or sharing stopped. Press the share button on the camera to start again, then reopen this page.</p>
+    <button class="btn primary" type="button" id="offline-retry">Try again</button>
+  </div>
+</div>
+<div class="offline" id="ended" hidden>
+  <div class="card" role="alertdialog" aria-labelledby="ended-title">
+    <span class="ico"><svg class="i"><use href="#i-check"/></svg></span>
+    <h2 id="ended-title">Sharing is off</h2>
+    <p>You can close this page.</p>
+  </div>
+</div>
+<div class="offline" id="updating" hidden>
+  <div class="card" role="alertdialog" aria-labelledby="updating-title" aria-live="polite">
+    <span class="ico"><svg class="i"><use href="#i-refresh"/></svg></span>
+    <h2 id="updating-title">Updating the camera</h2>
+    <ol class="steps" id="update-steps">
+      <li data-step="downloading">Downloading</li>
+      <li data-step="installing">Installing</li>
+      <li data-step="restarting">Restarting</li>
+    </ol>
+    <p id="update-note">Keep the camera charging, or above 30%.</p>
+  </div>
+</div>
+<script type="module" src="{% block script %}{{ asset('gallery.js') }}{% endblock %}"></script>
+</body>
+</html>

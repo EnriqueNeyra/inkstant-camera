@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Photos · Inkstant{% endblock %}
+{% block bodyclass %}page-gallery{% endblock %}
+{% block body %}
+<header class="appbar" id="appbar">
+  <div class="bar">
+    <a class="title" href="/"><span class="strip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>Inkstant</a>
+    <button class="tbtn" type="button" id="select-btn">Select</button>
+    <button class="tbtn ink" type="button" id="menu-btn" aria-label="More" aria-haspopup="menu" aria-expanded="false"><svg class="i"><use href="#i-more"/></svg></button>
+    <a class="tbtn ink" href="/settings" aria-label="Settings"><svg class="i"><use href="#i-settings"/></svg></a>
+  </div>
+  <div class="bar selbar" id="selbar" hidden>
+    <button class="tbtn" type="button" id="sel-cancel">Cancel</button>
+    <span class="seltitle" id="sel-count" aria-live="polite">Select photos</span>
+    <button class="tbtn" type="button" id="sel-all">Select all</button>
+  </div>
+  <a class="status" href="/settings" id="status-line">
+    <span id="st-count">{{ "{:,}".format(total) }} photo{{ "" if total == 1 else "s" }}</span>
+  </a>
+  <div class="banners" id="banners"></div>
+  <div class="menu" id="menu" role="menu" hidden>
+    <button role="menuitem" type="button" data-act="download-all"><svg class="i"><use href="#i-download"/></svg>Download all…</button>
+    <button role="menuitem" type="button" data-act="jump"><svg class="i"><use href="#i-calendar"/></svg>Jump to month…</button>
+    <button role="menuitem" type="button" data-act="stop-sharing"><svg class="i"><use href="#i-wifi"/></svg>Stop sharing</button>
+  </div>
+</header>
+<button class="pill" type="button" id="new-pill" hidden></button>
+<button class="pill" type="button" id="newest-pill" hidden>Back to newest</button>
+<main id="grid-root" data-next="{{ next_before or '' }}" data-total="{{ total }}">
+{% if total == 0 %}
+  <div class="empty" id="empty">
+    <span class="strip lg" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+    <h1>No photos yet</h1>
+    <p>Press the shutter on the camera. New photos show up here straight away.</p>
+  </div>
+{% endif %}
+{% for g in groups %}
+  <section class="dayg" data-day="{{ g.key }}">
+    <h2 class="day"><b class="dlabel" data-day="{{ g.key }}">{{ "Unknown date" if g.key == "unknown" else g.key }}</b><span class="dcount">{{ counts[g.key] }}</span><button class="tbtn dsel" type="button" hidden>Select</button></h2>
+    <div class="grid">
+    {% for p in g.photos %}
+      <a class="tile" href="/p/{{ p.id }}" data-id="{{ p.id }}" data-seq="{{ p.seq }}" data-size="{{ p.size }}" data-day="{{ p.day or '' }}" data-time="{{ p.time or '' }}">
+        <img src="/thumbs/{{ p.id }}.jpg" alt="" width="480" height="270" loading="{{ 'eager' if loop.index0 < 18 else 'lazy' }}" decoding="async">
+      </a>
+    {% endfor %}
+    </div>
+  </section>
+{% endfor %}
+  <div class="loading" id="loading" hidden aria-hidden="true"><i></i><i></i><i></i></div>
+  <p class="end" id="end" {% if next_before or total == 0 %}hidden{% endif %}>That's everything{% if oldest %} · <span class="dlabel-plain" data-day="{{ oldest }}">{{ oldest }}</span>{% endif %}</p>
+</main>
+<div class="actions" id="actions" hidden>
+  <button class="act" type="button" id="act-download" disabled><svg class="i"><use href="#i-download"/></svg>Download<small id="act-size"></small></button>
+  <button class="act" type="button" id="act-show" disabled><svg class="i"><use href="#i-display"/></svg>Show on camera</button>
+  <button class="act danger" type="button" id="act-delete" disabled><svg class="i"><use href="#i-trash"/></svg>Delete</button>
+</div>
+{% include "dialogs.html" %}
+{% include "viewer.html" %}
+{% endblock %}

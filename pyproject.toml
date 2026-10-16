@@ -1,0 +1,22 @@
+# Development tooling only. On the Pi the code runs from /opt/inkstant/current/src
+# with Debian's packages (SPEC.md §4.4); nothing here is installed there.
+[project]
+name = "inkstant"
+dynamic = ["version"]
+requires-python = ">=3.13"
+description = "Inkstant Camera: an e-paper instant camera on a Raspberry Pi"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "install", "."]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning:gpiozero.*"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py313"
+src = ["src", "install", "tools", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "I", "UP", "SIM"]
+ignore = ["E501", "SIM105", "SIM108", "B008"]

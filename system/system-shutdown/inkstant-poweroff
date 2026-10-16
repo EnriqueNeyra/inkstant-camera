@@ -1,0 +1,14 @@
+#!/bin/sh
+# Inkstant (SPEC.md §13.4). Runs after all services have stopped, just before the kernel
+# powers off. Arms the PiSugar 3's delayed power cut, so the Pi then draws nothing.
+# Does nothing on reboot, halt or kexec.
+[ "$1" = "poweroff" ] || exit 0
+B=1 A=0x57 DELAY=10
+command -v i2cset >/dev/null 2>&1 || exit 0
+i2cset -y $B $A 0x0B 0x29 || exit 0                              # unlock writes
+v=$(i2cget -y $B $A 0x06) && i2cset -y $B $A 0x06 $((v & 0x7F))  # software watchdog off
+i2cset -y $B $A 0x09 $DELAY                                      # delay in s (write before 0x02)
+v=$(i2cget -y $B $A 0x02) && i2cset -y $B $A 0x02 $((v & 0xDF))  # clear bit 5: start the countdown
+i2cset -y $B $A 0x0B 0x00                                        # lock writes
+echo "inkstant: PiSugar power cut armed ($DELAY s)" > /dev/kmsg 2>/dev/null
+exit 0

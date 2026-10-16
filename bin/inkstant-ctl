@@ -1,0 +1,11 @@
+#!/usr/bin/python3
+# inkstant-ctl: runs the control tool from the active release (SPEC.md §17).
+import os
+import sys
+
+HERE = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "src"))
+
+from inkstant.ctl import main  # noqa: E402
+
+sys.exit(main())

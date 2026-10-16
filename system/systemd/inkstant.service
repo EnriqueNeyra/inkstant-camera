@@ -1,0 +1,29 @@
+# Inkstant camera app (SPEC.md §13.3). Installed by install/configure.py.
+[Unit]
+Description=Inkstant camera
+Wants=pisugar-server.service
+After=pisugar-server.service
+StartLimitIntervalSec=120
+StartLimitBurst=5
+OnFailure=inkstant-failsafe.service
+
+[Service]
+Type=notify
+NotifyAccess=main
+WorkingDirectory=/opt/inkstant/current
+Environment=PYTHONPATH=/opt/inkstant/current/src
+Environment=GPIOZERO_PIN_FACTORY=lgpio
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 -m inkstant camera
+RuntimeDirectory=inkstant
+RuntimeDirectoryMode=0755
+Restart=on-failure
+RestartSec=2
+WatchdogSec=30
+TimeoutStartSec=60
+TimeoutStopSec=75
+KillMode=mixed
+OOMScoreAdjust=-800
+
+[Install]
+WantedBy=multi-user.target
