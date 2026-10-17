@@ -1,4 +1,4 @@
-// A direct link to one photo, /p/<id> (SPEC.md §11.2): the viewer on its own; closing goes to the gallery.
+// A direct link to one photo, /p/<id>: the viewer on its own; closing goes to the gallery.
 import { $, api, onStatus, startPolling } from "./common.js";
 import { Viewer } from "./viewer.js";
 

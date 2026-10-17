@@ -1,4 +1,4 @@
-"""Scheduling the next slideshow wake (SPEC.md §8.12) and spotting a timed wake (§8.11).
+"""Scheduling the next slideshow wake and spotting a timed wake.
 
 Pure functions, standard library only. Local times use the system's time zone rules
 through time.localtime/mktime, so daylight-saving changes are handled.

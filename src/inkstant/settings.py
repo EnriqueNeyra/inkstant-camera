@@ -1,4 +1,4 @@
-"""User settings, /var/lib/inkstant/settings.json (SPEC.md §5.4, §1.8).
+"""User settings, /var/lib/inkstant/settings.json.
 
 Standard library only: the install script uses it too.
 """
@@ -27,7 +27,7 @@ DEFAULTS: dict[str, Any] = {
     "dev_mode": False,
 }
 
-# What the gallery offers (SPEC.md §1.8); the server accepts any value in range.
+# What the gallery offers; the server accepts any value in range.
 OPTIONS = {
     "slideshow.interval_min": [5, 10, 15, 30, 60, 120, 180, 360, 720, 1440],
     "sleep_min": [1, 2, 3, 5, 10, 15, None],

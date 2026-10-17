@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shutter button, module detect, BUSY, and the status light (SPEC.md §19.5, §6.1, §6.2, §1.3).
+"""Shutter button, module detect, BUSY, and the status light.
 
     sudo systemctl stop inkstant
     sudo python3 tools/bench/inputs.py            # log edges for 60 s: press, slide a module in and out

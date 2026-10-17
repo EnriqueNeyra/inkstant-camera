@@ -1,4 +1,4 @@
-# Same versions as Debian Trixie / the Raspberry Pi archive (SPEC.md §4.4).
+# Same versions as Debian Trixie / the Raspberry Pi archive.
 Pillow==11.1.0
 numpy==2.2.4
 Flask==3.1.1

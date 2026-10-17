@@ -1,5 +1,4 @@
-// Shared by every page: API calls, the status poll, banners, toasts, dialogs and dates
-// (SPEC.md §11.4.8 to §11.5).
+// Shared by every page: API calls, the status poll, banners, toasts, dialogs and dates.
 import { S } from "./strings.js";
 
 export const $ = (sel, root = document) => root.querySelector(sel);
@@ -13,7 +12,7 @@ export class ApiError extends Error {
   }
 }
 
-// Every request that changes something carries X-Inkstant (SPEC.md §10.5).
+// Every request that changes something carries X-Inkstant.
 export async function api(method, path, body, { poll = false } = {}) {
   const headers = { Accept: "application/json" };
   if (method !== "GET") headers["X-Inkstant"] = "1";
@@ -103,7 +102,7 @@ export function openDialog(d, opener) {
   d.addEventListener("close", () => opener && opener.focus && opener.focus(), { once: true });
 }
 
-// Dates (§11.5.3): the camera's local time, shown in the phone's language. -------------------
+// Dates: the camera's local time, shown in the phone's language. -------------------
 export function parseDay(day) {
   const [y, m, d] = day.split("-").map(Number);
   return new Date(y, m - 1, d);
@@ -148,7 +147,7 @@ export function deviceKind() {
   return "computer";
 }
 
-// Status poll (§11.5.1) -------------------------------------------------------------------------
+// Status poll -------------------------------------------------------------------------
 let failures = 0;
 let lastStatus = null;
 const listeners = [];
@@ -231,7 +230,7 @@ function renderUpdating(st) {
   }
 }
 
-// Banners (§11.4.8): errors first, at most two, then "N more". ------------------------------------
+// Banners: errors first, at most two, then "N more". ------------------------------------
 let bannersExpanded = false;
 
 export function renderBanners(st) {

@@ -1,4 +1,4 @@
-/* Inkstant gallery (SPEC.md §11.3). Tokens follow the panel's six inks; light and dark. */
+/* Inkstant gallery. Tokens follow the panel's six inks; light and dark. */
 :root {
   --bg:#EEF0F0; --surface:#FFFFFF; --surface-2:#E2E5E6; --line:#CDD2D4;
   --ink:#16181A; --ink-2:#454B50; --ink-3:#62696E;

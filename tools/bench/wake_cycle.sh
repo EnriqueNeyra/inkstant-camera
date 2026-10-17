@@ -1,5 +1,5 @@
 #!/bin/sh
-# RTC wake cycle (SPEC.md §19.5, §8.11): arm the PiSugar alarm a few minutes out and power off.
+# RTC wake cycle: arm the PiSugar alarm a few minutes out and power off.
 # The PiSugar should switch the Pi on at that time, and the camera app should treat it as a
 # slideshow wake (show the next photo, then power off again on its own).
 #

@@ -1,4 +1,4 @@
-// The settings page (SPEC.md §11.4.6, §11.4.7). Toggles, selects and switches save as they change.
+// The settings page. Toggles, selects and switches save as they change.
 import { $, $$, api, el, onStatus, openDialog, pollNow, setPhoneTime, sharingEnded, startPolling, toast } from "./common.js";
 import { S } from "./strings.js";
 

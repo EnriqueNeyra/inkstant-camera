@@ -1,5 +1,5 @@
-# Tests, lint and shell checks on every push and pull request (SPEC.md §19).
-# A pushed tag v<VERSION> also builds the release and attaches it to a GitHub release (§16.1).
+# Tests, lint and shell checks on every push and pull request.
+# A pushed tag v<VERSION> also builds the release and attaches it to a GitHub release.
 name: CI
 
 on:

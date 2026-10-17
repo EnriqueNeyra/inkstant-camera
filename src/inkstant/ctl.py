@@ -1,4 +1,4 @@
-"""inkstant-ctl: status, self-test, sharing, shutdown and helpers (SPEC.md §17). Standard library only."""
+"""inkstant-ctl: status, self-test, sharing, shutdown and helpers. Standard library only."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from inkstant.paths import Paths
 POWER_BUTTON_TIMEOUT = 3.0
 
 
-def _call(paths: Paths, cmd: str, args: dict | None = None, timeout: float = ipc.REQUEST_TIMEOUT + 1):
+def _call(paths: Paths, cmd: str, args: dict | None = None, timeout: float | None = None):
     return ipc.call(paths.control_sock, cmd, args or {}, timeout=timeout)
 
 
@@ -60,7 +60,7 @@ def cmd_failsafe(paths: Paths) -> int:
 def cmd_selftest(paths: Paths, install: bool) -> int:
     if not install:
         try:
-            r = _call(paths, "selftest.run", timeout=30)
+            r = _call(paths, "selftest.run")
             _report(r)
             return 0 if r.get("passed") else 1
         except ipc.IpcError:
@@ -89,7 +89,8 @@ def _report(r: dict) -> None:
 def cmd_rollback(paths: Paths) -> int:
     releases = paths.opt / "releases"
     current = (paths.opt / "current").resolve()
-    found = sorted((p for p in releases.iterdir() if p.is_dir()), key=lambda p: p.stat().st_mtime)
+    found = sorted((p for p in releases.iterdir() if p.is_dir() and not p.name.startswith(".")),
+                   key=lambda p: p.stat().st_mtime)
     previous = [p for p in found if p.resolve() != current]
     if not previous:
         print("No previous release to go back to.", file=sys.stderr)
@@ -136,7 +137,7 @@ def main(argv: list[str] | None = None) -> int:
             return cmd_selftest(paths, a.install)
         elif a.cmd == "share":
             if a.state == "on":
-                _call(paths, "share.start", {"force_hotspot": a.hotspot}, timeout=60)
+                _print(_call(paths, "share.start", {"force_hotspot": a.hotspot}))
             else:
                 _call(paths, "share.stop")
         elif a.cmd == "shutdown":

@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="708" viewBox="0 0 680 708" role="img">
+<title>Where each wire goes on the Raspberry Pi's 40-pin header</title>
+<desc>The Pi's 40-pin header seen from above. Ten pins go to the display connector's contacts 1 to 10, four go to the shutter button's switch and light, and the PiSugar uses pins 3 and 5 from below.</desc>
+<style>
+  .bg { fill: #FFFFFF; }
+  text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .title { font-size: 16px; font-weight: 600; fill: #2C2C2A; }
+  .t { font-size: 14px; fill: #2C2C2A; }
+  .ts { font-size: 12px; fill: #5F5E5A; }
+  .num { font-size: 11px; text-anchor: middle; dominant-baseline: central; }
+  .header { fill: none; stroke: #B4B2A9; }
+  .pin { fill: #FAFAF7; stroke: #B4B2A9; }
+  .pin-t { fill: #5F5E5A; }
+  .disp { fill: #AFA9EC; stroke: #534AB7; }
+  .disp-t { fill: #26215C; }
+  .shut { fill: #F0997B; stroke: #993C1D; }
+  .shut-t { fill: #4A1B0C; }
+  @media (prefers-color-scheme: dark) {
+    .bg { fill: #1F1F1E; }
+    .title, .t { fill: #F1EFE8; }
+    .ts { fill: #B4B2A9; }
+    .header { stroke: #5F5E5A; }
+    .pin { fill: #2C2C2A; stroke: #5F5E5A; }
+    .pin-t { fill: #B4B2A9; }
+    .disp { fill: #3C3489; stroke: #AFA9EC; }
+    .disp-t { fill: #CECBF6; }
+    .shut { fill: #712B13; stroke: #F0997B; }
+    .shut-t { fill: #F5C4B3; }
+  }
+</style>
+<rect class="bg" width="680" height="708"/>
+<text class="title" x="40" y="30" text-anchor="start" dominant-baseline="central">Where each wire goes on the Pi&#x27;s 40-pin header</text>
+<text class="ts" x="40" y="54" text-anchor="start" dominant-baseline="central">Looking down, header on the right, USB ports at the bottom. Pin 1 (square pad) is at the top.</text>
+<text class="ts" x="292" y="90" text-anchor="end" dominant-baseline="central">Inner row (odd pins)</text>
+<text class="ts" x="388" y="90" text-anchor="start" dominant-baseline="central">Board edge (even pins)</text>
+<rect class="header" x="302" y="106" width="76" height="488" rx="6" stroke-width="0.75"/>
+<rect class="disp" x="312" y="112" width="20" height="20" rx="2" stroke-width="0.75"/>
+<text class="num disp-t" x="322" y="122">1</text>
+<text class="t" x="292" y="122" text-anchor="end" dominant-baseline="central">Connector 1 · VCC (3.3 V)</text>
+<circle class="pin" cx="358" cy="122" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="358" y="122">2</text>
+<text class="ts" x="388" y="122" text-anchor="start" dominant-baseline="central">5 V · not for the display!</text>
+<circle class="pin" cx="322" cy="146" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="322" y="146">3</text>
+<text class="ts" x="292" y="146" text-anchor="end" dominant-baseline="central">PiSugar, from below</text>
+<circle class="pin" cx="358" cy="146" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="358" y="146">4</text>
+<text class="ts" x="388" y="146" text-anchor="start" dominant-baseline="central">5 V · not for the display!</text>
+<circle class="pin" cx="322" cy="170" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="322" y="170">5</text>
+<text class="ts" x="292" y="170" text-anchor="end" dominant-baseline="central">PiSugar, from below</text>
+<circle class="pin" cx="358" cy="170" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="358" y="170">6</text>
+<circle class="pin" cx="322" cy="194" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="322" y="194">7</text>
+<circle class="pin" cx="358" cy="194" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="358" y="194">8</text>
+<circle class="pin" cx="322" cy="218" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="322" y="218">9</text>
+<circle class="pin" cx="358" cy="218" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="358" y="218">10</text>
+<circle class="disp" cx="322" cy="242" r="10" stroke-width="0.75"/>
+<text class="num disp-t" x="322" y="242">11</text>
+<text class="t" x="292" y="242" text-anchor="end" dominant-baseline="central">Connector 3 · RST</text>
+<circle class="disp" cx="358" cy="242" r="10" stroke-width="0.75"/>
+<text class="num disp-t" x="358" y="242">12</text>
+<text class="t" x="388" y="242" text-anchor="start" dominant-baseline="central">Connector 2 · PWR</text>
+<circle class="shut" cx="322" cy="266" r="10" stroke-width="0.75"/>
+<text class="num shut-t" x="322" y="266">13</text>
+<text class="t" x="292" y="266" text-anchor="end" dominant-baseline="central">Shutter switch</text>
+<circle class="shut" cx="358" cy="266" r="10" stroke-width="0.75"/>
+<text class="num shut-t" x="358" y="266">14</text>
+<text class="t" x="388" y="266" text-anchor="start" dominant-baseline="central">Shutter switch</text>
+<circle class="disp" cx="322" cy="290" r="10" stroke-width="0.75"/>
+<text class="num disp-t" x="322" y="290">15</text>
+<text class="t" x="292" y="290" text-anchor="end" dominant-baseline="central">Connector 9 · print detect</text>
+<circle class="pin" cx="358" cy="290" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="358" y="290">16</text>
+<circle class="pin" cx="322" cy="314" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="322" y="314">17</text>
+<circle class="disp" cx="358" cy="314" r="10" stroke-width="0.75"/>
+<text class="num disp-t" x="358" y="314">18</text>
+<text class="t" x="388" y="314" text-anchor="start" dominant-baseline="central">Connector 4 · BUSY</text>
+<circle class="disp" cx="322" cy="338" r="10" stroke-width="0.75"/>
+<text class="num disp-t" x="322" y="338">19</text>
+<text class="t" x="292" y="338" text-anchor="end" dominant-baseline="central">Connector 8 · DIN</text>
+<circle class="disp" cx="358" cy="338" r="10" stroke-width="0.75"/>
+<text class="num disp-t" x="358" y="338">20</text>
+<text class="t" x="388" y="338" text-anchor="start" dominant-baseline="central">Connector 10 · GND</text>
+<circle class="pin" cx="322" cy="362" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="322" y="362">21</text>
+<circle class="disp" cx="358" cy="362" r="10" stroke-width="0.75"/>
+<text class="num disp-t" x="358" y="362">22</text>
+<text class="t" x="388" y="362" text-anchor="start" dominant-baseline="central">Connector 5 · DC</text>
+<circle class="disp" cx="322" cy="386" r="10" stroke-width="0.75"/>
+<text class="num disp-t" x="322" y="386">23</text>
+<text class="t" x="292" y="386" text-anchor="end" dominant-baseline="central">Connector 7 · CLK</text>
+<circle class="disp" cx="358" cy="386" r="10" stroke-width="0.75"/>
+<text class="num disp-t" x="358" y="386">24</text>
+<text class="t" x="388" y="386" text-anchor="start" dominant-baseline="central">Connector 6 · CS</text>
+<circle class="pin" cx="322" cy="410" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="322" y="410">25</text>
+<circle class="pin" cx="358" cy="410" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="358" y="410">26</text>
+<circle class="pin" cx="322" cy="434" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="322" y="434">27</text>
+<circle class="pin" cx="358" cy="434" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="358" y="434">28</text>
+<circle class="pin" cx="322" cy="458" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="322" y="458">29</text>
+<circle class="pin" cx="358" cy="458" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="358" y="458">30</text>
+<circle class="pin" cx="322" cy="482" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="322" y="482">31</text>
+<circle class="pin" cx="358" cy="482" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="358" y="482">32</text>
+<circle class="pin" cx="322" cy="506" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="322" y="506">33</text>
+<circle class="pin" cx="358" cy="506" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="358" y="506">34</text>
+<circle class="pin" cx="322" cy="530" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="322" y="530">35</text>
+<circle class="pin" cx="358" cy="530" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="358" y="530">36</text>
+<circle class="shut" cx="322" cy="554" r="10" stroke-width="0.75"/>
+<text class="num shut-t" x="322" y="554">37</text>
+<text class="t" x="292" y="554" text-anchor="end" dominant-baseline="central">Shutter LED+</text>
+<circle class="pin" cx="358" cy="554" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="358" y="554">38</text>
+<circle class="shut" cx="322" cy="578" r="10" stroke-width="0.75"/>
+<text class="num shut-t" x="322" y="578">39</text>
+<text class="t" x="292" y="578" text-anchor="end" dominant-baseline="central">Shutter LED−</text>
+<circle class="pin" cx="358" cy="578" r="10" stroke-width="0.75"/>
+<text class="num pin-t" x="358" y="578">40</text>
+<circle class="disp" cx="47" cy="634" r="7" stroke-width="0.75"/>
+<text class="ts" x="62" y="634" text-anchor="start" dominant-baseline="central">Display connector, camera half (contacts 1 to 10)</text>
+<circle class="shut" cx="407" cy="634" r="7" stroke-width="0.75"/>
+<text class="ts" x="422" y="634" text-anchor="start" dominant-baseline="central">Shutter button</text>
+<text class="ts" x="40" y="664" text-anchor="start" dominant-baseline="central">All 14 wires go on top of the header. The PiSugar touches it from underneath.</text>
+<text class="ts" x="40" y="686" text-anchor="start" dominant-baseline="central">The two shutter switch wires can go either way round.</text>
+</svg>

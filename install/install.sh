@@ -1,5 +1,5 @@
 #!/bin/bash
-# Inkstant setup script (SPEC.md §15). Turns a freshly flashed Raspberry Pi OS Lite (64-bit,
+# Inkstant setup script. Turns a freshly flashed Raspberry Pi OS Lite (64-bit,
 # Trixie) into an Inkstant camera. Safe to run again: finished steps print "ok".
 #
 #   sudo ./inkstant/install/install.sh [--yes] [--dev] [--no-reboot] [--reconfigure] [--check] ...
@@ -196,7 +196,7 @@ if [ "$installed" != "${PISUGAR_VERSION}-1" ]; then
   retry 3 curl -fsSL --max-time 300 -o "$CACHE/$PISUGAR_DEB" "$PISUGAR_URL" || stop "Couldn't download pisugar-server."
   (cd "$CACHE" && sha256sum -c "$SELF_DIR/pisugar-server.sha256") >/dev/null \
     || { rm -f "$CACHE/$PISUGAR_DEB"; stop "pisugar-server's checksum doesn't match; the download was damaged or changed."; }
-  # Web UI and TCP off, socket on (SPEC.md §13.5). Without jq the post-install skips its login prompt.
+  # Web UI and TCP off, socket on. Without jq the post-install skips its login prompt.
   debconf-set-selections <<'EOF'
 pisugar-server pisugar-server/model select PiSugar 3
 pisugar-server pisugar-server/address select 127.0.0.1
@@ -239,7 +239,7 @@ if command -v rpicam-hello >/dev/null 2>&1; then
   if grep -q "imx708" <<<"$cams"; then
     say "  ok       camera found: $(grep -m1 -o 'imx708[^ ]*' <<<"$cams")"
   elif grep -q "No cameras available" <<<"$cams"; then
-    say "  warning  No camera found: check the ribbon cable and its direction (HARDWARE.md §9.3)."
+    say "  warning  No camera found: check the ribbon cable and its direction (README: connect the camera)."
   else
     say "  warning  couldn't list cameras yet (it may need the reboot)"
   fi

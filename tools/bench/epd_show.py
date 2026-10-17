@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Display driver: show a test frame and time each step (SPEC.md §19.5, §6.3).
+"""Display driver: show a test frame and time each step.
 
     sudo systemctl stop inkstant
     sudo python3 tools/bench/epd_show.py                     # the six-colour test chart

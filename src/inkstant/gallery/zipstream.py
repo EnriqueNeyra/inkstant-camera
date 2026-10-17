@@ -1,4 +1,4 @@
-"""A streaming ZIP writer (SPEC.md §10.4).
+"""A streaming ZIP writer.
 
 Stored (no compression: JPEGs don't shrink), no data descriptors (some readers that walk
 local headers can't handle stored entries with them), and an exact length known before the

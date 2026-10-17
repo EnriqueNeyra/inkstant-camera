@@ -1,4 +1,4 @@
-"""Camera frame → screen image, thumbnail and EXIF (SPEC.md §7.1, §7.3, §7.4, §7.7).
+"""Camera frame → screen image, thumbnail and EXIF.
 
 The only code that imports numpy and Pillow; it runs in the capture worker.
 """
@@ -16,7 +16,7 @@ from inkstant import version
 from inkstant.imaging import epdfile, palette
 
 LORES_W, LORES_H = 1152, 648
-CROP_X = 90  # 16:9 → 3:2 drops 90 px from each side of the lores frame (§1.9)
+CROP_X = 90  # 16:9 → 3:2 drops 90 px from each side of the lores frame
 SCREEN_W, SCREEN_H = 600, 400
 THUMB_W, THUMB_H = 480, 270
 THUMB_QUALITY = 80
@@ -70,7 +70,7 @@ def crop_3_2(img: Image.Image) -> Image.Image:
 
 # Screen image -------------------------------------------------------------------
 def screen_frame(rgb_3_2: Image.Image) -> bytes:
-    """A 3:2 RGB image → the panel's 120,000-byte frame (steps 4 to 8 of §7.1)."""
+    """A 3:2 RGB image → the panel's 120,000-byte frame (crop, resize, lift, dither, pack)."""
     img = rgb_3_2.resize((SCREEN_W, SCREEN_H), Image.Resampling.LANCZOS)
     img = ImageEnhance.Color(img).enhance(palette.ENHANCE["color"])
     img = ImageEnhance.Contrast(img).enhance(palette.ENHANCE["contrast"])
@@ -120,7 +120,7 @@ def thumbnail_jpeg(rgb_16_9: Image.Image) -> bytes:
 
 
 def exif_dict(taken: datetime | None, metadata: dict | None) -> dict:
-    """Our EXIF IFDs, passed whole so they replace Picamera2's (§7.4). piexif's format."""
+    """Our EXIF IFDs, passed whole so they replace Picamera2's. piexif's format."""
     import piexif
 
     zeroth = {
@@ -154,7 +154,7 @@ def from_lores(lores: np.ndarray) -> tuple[bytes, bytes]:
 
 
 def from_jpeg(jpeg_path: Path) -> tuple[bytes, bytes]:
-    """Rebuild the screen image and thumbnail from a saved photo (§7.7, recovery)."""
+    """Rebuild the screen image and thumbnail from a saved photo (after a power cut, or a palette change)."""
     with Image.open(jpeg_path) as im:
         im.draft("RGB", (LORES_W, LORES_H))  # libjpeg's quarter-size decode of 4608 × 2592
         rgb = im.convert("RGB")

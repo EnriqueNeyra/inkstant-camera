@@ -1,4 +1,4 @@
-"""Operating-system actions: power, units, clock, systemd notify, model (SPEC.md §6.7, §13)."""
+"""Operating-system actions: power, units, clock, systemd notify, model."""
 
 from __future__ import annotations
 
@@ -105,7 +105,7 @@ class System:
             return "unknown"
 
     def usb_hub_off(self) -> bool:
-        """3B and 3B+ only: unbind the on-board USB hub and Ethernet chip (§13.6)."""
+        """3B and 3B+ only: unbind the on-board USB hub and Ethernet chip."""
         path = self.root / "sys/bus/usb/drivers/usb/unbind"
         if not (self.root / "sys/bus/usb/devices/1-1").exists():
             return False

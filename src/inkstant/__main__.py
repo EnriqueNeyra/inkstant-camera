@@ -1,4 +1,4 @@
-"""python3 -m inkstant {camera|gallery|ctl} (SPEC.md §4.4)."""
+"""python3 -m inkstant {camera|gallery|ctl}."""
 
 import sys
 

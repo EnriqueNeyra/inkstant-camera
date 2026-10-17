@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Shutter delay at each frame rate (SPEC.md §19.5, §19.6 "Camera").
+"""Shutter delay at each frame rate.
 
 For each press: the time from the press to the start of the captured frame's exposure
 (SensorTimestamp − ExposureTime, "moment captured"), and to the frame arriving ("frame in hand").
-Picks the lowest frame rate that keeps the frame in hand within 0.5 s (§6.4).
+Picks the lowest frame rate that keeps the frame in hand within 0.5 s.
 
     sudo systemctl stop inkstant
     sudo python3 tools/bench/shutter_latency.py                 # press the real shutter button

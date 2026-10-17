@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# inkstant-ctl: runs the control tool from the active release (SPEC.md §17).
+# inkstant-ctl: runs the control tool from the active release.
 import os
 import sys
 

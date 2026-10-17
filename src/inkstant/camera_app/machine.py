@@ -1,4 +1,4 @@
-"""The camera's rules as pure functions (SPEC.md §8): what the light shows, whether the shutter
+"""The camera's rules as pure functions: what the light shows, whether the shutter
 is accepted, timers, battery levels and the battery saver. No hardware, no I/O."""
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ class View:
 
 
 def led_steady(v: View) -> str:
-    """§8.6: the first rule that matches wins."""
+    """The status light's steady pattern: the first rule that matches wins."""
     if v.lifecycle == STARTING:
         return "starting"
     if v.lifecycle == WAKE:
@@ -50,7 +50,7 @@ def led_steady(v: View) -> str:
 
 
 def shutter_accepted(v: View) -> bool:
-    """§8.1."""
+    """Whether a shutter press takes a photo now."""
     return (v.lifecycle == ACTIVE and v.camera in ("ready", "fallback", "asleep", "waking")
             and not v.capture_busy and v.display != "refreshing" and v.storage != "full"
             and not v.update_running)
@@ -67,7 +67,7 @@ def saver_on(settings: dict, saver_auto_active: bool) -> bool:
 
 
 def effective_minutes(settings: dict, saver: bool) -> tuple[int | None, int, int]:
-    """(sleep, turn off, share timeout) in minutes; sleep None = never (§8.7)."""
+    """(sleep, turn off, share timeout) in minutes; sleep None = never."""
     sleep = settings["sleep_min"]
     off = settings["auto_off_min"]
     share = settings["share_timeout_min"]
@@ -89,7 +89,7 @@ class Levels:
 
 
 def battery_levels(settings: dict) -> Levels:
-    """§8.10: the warning and the saver's automatic level move up with a high shutdown level."""
+    """The warning and the saver's automatic level move up with a high shutdown level."""
     shut = settings["low_battery_shutdown_pct"]
     return Levels(warn=max(15, shut + 5), saver=max(20, shut + 5), shutdown=shut)
 
@@ -104,7 +104,7 @@ def median(values: list[float]) -> float | None:
 
 def saver_auto_update(settings: dict, level: float | None, plugged: bool,
                       active: bool, dismissed: bool) -> tuple[bool, bool]:
-    """§8.9: new (saver_auto_active, saver_auto_dismissed) after a battery reading."""
+    """The battery saver's new (saver_auto_active, saver_auto_dismissed) after a battery reading."""
     if plugged:
         return False, False
     if not settings["battery_saver"]["auto"]:
@@ -117,7 +117,7 @@ def saver_auto_update(settings: dict, level: float | None, plugged: bool,
 
 
 def power_button_in_wake(level: float | None, plugged: bool) -> str:
-    """§8.2: during a slideshow wake, PWR means "turn on" unless it's the low-battery backup."""
+    """During a slideshow wake, PWR means "turn on" unless it's the low-battery backup."""
     if not plugged and level is not None and level <= Levels(0, 0, 0).backup + 1:
         return "shutdown"
     return "turn_on"

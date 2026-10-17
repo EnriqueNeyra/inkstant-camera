@@ -1,4 +1,4 @@
-"""The self-test / setup check (SPEC.md §15.8, §17). Standard library only.
+"""The self-test / setup check. Standard library only.
 
 Run by the camera app on its first start after an install or update (with the display
 probe), by `inkstant-ctl selftest`, and by the install script before its reboot

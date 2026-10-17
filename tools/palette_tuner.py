@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tune the dithering palette on the real panel (SPEC.md §7.7).
+"""Tune the dithering palette on the real panel.
 
 Shows calibration screens: the six pure colours with ramps, or a reference photo dithered
 with two candidate palettes side by side (left half A, right half B). Pick the one that looks

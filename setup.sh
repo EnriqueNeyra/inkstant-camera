@@ -1,5 +1,5 @@
 #!/bin/bash
-# Inkstant setup, in one command (SPEC.md §15.3). On a freshly flashed Raspberry Pi OS Lite
+# Inkstant setup, in one command. On a freshly flashed Raspberry Pi OS Lite
 # (64-bit, Trixie), over SSH:
 #
 #   curl -fsSL https://raw.githubusercontent.com/EnriqueNeyra/inkstant-camera/main/setup.sh | sudo bash

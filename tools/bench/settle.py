@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Focus, exposure and colour settling (SPEC.md §19.5, §6.4 tuning override).
+"""Focus, exposure and colour settling.
 
 Logs every frame's lens position, AfState, exposure, gain and colour gains after you re-aim
 from far to near, and after you switch a lamp on or off. Run it with and without the tuning

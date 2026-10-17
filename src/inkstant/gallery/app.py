@@ -1,4 +1,4 @@
-"""The gallery's Flask app: pages, photos, the JSON API and ZIP downloads (SPEC.md §10, §11).
+"""The gallery's Flask app: pages, photos, the JSON API and ZIP downloads.
 
 Runs as the unprivileged user inkstant-web. It reads photos and thumbnails directly; every
 change (delete, settings, Wi-Fi, time, show on camera) goes through the camera app's
@@ -71,7 +71,7 @@ def create_app(paths: Paths | None = None, *, control_sock: Path | None = None,
         except ipc.IpcError as e:
             return None, api_error(e.code, e.message)
 
-    # Request checks (§10.5) ------------------------------------------------------------------
+    # Request checks ------------------------------------------------------------------
     def host_ok(host: str) -> bool:
         h = host.strip().lower()
         if h.startswith("["):  # [IPv6]:port
@@ -321,7 +321,7 @@ def create_app(paths: Paths | None = None, *, control_sock: Path | None = None,
             abort(404)
         return "ok"
 
-    # ZIP downloads (§10.4) -------------------------------------------------------------------------
+    # ZIP downloads -------------------------------------------------------------------------
     def zip_response(chosen: list[store.Photo], filename: str):
         files = [(f"inkstant_{p.id}.jpg", photos.photo_path(p.id), p.when or datetime.now()) for p in chosen]
         plan = zipstream.plan(files)
@@ -335,7 +335,7 @@ def create_app(paths: Paths | None = None, *, control_sock: Path | None = None,
                         last = time.monotonic()
                         report_activity(force=True)
             except zipstream.FileChanged:
-                return  # ends early; the phone reports a failed download (accepted, §10.4)
+                return  # ends early; the phone reports a failed download (accepted)
 
         resp = Response(generate(), mimetype="application/zip", direct_passthrough=True)
         resp.headers["Content-Length"] = str(plan.total)
@@ -382,7 +382,7 @@ def create_app(paths: Paths | None = None, *, control_sock: Path | None = None,
 
 
 def serve(paths: Paths | None = None, listen: str = "0.0.0.0:80") -> None:
-    """Run under Waitress with the settings in SPEC.md §10.1."""
+    """Run under Waitress: 4 threads and small buffers, sized for a Pi 3A+."""
     from waitress import serve as waitress_serve
 
     app = create_app(paths)

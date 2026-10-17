@@ -1,4 +1,4 @@
-"""Fixed paths (SPEC.md §4.4, §5).
+"""Fixed paths.
 
 Everything hangs off a root, "/" on the camera. Tests and the simulator use a
 temporary root, set with the INKSTANT_ROOT environment variable or `Paths(root)`.
@@ -19,7 +19,7 @@ class Paths:
     def default(cls) -> Paths:
         return cls(Path(os.environ.get("INKSTANT_ROOT", "/")))
 
-    # /var/lib/inkstant (§5.1)
+    # /var/lib/inkstant
     @property
     def var(self) -> Path:
         return self.root / "var/lib/inkstant"

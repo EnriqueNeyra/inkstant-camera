@@ -1,4 +1,4 @@
-# Inkstant camera app (SPEC.md §13.3). Installed by install/configure.py.
+# Inkstant camera app. Installed by install/configure.py.
 [Unit]
 Description=Inkstant camera
 Wants=pisugar-server.service

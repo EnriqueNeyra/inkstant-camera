@@ -1,5 +1,5 @@
 #!/bin/bash
-# Inkstant uninstaller (SPEC.md §15.9). Keeps the photos unless --purge is given and confirmed.
+# Inkstant uninstaller. Keeps the photos unless --purge is given and confirmed.
 #   sudo /opt/inkstant/current/install/uninstall.sh [--purge] [--yes]
 set -Eeuo pipefail
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

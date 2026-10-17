@@ -1,4 +1,4 @@
-"""The status light: one steady pattern, a wink, and cues (SPEC.md §1.3, §6.2).
+"""The status light: one steady pattern, a wink, and cues.
 
 The kernel's `gpio-led` driver owns GPIO 26; patterns are written to
 /sys/class/leds/status. Without the `pattern` trigger, an asyncio task blinks instead.

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Inkstant updater (SPEC.md §16.1). Run by the camera app as the transient unit inkstant-update:
+# Inkstant updater. Run by the camera app as the transient unit inkstant-update:
 #   systemd-run --unit=inkstant-update --collect -p RuntimeMaxSec=1800 .../install/update.sh VERSION
 set -Eeuo pipefail
 VERSION="${1:?usage: update.sh VERSION}"

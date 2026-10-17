@@ -1,4 +1,4 @@
-"""The capture worker: one thread owns the camera (SPEC.md §4.5, §8.4, §8.8).
+"""The capture worker: one thread owns the camera.
 
 Picamera2, numpy and Pillow are first imported here, when the camera starts, so a
 slideshow wake never loads them.

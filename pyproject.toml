@@ -1,5 +1,5 @@
 # Development tooling only. On the Pi the code runs from /opt/inkstant/current/src
-# with Debian's packages (SPEC.md §4.4); nothing here is installed there.
+# with Debian's packages; nothing here is installed there.
 [project]
 name = "inkstant"
 dynamic = ["version"]

@@ -1,4 +1,4 @@
-"""Wi-Fi through NetworkManager's nmcli (SPEC.md §6.8, §9).
+"""Wi-Fi through NetworkManager's nmcli.
 
 Profiles are root-only keyfiles: `inkstant-hotspot` and `inkstant-home-1` … `-5`.
 They're generated with `nmcli --offline connection add`, which handles SSID and

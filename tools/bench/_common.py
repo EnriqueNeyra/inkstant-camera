@@ -1,4 +1,4 @@
-"""Shared helpers for the bench scripts (SPEC.md §19.5).
+"""Shared helpers for the bench scripts.
 
 Run them on the Pi, as root, with the camera app stopped:
 

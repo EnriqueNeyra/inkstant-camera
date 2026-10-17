@@ -1,4 +1,4 @@
-# Inkstant gallery (SPEC.md §13.3). Not enabled: the camera app starts it in share mode.
+# Inkstant gallery. Not enabled: the camera app starts it in share mode.
 [Unit]
 Description=Inkstant gallery
 After=inkstant.service

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Desktop simulator (SPEC.md §19.2): the real camera app with every fake, plus the gallery.
+"""Desktop simulator: the real camera app with every fake, plus the gallery.
 
     python3 tools/sim.py [--root sim] [--port 8080] [--no-module]
 

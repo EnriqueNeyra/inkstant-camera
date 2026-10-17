@@ -1,1 +1,1 @@
-"""The camera app (SPEC.md §8)."""
+"""The camera app."""

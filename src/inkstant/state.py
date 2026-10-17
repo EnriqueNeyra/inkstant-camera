@@ -1,4 +1,4 @@
-"""Runtime state: state.json and slideshow.json (SPEC.md §5.5)."""
+"""Runtime state: state.json and slideshow.json."""
 
 from __future__ import annotations
 
@@ -59,7 +59,7 @@ def save_state(path: Path, state: State, tmp_dir: Path | None = None) -> None:
 
 @dataclass
 class SlideshowState:
-    """A shuffle bag of sequence numbers (§5.5)."""
+    """A shuffle bag of sequence numbers."""
 
     bag: list[int] = field(default_factory=list)
     last: int | None = None

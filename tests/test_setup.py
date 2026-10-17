@@ -1,4 +1,4 @@
-"""setup.sh, the one-command installer (SPEC.md §15.3), against a local stand-in for GitHub."""
+"""setup.sh, the one-command installer, against a local stand-in for GitHub."""
 
 from __future__ import annotations
 
