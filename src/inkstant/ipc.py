@@ -1,4 +1,4 @@
-"""The camera app's control socket (SPEC.md §12).
+"""The camera app's control socket.
 
 One JSON object per line. The camera app serves; the gallery and inkstant-ctl call.
 """
@@ -26,7 +26,7 @@ REQUEST_TIMEOUT = 5.0
 COMMAND_TIMEOUTS = {"share.start": 75.0, "selftest.run": 30.0, "update.check": 15.0, "update.start": 30.0}
 WEB_USER = "inkstant-web"
 
-# Commands the gallery (user inkstant-web) may use; root may use all (§12).
+# Commands the gallery (user inkstant-web) may use; root may use all.
 GALLERY_COMMANDS = frozenset({
     "status", "photos.delete", "photos.show", "settings.get", "settings.set", "time.set",
     "wifi.list", "wifi.home.set", "wifi.home.remove", "share.stop", "share.activity",

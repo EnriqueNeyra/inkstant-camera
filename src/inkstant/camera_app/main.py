@@ -35,7 +35,7 @@ def build_hardware(paths: Paths) -> Hardware:
         network=Network(log=log),
         system=system,
         watchdog=Watchdog(log=log),
-        is_3b="Raspberry Pi 3 Model B" in model,  # the 3B and 3B+ have the USB hub (§13.6)
+        is_3b="Raspberry Pi 3 Model B" in model,  # the 3B and 3B+ have the USB hub
     )
 
 

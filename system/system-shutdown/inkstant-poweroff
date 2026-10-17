@@ -1,5 +1,5 @@
 #!/bin/sh
-# Inkstant (SPEC.md §13.4). Runs after all services have stopped, just before the kernel
+# Inkstant. Runs after all services have stopped, just before the kernel
 # powers off. Arms the PiSugar 3's delayed power cut, so the Pi then draws nothing.
 # Does nothing on reboot, halt or kexec.
 [ "$1" = "poweroff" ] || exit 0

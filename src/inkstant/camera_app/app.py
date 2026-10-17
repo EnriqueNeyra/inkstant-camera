@@ -1,4 +1,4 @@
-"""The camera app: one asyncio loop owns all state (SPEC.md §4.5, §8, §9, §12).
+"""The camera app: one asyncio loop owns all state.
 
 Hardware work runs in threads (display worker, capture worker, a small executor for
 nmcli/systemctl/file work); each reports back by scheduling a callback on the loop.
@@ -34,7 +34,7 @@ from inkstant.imaging import epdfile, palette
 from inkstant.paths import Paths
 
 GALLERY_UNIT = "inkstant-gallery.service"
-DEV_HOME = f"{HOME_PREFIX}1"  # the home network developer mode joins at every start (§16.2)
+DEV_HOME = f"{HOME_PREFIX}1"  # the home network developer mode joins at every start
 CTL_COMMAND = "/usr/local/bin/inkstant-ctl power-button"
 INSERT_SETTLE = 0.3
 WAKE_TIMEOUT = 120.0
@@ -131,7 +131,7 @@ class CameraApp:
                                          trust_all=hw.trust_all_callers, log=log)
         self.pisugar: PiSugarClient | None = None
 
-        # §8.1 state
+        # State
         self.lifecycle = STARTING
         self.module_present = False
         self.camera_state = "off"
@@ -282,7 +282,7 @@ class CameraApp:
         else:
             await self.start_active()
             if pending:
-                self.request_shutdown("power_button")  # §8.2: a press while starting, in normal use
+                self.request_shutdown("power_button")  # a press while starting, in normal use
         await self._stopped.wait()
         tick.cancel()
         await self._teardown()
@@ -517,7 +517,7 @@ class CameraApp:
             self.spawn(self.share_start(force_hotspot=(tap == "double")))
 
     def power_button(self) -> str:
-        """`inkstant-ctl power-button` (run by pisugar-server). Must answer at once (§3 finding 2)."""
+        """`inkstant-ctl power-button` (run by pisugar-server). Must answer at once: pisugar-server waits for it."""
         if self.lifecycle == STARTING:
             self.power_button_pending = True
             return "deferred"
@@ -614,7 +614,7 @@ class CameraApp:
             await asyncio.sleep(0.05)
         return True
 
-    # Sleep (§8.8) ----------------------------------------------------------------------------------
+    # Sleep ----------------------------------------------------------------------------------
     async def _sleep_camera(self) -> None:
         if self.camera_state not in ("ready", "fallback") or self.capture_busy:
             return
@@ -643,7 +643,7 @@ class CameraApp:
             self.camera_retry_at = self.clock() + 60
         self.update_led()
 
-    # Timers (§8.7) --------------------------------------------------------------------------------
+    # Timers --------------------------------------------------------------------------------
     async def _tick_loop(self) -> None:
         while True:
             try:
@@ -701,7 +701,7 @@ class CameraApp:
             self.camera_state = "off"
             self.spawn(self.start_camera())
 
-    # Battery and saver (§8.9, §8.10) -----------------------------------------------------------------
+    # Battery and saver -----------------------------------------------------------------
     async def poll_plug(self) -> None:
         try:
             plugged = await self.pisugar.plugged()
@@ -760,7 +760,7 @@ class CameraApp:
         except PiSugarError as e:
             self.log(f"charge limit: {e}")
 
-    # Storage (§8.15) ----------------------------------------------------------------------------------
+    # Storage ----------------------------------------------------------------------------------
     def refresh_storage(self) -> None:
         try:
             free, _ = self.store.disk()
@@ -775,7 +775,7 @@ class CameraApp:
             self.storage = new
             self.update_led()
 
-    # Clock (§6.7) ---------------------------------------------------------------------------------------
+    # Clock ---------------------------------------------------------------------------------------
     async def check_clock(self) -> None:
         sysm = self.hw.system
         rtc = None
@@ -818,7 +818,7 @@ class CameraApp:
         self.errors.clear("clock")
         self.log("time: set from a phone")
 
-    # Slideshow wake (§8.11) -----------------------------------------------------------------------------
+    # Slideshow wake -----------------------------------------------------------------------------
     async def start_wake(self) -> None:
         self.lifecycle = WAKE
         self.update_led()
@@ -892,7 +892,7 @@ class CameraApp:
             self.state.next_wake_utc = None
         return t
 
-    # Share mode (§9) ----------------------------------------------------------------------------------------
+    # Share mode ----------------------------------------------------------------------------------------
     async def share_start(self, force_hotspot: bool = False) -> str | None:
         """Start sharing; returns why it couldn't, or None."""
         if self.share != "off" or self.lifecycle != ACTIVE:
@@ -1013,7 +1013,7 @@ class CameraApp:
             self.log(f"share: stopping the gallery: {e}")
         dev = self.settings["dev_mode"]
         with contextlib.suppress(Exception):
-            # Developer mode keeps its home network up for SSH (§16.2). `nmcli connection down` would
+            # Developer mode keeps its home network up for SSH. `nmcli connection down` would
             # also stop NetworkManager reconnecting it until a reboot (nmcli(1)). After the hotspot or
             # another home network goes down, NetworkManager rejoins DEV_HOME by itself: it was replaced,
             # not taken down, so its autoconnect isn't blocked.
@@ -1037,7 +1037,7 @@ class CameraApp:
                 else:
                     self.queue_job(Job(BLANK, why="restore"))
 
-    # Shutdown (§8.13) ------------------------------------------------------------------------------------------
+    # Shutdown ------------------------------------------------------------------------------------------
     def request_shutdown(self, reason: str, reboot: bool = False) -> None:
         if self._shutdown_task is None:
             self._shutdown_task = self.spawn(self._shutdown(reason, reboot))
@@ -1123,7 +1123,7 @@ class CameraApp:
                 await self.in_io(self.hw.system.poweroff)
         self._stopped.set()
 
-    # Rebuilding screen images (§7.7) ------------------------------------------------------------------------------
+    # Rebuilding screen images ------------------------------------------------------------------------------
     def _queue_rebuild(self, pid: str) -> None:
         if pid not in self.rebuild_queue:
             self.rebuild_queue.append(pid)
@@ -1175,7 +1175,7 @@ class CameraApp:
         self._kick_rebuild()
         return n
 
-    # Self-test (§15.8) ----------------------------------------------------------------------------------------------
+    # Self-test ----------------------------------------------------------------------------------------------
     async def _first_start_selftest(self) -> None:
         raw, _ = atomic.read_json(self.paths.selftest)
         self.selftest_result = raw
@@ -1235,7 +1235,7 @@ class CameraApp:
         self.log(f"selftest: {'passed' if result['passed'] else 'failed: ' + ', '.join(result['failed'])}")
         return result
 
-    # Status (§10.3) ---------------------------------------------------------------------------------------------------
+    # Status ---------------------------------------------------------------------------------------------------
     def status(self) -> dict:
         try:
             free, total = self.store.disk()
@@ -1281,7 +1281,7 @@ class CameraApp:
             "model": self.hw.system.model(),
         }
 
-    # Control socket (§12) --------------------------------------------------------------------------------------------
+    # Control socket --------------------------------------------------------------------------------------------
     async def handle_command(self, cmd: str, args: dict, role: str) -> Any:
         if cmd not in ("status", "share.activity", "selftest.get", "settings.get", "wifi.list", "update.report"):
             self.last_use = self.clock()

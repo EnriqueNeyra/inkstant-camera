@@ -1,5 +1,5 @@
 #!/bin/sh
-# Delayed power-off (SPEC.md §19.5, §13.4): `poweroff` runs our shutdown hook, which arms the
+# Delayed power-off: `poweroff` runs our shutdown hook, which arms the
 # PiSugar's power cut about 10 s later. Time it with a stopwatch: start when this script says
 # "powering off", stop when the PiSugar's power LEDs go out (or the USB meter reads 0).
 #

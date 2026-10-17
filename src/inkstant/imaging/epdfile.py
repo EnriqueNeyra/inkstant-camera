@@ -1,4 +1,4 @@
-"""The .epd screen-image file (SPEC.md §7.2). Standard library only: the slideshow wake loads it.
+"""The .epd screen-image file. Standard library only: the slideshow wake loads it.
 
 16-byte header + 120,000-byte frame. The frame is the panel's native 400 × 600 portrait
 order, two pixels per byte, first pixel in the high nibble, panel colour codes.

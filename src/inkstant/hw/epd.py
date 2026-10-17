@@ -1,4 +1,4 @@
-"""E-paper driver: our port of Waveshare's epd3in6e (SPEC.md §6.3).
+"""E-paper driver: our port of Waveshare's epd3in6e.
 
 Same commands, data and delays as Waveshare's driver, plus BUSY timeouts, abort, PWR held
 low when idle, and sending a ready-made frame. Runs in the display worker thread.

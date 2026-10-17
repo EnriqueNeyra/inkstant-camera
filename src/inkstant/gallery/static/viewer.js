@@ -1,4 +1,4 @@
-// The photo viewer (SPEC.md §11.4.2): over the gallery, or on its own at /p/<id>.
+// The photo viewer: over the gallery, or on its own at /p/<id>.
 import { $, api, deviceKind, el, longWhen, openDialog, status, toast } from "./common.js";
 import { S, fmtBytes, fmtInt } from "./strings.js";
 
@@ -75,7 +75,7 @@ export class Viewer {
         this._hide();
       }
     });
-    // Swipe between photos, but never while pinch-zoomed (§11.4.2).
+    // Swipe between photos, but never while pinch-zoomed.
     let x0 = null;
     let y0 = null;
     this.root.addEventListener("pointerdown", (e) => {

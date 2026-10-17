@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Inkstant setup, the Python half (SPEC.md §15). Standard library only.
+"""Inkstant setup, the Python half. Standard library only.
 
 install.sh runs the parts that need apt and the network; this writes every file, and is
 safe to run again: each step compares what is there with what should be, and changes only
@@ -50,7 +50,7 @@ BEGIN, END = "# BEGIN inkstant", "# END inkstant"
 CONFLICTING = ["camera_auto_detect=1", "display_auto_detect=1", "dtoverlay=vc4-kms-v3d",
                "max_framebuffers=2", "dtparam=audio=on"]
 COMMENT = "#inkstant: "
-CMDLINE_ADD = ["quiet"]  # §13.2
+CMDLINE_ADD = ["quiet"]  # fewer boot messages: a slightly faster boot
 DISABLE_UNITS = [
     "apt-daily.timer", "apt-daily-upgrade.timer", "man-db.timer", "e2scrub_all.timer",
     "dpkg-db-backup.timer", "fstrim.timer", "NetworkManager-wait-online.service",
@@ -155,7 +155,7 @@ def board_serial() -> str:
     return secrets.token_hex(4)
 
 
-# Preflight (§15.6 step 2) -----------------------------------------------------------------------------
+# Preflight -----------------------------------------------------------------------------
 def cmd_preflight(a) -> int:
     problems = []
     if os.geteuid() != 0 and Path("/") == ROOT:
@@ -198,7 +198,7 @@ def cmd_preflight(a) -> int:
     return 0
 
 
-# Questions (§15.5) -----------------------------------------------------------------------------------------
+# Questions -----------------------------------------------------------------------------------------
 def _tty():
     """The terminal, for questions: stdout goes to the install log, and answers mustn't."""
     try:
@@ -359,7 +359,7 @@ def cmd_questions(a) -> int:
     return 0
 
 
-# Apply (§15.6 steps 8 to 12) -------------------------------------------------------------------------------
+# Apply -------------------------------------------------------------------------------
 def release_version(release: Path) -> str:
     try:
         return (release / "VERSION").read_text().strip()
@@ -555,7 +555,7 @@ def edit_config_txt(text: str, family: str, camera_port: str) -> tuple[str, list
     while out and not out[-1].strip():
         out.pop()
     body = "\n".join(out) + "\n\n" + config_txt_block(family, camera_port)
-    # Checks (§15.6): no active vc4-kms-v3d outside the block, exactly one block.
+    # Checks: no active vc4-kms-v3d outside the block, exactly one block.
     outside = body.split(BEGIN)[0]
     if any(ln.strip().startswith("dtoverlay=vc4-kms-v3d") for ln in outside.splitlines()):
         raise Stop("config.txt still has an active vc4-kms-v3d line outside the Inkstant block.")
@@ -605,7 +605,7 @@ def step_config_txt(st: dict) -> None:
 
 
 def edit_cmdline(text: str) -> tuple[str, list[str]]:
-    """Returns (new text, tokens added). cmdline.txt is a single line; nothing else changes (§13.2)."""
+    """Returns (new text, tokens added). cmdline.txt is a single line; nothing else changes."""
     line = text.strip()
     tokens = line.split()
     added = [t for t in CMDLINE_ADD if t not in tokens]
@@ -661,7 +661,7 @@ def step_system_files(release_root: Path) -> None:
         write_if_changed(P(dst), (sysdir / src).read_text(), mode, dst)
     cloud = P("/etc/cloud/cloud-init.disabled")
     if P("/etc/cloud").exists() and not cloud.exists():
-        cloud.write_text("Disabled by Inkstant: first-boot setup is done (SPEC.md §13.6).\n")
+        cloud.write_text("Disabled by Inkstant: first-boot setup is done.\n")
         changed("cloud-init disabled")
 
 
@@ -752,7 +752,7 @@ def cmd_apply(a) -> int:
     return 0
 
 
-# PiSugar settings and clock (§15.6 step 11) ----------------------------------------------------------------
+# PiSugar settings and clock ----------------------------------------------------------------
 def cmd_pisugar(a) -> int:
     from inkstant.hw.pisugar import PiSugarClient, PiSugarError, ensure_settings
 
@@ -786,12 +786,12 @@ def cmd_pisugar(a) -> int:
     return asyncio.run(main())
 
 
-# Summary (§15.6 step 14) ----------------------------------------------------------------------------------
+# Summary ----------------------------------------------------------------------------------
 def cmd_summary(a) -> int:
     s = setmod.load(P("/var/lib/inkstant/settings.json"))
     st = load_state()
     dev = st.get("answers", {}).get("dev_mode")
-    # Straight to the terminal: the install log never gets the password (§15.4).
+    # Straight to the terminal: the install log never gets the password.
     try:
         tty = open("/dev/tty", "w")  # noqa: SIM115
     except OSError:
@@ -814,7 +814,7 @@ def cmd_summary(a) -> int:
     return 0
 
 
-# Uninstall (§15.9) ----------------------------------------------------------------------------------------
+# Uninstall ----------------------------------------------------------------------------------------
 def cmd_uninstall(a) -> int:
     st = load_state()
     if Path("/") == ROOT:

@@ -1,4 +1,4 @@
-// The gallery page (SPEC.md §11.4.1, §11.4.3, §11.4.4): grid, scrolling, select mode, downloads.
+// The gallery page: grid, scrolling, select mode, downloads.
 import {
   $, $$, api, dayLabel, deviceKind, el, icon, layoutVars, monthLabel, onStatus, openDialog,
   pollNow, sharingEnded, startPolling, status, statusLine, toast,
@@ -69,7 +69,7 @@ function refreshLabels() {
   }
 }
 
-// Badges: on camera, developing (§11.4.1) -------------------------------------------------------------
+// Badges: on camera, developing -------------------------------------------------------------
 function decorate(t) {
   const st = status();
   t.querySelector(".badge")?.remove();
@@ -85,7 +85,7 @@ function decorate(t) {
   else t.removeAttribute("aria-pressed");
 }
 
-// Loading more as you scroll (§11.4.1) -------------------------------------------------------------------
+// Loading more as you scroll -------------------------------------------------------------------
 async function loadMore() {
   if (loadingMore || nextBefore === null) return false;
   loadingMore = true;
@@ -196,7 +196,7 @@ function removeTiles(ids) {
   if (!tiles().length && nextBefore === null) location.reload();
 }
 
-// Select mode (§11.4.3) -----------------------------------------------------------------------------------------
+// Select mode -----------------------------------------------------------------------------------------
 function setSelecting(on) {
   selecting = on;
   selectAll = false;
@@ -328,7 +328,7 @@ $("#act-download").addEventListener("click", () => {
   openDownload({ count: selectionCount(), bytes: selectionBytes(), ids: selectAll ? null : photos.map((p) => p.id), all: selectAll });
 });
 
-// Download sheet (§11.4.4) -------------------------------------------------------------------------------------------
+// Download sheet -------------------------------------------------------------------------------------------
 function openDownload({ count, bytes, ids, all }) {
   $("#dl-title").textContent = S.downloadN(count);
   $("#dl-meta").textContent = S.downloadMeta(bytes, (bytes / 3e6) * 1.3);

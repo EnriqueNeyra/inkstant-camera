@@ -1,4 +1,4 @@
-"""Software update helpers (SPEC.md §16.1). Standard library only."""
+"""Software update helpers. Standard library only."""
 
 from __future__ import annotations
 

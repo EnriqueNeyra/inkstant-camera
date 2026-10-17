@@ -1,5 +1,5 @@
 #!/bin/sh
-# Boot-to-ready (SPEC.md §19.5, §13): systemd's view of the boot plus the camera app's own
+# Boot-to-ready: systemd's view of the boot plus the camera app's own
 # timing marks (app start, wake decision, ready). Run it after a cold boot (power off, then on).
 #
 #   sh tools/bench/boot_timing.sh

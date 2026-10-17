@@ -1,4 +1,4 @@
-"""The share screen: QR codes and text, in pure black and white (SPEC.md §7.5)."""
+"""The share screen: QR codes and text, in pure black and white."""
 
 from __future__ import annotations
 

@@ -1,9 +1,9 @@
 <title>Inkstant Gallery Screens</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
-/* Layout: a contact sheet of phone frames, each one screen from SPEC.md §11, on a quiet page. */
+/* Layout: a contact sheet of phone frames, each one screen of the gallery, on a quiet page. */
 :root {
-  /* constants: light (L) and dark (D) values of the app tokens in SPEC.md §11.3.2 */
+  /* constants: light (L) and dark (D) values of the app's colour tokens */
   --L-bg:#EEF0F0; --L-surface:#FFFFFF; --L-surface-2:#E2E5E6; --L-line:#CDD2D4;
   --L-ink:#16181A; --L-ink-2:#454B50; --L-ink-3:#62696E;
   --L-accent:#3A3F9E; --L-accent-ink:#FFFFFF; --L-danger:#A3343A; --L-ok:#2C6643;
@@ -265,7 +265,7 @@ footer code { font-family: var(--font-mono); font-size: .75rem; }
   <header class="intro">
     <div class="brand"><span class="strip lg" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
     <h1>Inkstant gallery, screen by screen</h1>
-    <p>What a phone sees when it opens the camera's share-mode gallery, as specified in SPEC.md §11. Layout, colours, type and wording follow the spec. The photos are placeholders. System fonts only, because the camera's own Wi-Fi has no internet.</p>
+    <p>What a phone sees when it opens the camera's share-mode gallery: layout, colours, type and wording. The photos are placeholders. System fonts only, because the camera's own Wi-Fi has no internet.</p>
     <div class="inks" aria-label="The display panel's six inks, with their panel colour codes">
       <span><b style="background:var(--ink-k)"></b>Black · 0</span>
       <span><b style="background:var(--ink-w)"></b>White · 1</span>
@@ -328,7 +328,7 @@ footer code { font-family: var(--font-mono); font-size: .75rem; }
           <div class="fade"></div>
         </div>
       </div></div>
-      <figcaption><strong>Gallery</strong><span>Newest first, grouped by the camera's date. The first 60 photos come with the page; more load as you scroll. Badges show which photo is on the display module and which is developing. <code>§11.4.1</code></span></figcaption>
+      <figcaption><strong>Gallery</strong><span>Newest first, grouped by the camera's date. The first 60 photos come with the page; more load as you scroll. Badges show which photo is on the display module and which is developing.</span></figcaption>
     </figure>
 
     <!-- 2 Select mode -->
@@ -370,7 +370,7 @@ footer code { font-family: var(--font-mono); font-size: .75rem; }
           <button class="act danger" type="button"><svg class="i"><use href="#i-trash"/></svg>Delete</button>
         </div>
       </div></div>
-      <figcaption><strong>Select mode</strong><span>Tap photos, or select a whole day from its header. Download shows the total size. Show on camera needs exactly one photo, so it's greyed out here. <code>§11.4.3</code></span></figcaption>
+      <figcaption><strong>Select mode</strong><span>Tap photos, or select a whole day from its header. Download shows the total size. Show on camera needs exactly one photo, so it's greyed out here.</span></figcaption>
     </figure>
 
     <!-- 3 Download sheet -->
@@ -403,7 +403,7 @@ footer code { font-family: var(--font-mono); font-size: .75rem; }
           <button class="btn plain" type="button">Cancel</button>
         </div>
       </div></div>
-      <figcaption><strong>Download sheet</strong><span>Size and time before anything starts, and instructions for the phone in hand (this is the iPhone version). A single photo skips the ZIP. <code>§11.4.4</code></span></figcaption>
+      <figcaption><strong>Download sheet</strong><span>Size and time before anything starts, and instructions for the phone in hand (this is the iPhone version). A single photo skips the ZIP.</span></figcaption>
     </figure>
 
     <!-- 4 Viewer -->
@@ -424,7 +424,7 @@ footer code { font-family: var(--font-mono); font-size: .75rem; }
           <button class="act danger" type="button"><svg class="i"><use href="#i-trash"/></svg>Delete</button>
         </div>
       </div></div>
-      <figcaption><strong>Photo viewer</strong><span>Always dark. The full photo is a plain image, so press-and-hold saves it. Swipe for the next one; pinch-zoom stays on. The tip shows once per phone. <code>§11.4.2</code></span></figcaption>
+      <figcaption><strong>Photo viewer</strong><span>Always dark. The full photo is a plain image, so press-and-hold saves it. Swipe for the next one; pinch-zoom stays on. The tip shows once per phone.</span></figcaption>
     </figure>
 
     <!-- 5 Settings -->
@@ -460,7 +460,7 @@ footer code { font-family: var(--font-mono); font-size: .75rem; }
           </div>
         </div>
       </div></div>
-      <figcaption><strong>Settings</strong><span>One page of grouped settings. Toggles and choices save as you change them. Power holds sleep, turn-off and the battery saver; below it: Wi-Fi, date &amp; time, storage, software, advanced. <code>§11.4.6</code></span></figcaption>
+      <figcaption><strong>Settings</strong><span>One page of grouped settings. Toggles and choices save as you change them. Power holds sleep, turn-off and the battery saver; below it: Wi-Fi, date &amp; time, storage, software, advanced.</span></figcaption>
     </figure>
 
     <!-- 5b Settings, scrolled to Power -->
@@ -497,7 +497,7 @@ footer code { font-family: var(--font-mono); font-size: .75rem; }
           </div>
         </div>
       </div></div>
-      <figcaption><strong>Settings: power</strong><span>The same page scrolled down. The camera sleeps after 5 idle minutes and turns off after 10. The battery saver turns itself on at 20%: sleep after 1 min, off after 5, the slowest frame rate, sharing stops after 5 min. <code>§11.4.6</code></span></figcaption>
+      <figcaption><strong>Settings: power</strong><span>The same page scrolled down. The camera sleeps after 5 idle minutes and turns off after 10. The battery saver turns itself on at 20%: sleep after 1 min, off after 5, the slowest frame rate, sharing stops after 5 min.</span></figcaption>
     </figure>
 
     <!-- 6 Delete dialog -->
@@ -531,7 +531,7 @@ footer code { font-family: var(--font-mono); font-size: .75rem; }
           </div>
         </div>
       </div></div>
-      <figcaption><strong>Delete confirmation</strong><span>Deleting always asks first, so there's no undo. The extra line appears because one of the photos is on the display module. <code>§11.4.5</code></span></figcaption>
+      <figcaption><strong>Delete confirmation</strong><span>Deleting always asks first, so there's no undo. The extra line appears because one of the photos is on the display module.</span></figcaption>
     </figure>
 
     <!-- 7 Offline -->
@@ -562,11 +562,11 @@ footer code { font-family: var(--font-mono); font-size: .75rem; }
           <span class="sub">Trying again every 10 seconds</span>
         </div>
       </div></div>
-      <figcaption><strong>Can't reach the camera</strong><span>Shown after two missed status checks, on any page. It goes away by itself when the camera answers again. <code>§11.4.9</code></span></figcaption>
+      <figcaption><strong>Can't reach the camera</strong><span>Shown after two missed status checks, on any page. It goes away by itself when the camera answers again.</span></figcaption>
     </figure>
   </main>
 
-  <footer>Spec: <code>SPEC.md §11</code> (screens, behaviour, words) and <code>SPEC.md §10</code> (server, routes, security). This page's source: <code>mockups/gallery.html</code>.</footer>
+  <footer>This page's source: <code>mockups/gallery.html</code>. The real gallery is in <code>src/inkstant/gallery</code>.</footer>
 </div>
 
 <script>

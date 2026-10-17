@@ -1,4 +1,4 @@
-"""Camera: Picamera2 wrapper, tuning override, sleep and wake (SPEC.md §6.4, §8.8).
+"""Camera: Picamera2 wrapper, tuning override, sleep and wake.
 
 Picamera2 is imported only when the camera first opens, in the capture worker thread,
 so slideshow wakes never load it. Every method here blocks; call them from that thread.
@@ -17,9 +17,9 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-CAMERA_FPS = 5  # set from M1's measurements (§6.4); device.toml's camera_fps overrides it
+CAMERA_FPS = 5  # set from bench measurements; device.toml's camera_fps overrides it
 SAVER_FPS = 5
-SETTLE_FPS = 14  # the full-resolution maximum is 14.35 fps (§3 finding 22)
+SETTLE_FPS = 14  # the full-resolution maximum is 14.35 fps
 SETTLE_FRAMES = 10
 # Measured on a Pi 4 at full resolution (2026-10-16): the first frame comes ~1.6 s after start,
 # then one every ~0.2 s (about 5 fps reach us, whatever the sensor's rate). So wait per frame.
@@ -32,7 +32,7 @@ WAKE_FOCUS_TIMEOUT = 1.5
 WAKE_MIN_FRAMES = 4
 TUNING_ENV = "LIBCAMERA_RPI_TUNING_FILE"
 
-# The tuning override for 5 fps (§6.4 table). Absolute values, used at every frame rate.
+# The tuning override, worked out for 5 fps. Absolute values, used at every frame rate.
 TUNING_OVERRIDE = {
     "rpi.agc": {"speed": 0.62},
     "rpi.awb": {"speed": 0.26, "frame_period": 2},
@@ -168,7 +168,7 @@ class Camera:
         }
         self.picam2.options["quality"] = 90
         last_error = None
-        for buffers in (2, 1):  # failure ladder, steps 1 and 2 (§6.4)
+        for buffers in (2, 1):  # failure ladder, steps 1 and 2: two buffers, then one
             try:
                 self._full_config = self.picam2.create_still_configuration(
                     main={"size": MAIN_SIZE, "format": "YUV420"},
@@ -246,14 +246,14 @@ class Camera:
             req.release()
 
     def sleep(self) -> None:
-        """Stop the stream; the configuration and its buffers stay allocated (§8.8)."""
+        """Stop the stream; the configuration and its buffers stay allocated."""
         if self.picam2 is not None and self.mode in ("full", "fallback"):
             self.picam2.stop()
             self._asleep_from = self.mode
             self.mode = "asleep"
 
     def wake(self, for_shot: bool) -> None:
-        """Restart at 14 fps; for a shot, wait for focus to settle (§6.4)."""
+        """Restart at 14 fps; for a shot, wait for focus to settle."""
         from libcamera import controls
 
         if self.mode != "asleep":

@@ -1,4 +1,4 @@
-# Share mode on phones: manual checklist (SPEC.md §19.5, §19.7)
+# Share mode on phones: manual checklist
 
 Run each column on one iPhone (iOS 17 or later) and one Android phone (Android 12 or later).
 Write the result (✓, ✗ and a note) in each cell, and keep the filled-in copy with the release notes.
@@ -14,7 +14,7 @@ and `inkstant-ctl status` shows no errors.
 | 2 | Scan the Wi-Fi QR code with the phone's camera app from 15, 20 and 30 cm | The phone offers to join `Inkstant-XXXX` at each distance | | |
 | 3 | Join | Joins without typing the password; no "no internet" prompt blocks it | | |
 | 4 | Scan the second QR code (the address) | The gallery opens at `http://10.42.0.1` | | |
-| 5 | With mobile data **on**, open `http://10.42.0.1` by hand | The gallery opens (if not on Android, note it: §9 fallback) | | |
+| 5 | With mobile data **on**, open `http://10.42.0.1` by hand | The gallery opens (if not, note which phone) | | |
 | 6 | Grid, viewer, swipe, info sheet | Photos load; EXIF shows date and exposure | | |
 | 7 | Download one photo | Saved to Photos (iPhone) / Downloads or Gallery (Android) | | |
 | 8 | Select 3 and download as ZIP | The ZIP downloads and opens; 3 full-size JPEGs | | |

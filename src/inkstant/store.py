@@ -1,4 +1,4 @@
-"""The photo store: IDs, commit, list, delete, free space (SPEC.md §5.1, §5.2, §8.15)."""
+"""The photo store: IDs, commit, list, delete, free space."""
 
 from __future__ import annotations
 
@@ -159,7 +159,7 @@ class PhotoStore:
                 fsync_dir(d)
         return deleted, missing
 
-    # Recovery (§5.2) -----------------------------------------------------
+    # Recovery -----------------------------------------------------
     def recover(self) -> list[str]:
         """Clean up after a power cut. Returns IDs whose thumbnail or screen image must be rebuilt."""
         self.paths.ensure_dirs()
@@ -180,7 +180,7 @@ class PhotoStore:
                 rebuild.append(pid)
         return rebuild
 
-    # Space (§8.15) ---------------------------------------------------------
+    # Space ---------------------------------------------------------
     def disk(self) -> tuple[int, int]:
         st = os.statvfs(self.paths.var)
         return st.f_bavail * st.f_frsize, st.f_blocks * st.f_frsize

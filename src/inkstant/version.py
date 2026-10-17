@@ -1,4 +1,4 @@
-"""Release version and build time (SPEC.md §4.4, §6.7).
+"""Release version and build time.
 
 BUILD_EPOCH is the earliest time a working clock can show: an RTC reading before it
 means the clock was lost. Release builds and from-source installs write `_build.py`

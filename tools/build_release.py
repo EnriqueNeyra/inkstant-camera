@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a release: dist/inkstant.tar.gz (top folder inkstant/) and dist/SHA256SUMS (SPEC.md §16.1).
+"""Build a release: dist/inkstant.tar.gz (top folder inkstant/) and dist/SHA256SUMS.
 
     python3 tools/build_release.py
 

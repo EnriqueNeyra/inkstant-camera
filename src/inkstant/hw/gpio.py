@@ -1,4 +1,4 @@
-"""GPIO through gpiozero with the lgpio pin factory (SPEC.md §6.1).
+"""GPIO through gpiozero with the lgpio pin factory.
 
 The SPI driver owns GPIO 7 to 11, `gpio-led` owns 26 and I2C owns 2 and 3, so none of
 those are opened here. Tests and the simulator use gpiozero's MockFactory.

@@ -1,4 +1,4 @@
-"""The PiSugar 3's hardware watchdog, through smbus2 (SPEC.md §6.6).
+"""The PiSugar 3's hardware watchdog, through smbus2.
 
 Registers (I2C 0x57): 0x06 bit 7 = enable, bit 5 = feed; 0x07 = timeout in 2 s units;
 0x0B = write protection (0x29 unlocks, 0x00 locks). pisugar-server unlocks and relocks

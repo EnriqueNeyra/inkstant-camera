@@ -1,4 +1,4 @@
-// Every message the gallery shows (SPEC.md §11.9). One place, ready for translation later.
+// Every message the gallery shows. One place, ready for translation later.
 export const S = {
   photos: (n) => `${fmtInt(n)} photo${n === 1 ? "" : "s"}`,
   today: "Today",
@@ -12,7 +12,7 @@ export const S = {
   deselect: "Deselect",
   thatsEverything: "That's everything",
   newPhotos: (n) => `${fmtInt(n)} new photo${n === 1 ? "" : "s"}`,
-  // Banners (§11.4.8)
+  // Banners
   storageFull: "Storage full. The camera can't take photos until you delete some.",
   storageLow: (n) => `Storage low: about ${fmtInt(n)} photos left.`,
   batteryLow: (pct) => `Battery low (${pct}%). Charge the camera soon.`,
@@ -27,7 +27,7 @@ export const S = {
   usePhoneTime: "Use this phone's time",
   seeDetails: "See details",
   tryAgain: "Try again",
-  // Toasts (§11.4.10)
+  // Toasts
   photoDeleted: "Photo deleted",
   photosDeleted: (n) => `${fmtInt(n)} photos deleted`,
   developing: "Developing on the camera, about 20 seconds",
@@ -39,7 +39,7 @@ export const S = {
   networkAdded: "Network added",
   networkForgotten: "Network forgotten",
   sharingStopped: "Sharing stopped",
-  // Download sheet (§11.4.4)
+  // Download sheet
   downloadN: (n) => `Download ${fmtInt(n)} photo${n === 1 ? "" : "s"}`,
   downloadMeta: (bytes, secs) => `${fmtBytes(bytes)} · about ${fmtDuration(secs)}`,
   howtoIos: "Safari saves one ZIP file to Files → Downloads. Open it there, then select the photos and tap Share → Save Images.",

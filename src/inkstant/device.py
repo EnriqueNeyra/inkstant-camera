@@ -1,4 +1,4 @@
-"""Per-build hardware settings, /etc/inkstant/device.toml (SPEC.md §5.3)."""
+"""Per-build hardware settings, /etc/inkstant/device.toml."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ class Device:
 
 
 def family_from_model(model: str) -> str | None:
-    """Map /proc/device-tree/model to a config.txt family (SPEC.md §15.1)."""
+    """Map /proc/device-tree/model to a config.txt family."""
     m = model.lower()
     if "raspberry pi 5 model b" in m:  # not the Pi 500 keyboard (no camera port)
         return "pi5"
@@ -71,7 +71,7 @@ def load(path: Path) -> Device:
 def dumps(d: Device) -> str:
     """The file the install script writes."""
     lines = [
-        "# Inkstant per-build hardware settings (SPEC.md §5.3). Written by the install script;",
+        "# Inkstant per-build hardware settings. Written by the install script;",
         "# change by hand only when the build changes, then restart the camera.",
         f"model = {json.dumps(d.model)}",
         f"family = {json.dumps(d.family)}",

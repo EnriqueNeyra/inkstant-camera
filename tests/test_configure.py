@@ -1,4 +1,4 @@
-"""install/configure.py against a fake system (SPEC.md §19.4)."""
+"""install/configure.py against a fake system."""
 
 import json
 import os

@@ -1,4 +1,4 @@
-"""The camera app end to end, with every hardware fake (SPEC.md §19.1, §19.7)."""
+"""The camera app end to end, with every hardware fake."""
 
 import asyncio
 import http.server

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PiSugar 3: socket, settings, button taps, clock, alarm and watchdog (SPEC.md §19.5, §6.5 to §6.7).
+"""PiSugar 3: socket, settings, button taps, clock, alarm and watchdog.
 
     sudo systemctl stop inkstant
     sudo python3 tools/bench/pisugar_probe.py                    # everything except the watchdog reset

@@ -1,4 +1,4 @@
-"""Atomic file writes (SPEC.md §5.2).
+"""Atomic file writes.
 
 A power cut can happen at any moment, so every file is written under a temporary
 name in the same filesystem, flushed to disk, then renamed into place.

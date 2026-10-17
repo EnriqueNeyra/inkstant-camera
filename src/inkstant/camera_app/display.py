@@ -1,4 +1,4 @@
-"""Display jobs and the display worker thread (SPEC.md §8.3, §6.3).
+"""Display jobs and the display worker thread.
 
 One job runs at a time, with one pending slot. The worker reports back by posting
 events to the event loop; it never touches the app's state.

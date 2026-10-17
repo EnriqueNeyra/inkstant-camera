@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Full-resolution capture and camera memory (SPEC.md §19.5, §19.6 "Camera").
+"""Full-resolution capture and camera memory.
 
-Starts the camera exactly as the app does (§6.4: 4608 × 2592 main + 1152 × 648 lores, YUV420,
+Starts the camera exactly as the app does (4608 × 2592 main + 1152 × 648 lores, YUV420,
 2 buffers, tuning override), logs CmaFree before and after, takes 20 photos through the app's
-own capture path, and times the screen image, thumbnail and JPEG against §7.6's targets.
+own capture path, and times the screen image, thumbnail and JPEG against the timing targets.
 
     sudo systemctl stop inkstant
     sudo python3 tools/bench/camera_fullres.py [--frames 20] [--fps 5]
@@ -104,7 +104,7 @@ def main() -> int:
     mem2 = c.meminfo()
     result["cma_free_after_kb"] = mem2.get("CmaFree")
 
-    # Sleep and wake (§8.8): no new CMA allocation on waking.
+    # Sleep and wake: no new CMA allocation on waking.
     try:
         cam.sleep()
         asleep = c.meminfo().get("CmaFree")

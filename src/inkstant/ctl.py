@@ -1,4 +1,4 @@
-"""inkstant-ctl: status, self-test, sharing, shutdown and helpers (SPEC.md §17). Standard library only."""
+"""inkstant-ctl: status, self-test, sharing, shutdown and helpers. Standard library only."""
 
 from __future__ import annotations
 

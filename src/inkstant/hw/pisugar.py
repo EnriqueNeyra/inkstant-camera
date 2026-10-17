@@ -1,4 +1,4 @@
-"""pisugar-server client over its Unix socket (SPEC.md §6.5), and a fake server.
+"""pisugar-server client over its Unix socket, and a fake server.
 
 Replies are `<name>: <value>` lines: `get battery` → `battery: 87.5`; setters answer
 `<command>: done`. Button taps arrive as bare `single`, `double` or `long` lines on every
@@ -213,7 +213,7 @@ class PiSugarClient:
         await self.set("rtc_pi2rtc")
 
 
-# The settings the camera depends on (§6.5), checked and re-applied at every start.
+# The settings the camera depends on, checked and re-applied at every start.
 def required_settings(ctl_path: str = "/usr/local/bin/inkstant-ctl power-button") -> list[tuple[str, str, str]]:
     """(get name, expected value, set command line)."""
     return [
