@@ -3,8 +3,8 @@
 
     python3 tools/build_release.py
 
-The tarball holds VERSION, src/ (with _build.py: VERSION and BUILD_EPOCH = now), bin/, system/,
-install/ and tools/. Upload both files to a GitHub release tagged v<VERSION>.
+The tarball holds VERSION, LICENSE, README.md, src/ (with _build.py: VERSION and BUILD_EPOCH = now), bin/,
+system/, install/ and tools/. Upload both files to a GitHub release tagged v<VERSION>.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-INCLUDE = ["VERSION", "README.md", "SPEC.md", "HARDWARE.md", "src", "bin", "system", "install", "tools"]
+INCLUDE = ["VERSION", "LICENSE", "README.md", "src", "bin", "system", "install", "tools"]
 SKIP_PARTS = {"__pycache__", ".pytest_cache", ".ruff_cache"}
 
 

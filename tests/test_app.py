@@ -5,6 +5,7 @@ import http.server
 import json
 import threading
 import time
+import urllib.error
 
 import pytest
 
@@ -434,6 +435,81 @@ def test_share_timeout_on_battery(paths, health_url):
             await h.app.tick()
             await h.until(lambda: h.app.share == "off")
             assert h.app.lifecycle == machine.ACTIVE  # turn-off restarts from now
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_share_start_outlives_a_request_that_gives_up(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start(module=False)
+        try:
+            gate = threading.Event()
+            scan = h.net.scan
+            h.net.scan = lambda: (gate.wait(5), scan())[1]
+            req = asyncio.ensure_future(h.cmd("share.start"))
+            await h.until(lambda: h.app.share == "starting")
+            req.cancel()  # what the control socket's timeout does to a slow request
+            gate.set()
+            await h.until(lambda: h.app.share == "on")
+            assert h.app.share_info.mode == "home"
+            await h.cmd("share.stop")
+            await h.until(lambda: h.app.share == "off")
+            assert await h.cmd("share.start") == {"mode": "home", "url": "http://127.0.0.1/", "ssid": "Sim Home"}
+            assert ipc.timeout_for("share.start") > ipc.REQUEST_TIMEOUT
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_stopping_during_a_start_waits_for_it(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start(module=False)
+        try:
+            gate = threading.Event()
+            scan = h.net.scan
+            h.net.scan = lambda: (gate.wait(5), scan())[1]
+            start = asyncio.ensure_future(h.app.share_start())
+            await h.until(lambda: h.app.share == "starting")
+            stop = asyncio.ensure_future(h.app.share_stop())
+            await asyncio.sleep(0.2)
+            assert h.app.share == "starting"  # the stop waits instead of racing the start
+            gate.set()
+            await asyncio.wait_for(asyncio.gather(start, stop), 5)
+            assert h.app.share == "off" and h.net.state == "off"
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_update_check_before_any_release(paths, health_url, monkeypatch):
+    from inkstant.camera_app import update
+
+    def no_release(req, timeout):
+        raise urllib.error.HTTPError(update.LATEST_URL, 404, "Not Found", {}, None)
+
+    monkeypatch.setattr(update.urllib.request, "urlopen", no_release)
+    with pytest.raises(update.NoRelease):
+        update.check_latest()
+    monkeypatch.undo()  # the app's gallery health check uses urlopen too
+
+    def latest():
+        raise update.NoRelease("no release published yet")
+
+    monkeypatch.setattr(update, "check_latest", latest)
+
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start(module=False)
+        try:
+            await h.cmd("share.start")
+            r = await h.cmd("update.check")
+            assert r["available"] is False and r["latest"] is None
         finally:
             await h.stop()
 

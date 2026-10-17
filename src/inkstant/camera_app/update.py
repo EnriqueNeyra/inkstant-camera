@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import urllib.error
 import urllib.request
 
 REPO = "EnriqueNeyra/inkstant-camera"
@@ -20,14 +21,24 @@ def newer(latest: str, current: str) -> bool:
     return parse(latest) > parse(current)
 
 
+class NoRelease(OSError):
+    """Nothing is published yet, so there's nothing to update to."""
+
+
 def check_latest(timeout: float = 8.0) -> dict:
-    """The latest non-pre-release on GitHub: {"version", "url", "notes"}. Raises OSError."""
+    """The latest non-pre-release on GitHub: {"version", "url", "notes"}. Raises NoRelease when
+    none is published, OSError for anything else."""
     req = urllib.request.Request(LATEST_URL, headers={"Accept": "application/vnd.github+json",
                                                       "User-Agent": "inkstant-camera"})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        data = json.load(resp)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.load(resp)
+    except urllib.error.HTTPError as e:
+        if e.code == 404:  # GitHub's answer when a repository has no releases
+            raise NoRelease("no release published yet") from None
+        raise
     if data.get("prerelease") or data.get("draft"):
-        raise OSError("no release yet")
+        raise NoRelease("no release published yet")
     tag = data.get("tag_name", "")
     assets = {a.get("name"): a.get("browser_download_url") for a in data.get("assets", [])}
     if RELEASE_ASSET not in assets or "SHA256SUMS" not in assets:

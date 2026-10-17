@@ -173,7 +173,8 @@ def cmd_preflight(a) -> int:
     model = board_model()
     fam = devmod.family_from_model(model)
     if fam is None and not a.force_model:
-        problems.append(f"{model} isn't supported (SPEC.md §15.1.3). Use --force-model to try anyway.")
+        problems.append(f"{model} isn't supported: use a Raspberry Pi 3A+, 3B, 3B+, 4B or 5 (see the README)."
+                        " Use --force-model to try anyway.")
     if Path("/") == ROOT and shutil.which("cloud-init") and not P("/etc/cloud/cloud-init.disabled").exists():
         say("  waiting for first-boot setup (cloud-init) to finish …")
         run("cloud-init", "status", "--wait", check=False, timeout=300)
@@ -699,6 +700,12 @@ def step_wifi(st: dict) -> None:
                                                                       autoconnect=bool(ans.get("dev_mode")) and n == 1,
                                                                       key_mgmt=key_mgmt)))
         changed(f"Wi-Fi profile inkstant-home-{n} ({home['ssid']})")
+    elif home:
+        # A re-run keeps the saved profile and its password; only developer mode may have changed.
+        n = next((h.n for h in net.homes() if h.ssid == home["ssid"]), None)
+        if n == 1:
+            net.set_home_autoconnect(1, bool(ans.get("dev_mode")))
+            ok(f"Wi-Fi profile inkstant-home-1 joins at every start: {'yes' if ans.get('dev_mode') else 'no'}")
     # Retire Imager's netplan profile; nothing disconnects until the reboot.
     backup = P("/var/lib/inkstant/backup/netplan")
     for y in sorted(P("/etc/netplan").glob("*.yaml")) if P("/etc/netplan").exists() else []:
@@ -798,7 +805,7 @@ def cmd_summary(a) -> int:
     say(f"  Camera Wi-Fi:  {s['hotspot']['ssid']}")
     say(f"  Password:      {s['hotspot']['password']}")
     say("  To share: press the PiSugar's BTN. The display module shows a QR code for the gallery.")
-    say("  The light: solid, then a slow blink while starting, then solid when ready (SPEC.md §1.3).")
+    say("  The light: solid, then a slow blink while starting, then solid when ready (README: the status light).")
     if dev:
         say("  Developer mode is on: the camera joins your home Wi-Fi at every start, so SSH keeps working.")
     else:

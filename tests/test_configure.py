@@ -120,6 +120,7 @@ def test_apply_writes_everything(installed):
     rel = r / "opt/inkstant/releases/1.0.0"
     assert (rel / "src/inkstant/camera_app/app.py").exists() and (rel / "bin/inkstant-ctl").exists()
     assert not (rel / "tests").exists() and not (rel / ".git").exists()
+    assert (rel / "LICENSE").exists()  # the license travels with every copy
     assert "BUILD_EPOCH" in (rel / "src/inkstant/_build.py").read_text()
     assert os.readlink(r / "usr/local/bin/inkstant-ctl") == "/opt/inkstant/current/bin/inkstant-ctl"
     dev = (r / "etc/inkstant/device.toml").read_text()
@@ -169,6 +170,17 @@ def test_update_keeps_answers(installed):
     assert a.returncode == 0
     s = json.loads((r / "var/lib/inkstant/settings.json").read_text())
     assert s["hotspot"]["password"] == "secretpass1"
+
+
+def test_rerun_with_dev_makes_the_home_network_join_at_start(tmp_path):
+    r = fake_root(tmp_path)
+    assert cfg(r, "questions", "--yes", "--home-ssid", "Home", "--home-password", "homepass1").returncode == 0
+    a = cfg(r, "apply", "--release", str(REPO))
+    assert a.returncode == 0 and "inkstant-home-1 (Home)" in a.stdout, a.stdout
+    assert cfg(r, "questions", "--yes", "--dev").returncode == 0
+    a = cfg(r, "apply", "--release", str(REPO))
+    assert a.returncode == 0, a.stdout
+    assert "inkstant-home-1 joins at every start: yes" in a.stdout
 
 
 def test_uninstall_restores_config_and_keeps_photos(installed):

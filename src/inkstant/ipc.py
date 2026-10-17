@@ -21,6 +21,9 @@ from typing import Any
 
 MAX_MESSAGE = 64 * 1024
 REQUEST_TIMEOUT = 5.0
+# Commands that wait on Wi-Fi, the network or the hardware get longer. share.start can scan (12 s),
+# join a network (25 s) or start the camera's Wi-Fi (20 s), then wait for the gallery (10 s).
+COMMAND_TIMEOUTS = {"share.start": 75.0, "selftest.run": 30.0, "update.check": 15.0, "update.start": 30.0}
 WEB_USER = "inkstant-web"
 
 # Commands the gallery (user inkstant-web) may use; root may use all (§12).
@@ -33,6 +36,10 @@ ROOT_ONLY_COMMANDS = frozenset({
     "power.button", "shutdown", "share.start", "dev.set", "regen_epd", "update.report",
 })
 ALL_COMMANDS = GALLERY_COMMANDS | ROOT_ONLY_COMMANDS
+
+
+def timeout_for(cmd: str) -> float:
+    return COMMAND_TIMEOUTS.get(cmd, REQUEST_TIMEOUT)
 
 
 class IpcError(Exception):
@@ -144,7 +151,7 @@ class ControlServer:
         if role == "gallery" and cmd not in GALLERY_COMMANDS:
             return {"id": rid, "ok": False, "error": {"code": "denied", "message": "Not allowed."}}
         try:
-            result = await asyncio.wait_for(self.handler(cmd, args, role), REQUEST_TIMEOUT)
+            result = await asyncio.wait_for(self.handler(cmd, args, role), timeout_for(cmd))
             return {"id": rid, "ok": True, "result": result}
         except IpcError as e:
             return {"id": rid, "ok": False, "error": {"code": e.code, "message": e.message}}
@@ -158,8 +165,11 @@ class ControlServer:
 _ids = itertools.count(1)
 
 
-def call(path: Path, cmd: str, args: dict[str, Any] | None = None, timeout: float = REQUEST_TIMEOUT + 1) -> Any:
-    """Send one request and wait for its reply (blocking). Raises IpcError."""
+def call(path: Path, cmd: str, args: dict[str, Any] | None = None, timeout: float | None = None) -> Any:
+    """Send one request and wait for its reply (blocking): by default a second longer than the
+    camera app gives the command. Raises IpcError."""
+    if timeout is None:
+        timeout = timeout_for(cmd) + 1
     rid = next(_ids)
     data = (json.dumps({"id": rid, "cmd": cmd, "args": args or {}}) + "\n").encode()
     if len(data) > MAX_MESSAGE:

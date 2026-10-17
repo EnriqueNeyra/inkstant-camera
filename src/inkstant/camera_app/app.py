@@ -39,6 +39,7 @@ CTL_COMMAND = "/usr/local/bin/inkstant-ctl power-button"
 INSERT_SETTLE = 0.3
 WAKE_TIMEOUT = 120.0
 SHUTDOWN_DISPLAY_WAIT = 30.0
+SHARE_START_WAIT = 90.0
 ERROR_TEXT = {
     "camera": "Camera problem",
     "display": "Display module not responding",
@@ -892,9 +893,10 @@ class CameraApp:
         return t
 
     # Share mode (§9) ----------------------------------------------------------------------------------------
-    async def share_start(self, force_hotspot: bool = False) -> None:
+    async def share_start(self, force_hotspot: bool = False) -> str | None:
+        """Start sharing; returns why it couldn't, or None."""
         if self.share != "off" or self.lifecycle != ACTIVE:
-            return
+            return None
         self.share = "starting"
         self.share_activity = self.clock()
         self.update_led()
@@ -930,7 +932,7 @@ class CameraApp:
             await self.share_stop(restore=False)
             self.errors.clear("wifi")
             self.update_led()
-            return
+            return str(e)
         self.share_info = info
         self.share = "on"
         self.share_activity = self.clock()
@@ -940,6 +942,7 @@ class CameraApp:
             await self._queue_share_screen()
         if info.mode == "home" and self.pisugar:
             self.spawn(self._internet_time())
+        return None
 
     async def _internet_time(self) -> None:
         try:
@@ -991,6 +994,11 @@ class CameraApp:
         return False
 
     async def share_stop(self, restore: bool = True) -> None:
+        # A start in progress finishes first (it can take a minute); stopping halfway through
+        # would race it and leave the gallery or the camera's Wi-Fi running.
+        deadline = self.clock() + SHARE_START_WAIT
+        while self.share == "starting" and self.clock() < deadline:
+            await asyncio.sleep(0.1)
         if self.share not in ("on", "starting"):
             return
         self.share = "stopping"
@@ -1400,8 +1408,17 @@ class CameraApp:
     def cmd_share_activity(self) -> None:
         self.share_activity = self.clock()
 
-    async def cmd_share_start(self, force_hotspot: bool = False) -> None:
-        await self.share_start(force_hotspot=bool(force_hotspot))
+    async def cmd_share_start(self, force_hotspot: bool = False) -> dict:
+        # Shielded: if the request gives up waiting, sharing still finishes starting (or tears down)
+        # instead of being cancelled halfway and left "starting".
+        if self.lifecycle != ACTIVE:
+            raise ipc.IpcError("not_ready", "The camera is busy starting or turning off.")
+        if self.share in ("starting", "stopping"):
+            raise ipc.IpcError("busy", f"Sharing is {self.share}; try again in a moment.")
+        why = await asyncio.shield(self.spawn(self.share_start(force_hotspot=bool(force_hotspot))))
+        if self.share != "on":
+            raise ipc.IpcError("failed", f"Couldn't start sharing: {why or 'it was stopped'}")
+        return {"mode": self.share_info.mode, "url": self.share_info.url, "ssid": self.share_info.network}
 
     async def cmd_update_check(self) -> dict:
         from inkstant.camera_app import update
@@ -1410,6 +1427,8 @@ class CameraApp:
             raise ipc.IpcError("offline", "Needs internet. Share at home to update.")
         try:
             latest = await self.in_io(update.check_latest)
+        except update.NoRelease:
+            return {"current": version.VERSION, "latest": None, "available": False, "notes": ""}
         except Exception as e:
             raise ipc.IpcError("unavailable", f"Couldn't check for updates: {e}") from None
         return {"current": version.VERSION, "latest": latest["version"],

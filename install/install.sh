@@ -239,7 +239,7 @@ if command -v rpicam-hello >/dev/null 2>&1; then
   if grep -q "imx708" <<<"$cams"; then
     say "  ok       camera found: $(grep -m1 -o 'imx708[^ ]*' <<<"$cams")"
   elif grep -q "No cameras available" <<<"$cams"; then
-    say "  warning  No camera found: check the ribbon cable and its direction (HARDWARE.md §9.3)."
+    say "  warning  No camera found: check the ribbon cable and its direction (README: connect the camera)."
   else
     say "  warning  couldn't list cameras yet (it may need the reboot)"
   fi
