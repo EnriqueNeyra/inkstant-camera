@@ -13,7 +13,7 @@ from inkstant import ipc, settings, state
 from inkstant.camera_app import machine
 from inkstant.camera_app.app import CameraApp, Hardware
 from inkstant.hw import camera, epd, gpio, led, network, pisugar, pisugar_i2c, system
-from inkstant.imaging import epdfile
+from inkstant.imaging import epdfile, palette
 
 
 class FakeClock:
@@ -344,6 +344,33 @@ def test_timed_wake_shows_next_photo_and_rearms(paths, health_url):
     run(main())
 
 
+def test_each_photo_keeps_its_print_and_old_ones_are_remade(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start()
+        pid = await h.shoot()
+        await h.idle_display()
+        st = h.app.store
+        assert st.print_path(pid).read_bytes().startswith(b"\x89PNG")
+        await h.stop()
+        # Made with an older palette: the screen image and the print are remade at the next start.
+        data = bytearray(st.epd_path(pid).read_bytes())
+        data[6:8] = (palette.PALETTE_VERSION - 1).to_bytes(2, "little")
+        st.epd_path(pid).write_bytes(bytes(data))
+        st.print_path(pid).write_bytes(b"old")
+        h2 = Harness(paths, health_url)
+        await h2.start()
+        try:
+            await h2.until(lambda: f"rebuilt screen image for {pid}" in h2.logs)
+            assert int.from_bytes(st.epd_path(pid).read_bytes()[6:8], "little") == palette.PALETTE_VERSION
+            assert st.print_path(pid).read_bytes().startswith(b"\x89PNG")
+            assert "palette changed: rebuilding 1 screen images" in h2.logs
+        finally:
+            await h2.stop()
+
+    run(main())
+
+
 def test_share_mode_on_and_off(paths, health_url):
     async def main():
         h = Harness(paths, health_url)
@@ -351,13 +378,21 @@ def test_share_mode_on_and_off(paths, health_url):
         try:
             pid = await h.shoot()
             await h.idle_display()
-            await h.server.tap("single")
+            for tap in ("single", "double"):  # a brush against BTN doesn't start sharing
+                await h.server.tap(tap)
+                await h.until(lambda line=f"button: BTN {tap}": line in h.logs)
+            assert h.app.share == "off"
+            await h.server.tap("long")
             await h.until(lambda: h.app.share == "on")
             assert h.app.share_info.mode == "home" and h.steady() in ("share", "wait")
             await h.until(lambda: h.app.state.display_content == "share")
+            await h.idle_display()
             st = await h.cmd("status")
             assert st["share"]["mode"] == "home" and st["share"]["timeout_min"] == 10
             await h.server.tap("single")
+            await h.until(lambda: h.logs.count("button: BTN single") == 2)
+            assert h.app.share == "on"
+            await h.server.tap("long")
             await h.until(lambda: h.app.share == "off")
             await h.idle_display()
             assert h.app.state.display_content == "photo" and h.app.state.current == pid
@@ -373,13 +408,17 @@ def test_dev_mode_sharing_at_home_keeps_the_home_wifi(paths, health_url):
         h = Harness(paths, health_url)
         await h.start(cfg={"dev_mode": True})
         h.net.state = "inkstant-home-1"  # NetworkManager joined it at boot
+        scans = []
+        real_scan = h.net.scan
+        h.net.scan = lambda: scans.append(1) or real_scan()
         try:
-            await h.server.tap("single")
+            await h.server.tap("long")
             await h.until(lambda: h.app.share == "on")
             assert h.app.share_info.mode == "home"
+            assert scans == []  # already joined: no Wi-Fi scan to wait for
             await h.until(lambda: h.app.state.display_content == "share")  # BTN is ignored mid-refresh
             await h.idle_display()
-            await h.server.tap("single")
+            await h.server.tap("long")
             await h.until(lambda: h.app.share == "off")
             # Still joined, never dropped: SSH keeps working, and NetworkManager isn't left blocking it.
             assert h.net.state == "inkstant-home-1"
@@ -396,8 +435,7 @@ def test_dev_mode_hotspot_stop_leaves_the_radio_on(paths, health_url):
         await h.start(module=False, cfg={"dev_mode": True})
         h.net.state = "inkstant-home-1"
         try:
-            await h.server.tap("double")
-            await h.until(lambda: h.app.share == "on")
+            await h.cmd("share.start", force_hotspot=True)
             assert h.app.share_info.mode == "hotspot"
             await h.cmd("share.stop")
             await h.until(lambda: h.app.share == "off")
@@ -410,14 +448,88 @@ def test_dev_mode_hotspot_stop_leaves_the_radio_on(paths, health_url):
     run(main())
 
 
-def test_double_tap_uses_hotspot(paths, health_url):
+def test_double_tap_while_sharing_switches_between_home_and_camera_wifi(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start()
+        try:
+            await h.idle_display()
+            await h.server.tap("long")
+            await h.until(lambda: h.app.share == "on")
+            assert h.app.share_info.mode == "home"
+            await h.until(lambda: h.app.state.display_content == "share")
+            await h.idle_display()
+            await h.server.tap("double")
+            await h.until(lambda: h.app.share == "on" and h.app.share_info.mode == "hotspot")
+            assert h.app.share_info.url == "http://10.42.0.1/"
+            assert h.app.share_info.chosen
+            await h.until(lambda: h.logs.count("display: SHARE_SCREEN(share)") == 2)  # the camera's QR codes
+            await h.idle_display()
+            await h.server.tap("double")  # and back
+            await h.until(lambda: h.app.share == "on" and h.app.share_info.mode == "home")
+            await h.until(lambda: h.logs.count("display: SHARE_SCREEN(share)") == 3)
+            assert h.logs.count("share: switching to the camera Wi-Fi") == 1
+            assert h.logs.count("share: switching to home Wi-Fi") == 1
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_double_tap_on_the_camera_wifi_with_no_home_wifi_saved_does_nothing(paths, health_url):
     async def main():
         h = Harness(paths, health_url)
         await h.start(module=False)
+        h.net.home = []
         try:
-            await h.server.tap("double")
+            await h.server.tap("long")
             await h.until(lambda: h.app.share == "on")
-            assert h.app.share_info.mode == "hotspot" and h.app.share_info.url == "http://10.42.0.1/"
+            assert h.app.share_info.mode == "hotspot" and not h.app.share_info.chosen
+            await h.server.tap("double")
+            await h.until(lambda: "button: BTN double" in h.logs)
+            await asyncio.sleep(0.1)
+            assert h.app.share == "on" and not any(line.startswith("share: switching") for line in h.logs)
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_a_qr_code_left_on_the_print_is_replaced_at_start(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start()
+        pid = await h.shoot()
+        await h.idle_display()
+        await h.server.tap("long")
+        await h.until(lambda: h.app.state.display_content == "share")
+        await h.idle_display()
+        await h.stop()  # sharing ends with the camera; the print keeps the QR code
+        assert state.load_state(paths.state).display_content == "share"
+        h2 = Harness(paths, health_url)
+        await h2.start()
+        try:
+            await h2.until(lambda: h2.app.state.display_content == "photo")
+            assert h2.app.state.current == pid
+        finally:
+            await h2.stop()
+
+    run(main())
+
+
+def test_a_failed_switch_to_the_camera_wifi_takes_the_qr_code_down(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start()
+        try:
+            await h.idle_display()
+            await h.server.tap("long")
+            await h.until(lambda: h.app.state.display_content == "share")
+            await h.idle_display()
+            h.net.up_hotspot = lambda: False
+            await h.server.tap("double")
+            await h.until(lambda: h.app.share == "off" and h.app.state.display_content != "share")
+            assert "share: couldn't start the camera's Wi-Fi" in h.logs
         finally:
             await h.stop()
 

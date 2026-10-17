@@ -69,11 +69,21 @@ def crop_3_2(img: Image.Image) -> Image.Image:
 
 
 # Screen image -------------------------------------------------------------------
+def to_panel_range(img: Image.Image, rgb=palette.RGB) -> Image.Image:
+    """Map 0..255 onto the panel's black..white. Its white is a light grey, so without this
+    everything brighter than that grey dithers to solid white and the highlights blow out."""
+    lut: list[int] = []
+    for black, white in zip(rgb[0], rgb[1], strict=True):
+        lut.extend(round(black + v * (white - black) / 255) for v in range(256))
+    return img.point(lut)
+
+
 def screen_frame(rgb_3_2: Image.Image) -> bytes:
     """A 3:2 RGB image → the panel's 120,000-byte frame (crop, resize, lift, dither, pack)."""
     img = rgb_3_2.resize((SCREEN_W, SCREEN_H), Image.Resampling.LANCZOS)
     img = ImageEnhance.Color(img).enhance(palette.ENHANCE["color"])
     img = ImageEnhance.Contrast(img).enhance(palette.ENHANCE["contrast"])
+    img = to_panel_range(img)
     img = img.transpose(Image.Transpose.ROTATE_90)  # 400 × 600, as Waveshare's getbuffer does
     indices = img.quantize(palette=palette.palette_image(), dither=Image.Dither.FLOYDSTEINBERG)
     return pack_indices(np.asarray(indices, dtype=np.uint8))
@@ -95,12 +105,30 @@ def bw_frame(img_600x400: Image.Image) -> bytes:
     return ((codes[0::2] << 4) | codes[1::2]).astype(np.uint8).tobytes()
 
 
-def frame_to_image(frame: bytes, rotation: int = 0) -> Image.Image:
-    """Decode a frame back to a 600 × 400 landscape picture (simulator, tests, gallery thumbnails)."""
+def _codes(frame: bytes) -> np.ndarray:
     raw = np.frombuffer(frame, dtype=np.uint8)
     codes = np.empty(raw.size * 2, dtype=np.uint8)
     codes[0::2] = raw >> 4
     codes[1::2] = raw & 0x0F
+    return codes
+
+
+def print_png(epd: bytes) -> bytes:
+    """The print as the panel shows it, for the gallery: a 600 × 400 PNG in the six colours."""
+    frame, _ = epdfile.unpack(epd)
+    img = Image.fromarray(_codes(frame).reshape(epdfile.HEIGHT, epdfile.WIDTH), "P")
+    flat = [0] * 48
+    for code, rgb in palette.DISPLAY_RGB.items():
+        flat[code * 3 : code * 3 + 3] = rgb
+    img.putpalette(flat)
+    buf = io.BytesIO()
+    img.transpose(Image.Transpose.ROTATE_270).save(buf, format="PNG", optimize=True)
+    return buf.getvalue()
+
+
+def frame_to_image(frame: bytes, rotation: int = 0) -> Image.Image:
+    """Decode a frame back to a 600 × 400 landscape picture (simulator, tests)."""
+    codes = _codes(frame)
     lut = np.zeros((16, 3), dtype=np.uint8)
     for code, rgb in palette.DISPLAY_RGB.items():
         lut[code] = rgb

@@ -112,22 +112,27 @@ def test_ids():
 
 def test_commit_list_delete_and_recover(paths):
     st = store.PhotoStore(paths, web_group=None)
-    st.commit("000001", b"E", b"T", b"J1")
-    st.commit("000002_20261015-120000", b"E", b"T", b"J22")
+    st.commit("000001", b"E", b"T", b"J1", b"P")
+    st.commit("000002_20261015-120000", b"E", b"T", b"J22", b"P")
     photos = st.list()
     assert [p.seq for p in photos] == [2, 1]
     assert photos[0].day == "2026-10-15" and photos[0].time == "12:00"
     assert st.max_seq() == 2
     # Orphans and leftovers from a power cut.
     (paths.epd / "000009.epd").write_bytes(b"x")
+    (paths.thumbs / "000009.png").write_bytes(b"x")
+    (paths.thumbs / "notes.txt").write_bytes(b"x")
     (paths.tmp / "junk.tmp").write_bytes(b"x")
     (paths.thumbs / "000001.jpg").unlink()
+    (paths.thumbs / "000002_20261015-120000.png").unlink()  # from before prints were kept
     rebuild = st.recover()
-    assert rebuild == ["000001"]
+    assert rebuild == ["000001", "000002_20261015-120000"]
     assert not (paths.epd / "000009.epd").exists() and list(paths.tmp.iterdir()) == []
+    assert not (paths.thumbs / "000009.png").exists() and not (paths.thumbs / "notes.txt").exists()
+    assert (paths.thumbs / "000001.png").exists()
     deleted, missing = st.delete(["000001", "000077", "../x"])
     assert deleted == ["000001"] and missing == ["000077", "../x"]
-    assert not (paths.epd / "000001.epd").exists()
+    assert not (paths.epd / "000001.epd").exists() and not (paths.thumbs / "000001.png").exists()
 
 
 def test_storage_thresholds(paths):

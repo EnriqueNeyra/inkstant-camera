@@ -79,7 +79,9 @@ def _fit(draw, text: str, max_w: int, size: int, bold: bool = False):
     return _font(10, bold)
 
 
-def render_away(ssid: str, password: str, url: str = "http://10.42.0.1/", android_hint: bool = True) -> Image.Image:
+def render_away(ssid: str, password: str, url: str = "http://10.42.0.1/", android_hint: bool = True,
+                home_hint: bool = False) -> Image.Image:
+    """`home_hint`: the camera's Wi-Fi was chosen by a double tap at home, so say how to go back."""
     img = Image.new("L", (W, H), WHITE)
     draw = ImageDraw.Draw(img)
     head = _font(22, bold=True)
@@ -88,11 +90,14 @@ def render_away(ssid: str, password: str, url: str = "http://10.42.0.1/", androi
     draw_qr(img, wifi_qr_text(ssid, password), (40, 40, 260, 260))
     draw_qr(img, url, (340, 40, 560, 260))
     y = 272
+    gap = 6 if home_hint else 10  # room for one more line
     for label, value in (("Wi-Fi", ssid), ("Password", password), ("Address", url.rstrip("/"))):
         text = f"{label}:  {value}"
-        y = _centered(draw, text, W // 2, y, _fit(draw, text, W - 40, 21)) + 10
+        y = _centered(draw, text, W // 2, y, _fit(draw, text, W - 40, 21)) + gap
     if android_hint:
-        _centered(draw, "If your phone asks, choose to stay connected.", W // 2, y + 2, _font(15))
+        y = _centered(draw, "If your phone asks, choose to stay connected.", W // 2, y + 2, _font(15)) + 5
+    if home_hint:
+        _centered(draw, "Double-tap the share button to go back to home Wi-Fi.", W // 2, y, _font(15))
     return img
 
 
@@ -113,8 +118,8 @@ def render_home(url: str, network: str) -> Image.Image:
     return img
 
 
-def frame_away(ssid: str, password: str, url: str = "http://10.42.0.1/") -> bytes:
-    return pipeline.bw_frame(render_away(ssid, password, url))
+def frame_away(ssid: str, password: str, url: str = "http://10.42.0.1/", home_hint: bool = False) -> bytes:
+    return pipeline.bw_frame(render_away(ssid, password, url, home_hint=home_hint))
 
 
 def frame_home(url: str, network: str) -> bytes:

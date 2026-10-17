@@ -8,12 +8,13 @@ PALETTE_VERSION by one; the camera rebuilds every screen image on its next start
 
     sudo systemctl stop inkstant
     sudo python3 tools/palette_tuner.py chart
-    sudo python3 tools/palette_tuner.py photo ref.jpg --a pimoroni --b mid
-    sudo python3 tools/palette_tuner.py photo ref.jpg --a pimoroni --b "0,0,0 170,170,170 215,195,70 160,70,70 60,60,100 60,95,70"
+    sudo python3 tools/palette_tuner.py photo ref.jpg --a current --b pimoroni
+    sudo python3 tools/palette_tuner.py photo ref.jpg --a current --b "30,25,40 225,225,227 250,240,110 105,20,20 30,60,140 60,95,65"
     python3 tools/palette_tuner.py photo ref.jpg --png preview.png     # no panel: write a preview
 
-Candidates: pimoroni (the current palette), pure (Waveshare's), mid (halfway between them), or
-six "r,g,b" triples in the order black, white, yellow, red, blue, green.
+Candidates: current (palette.RGB), pimoroni (the palette before version 3), pure (Waveshare's),
+mid (halfway between current and pure), or six "r,g,b" triples in the order black, white,
+yellow, red, blue, green. Each is dithered as the camera does: mapped into its own black..white.
 """
 
 from __future__ import annotations
@@ -31,8 +32,10 @@ PURE = ((0, 0, 0), (255, 255, 255), (255, 255, 0), (255, 0, 0), (0, 0, 255), (0,
 def candidate(spec: str) -> tuple[tuple[int, int, int], ...]:
     from inkstant.imaging import palette
 
-    if spec == "pimoroni":
+    if spec == "current":
         return palette.RGB
+    if spec == "pimoroni":
+        return palette.PIMORONI
     if spec == "pure":
         return PURE
     if spec == "mid":
@@ -48,20 +51,20 @@ def candidate(spec: str) -> tuple[tuple[int, int, int], ...]:
 
 
 def pal_image(rgb):
-    from PIL import Image
+    from inkstant.imaging import palette
 
-    flat = [v for c in rgb for v in c] + [0, 0, 0] * (256 - len(rgb))
-    img = Image.new("P", (1, 1))
-    img.putpalette(flat)
-    return img
+    return palette.palette_image(rgb)
 
 
 def dither(img, rgb, color: float, contrast: float):
-    """A 600 × 400 RGB image → a 600 × 400 `P` image of indices 0..5."""
+    """A 600 × 400 RGB image → a 600 × 400 `P` image of indices 0..5, as the camera dithers."""
     from PIL import Image, ImageEnhance
+
+    from inkstant.imaging import pipeline
 
     img = ImageEnhance.Color(img.convert("RGB")).enhance(color)
     img = ImageEnhance.Contrast(img).enhance(contrast)
+    img = pipeline.to_panel_range(img, rgb)
     return img.quantize(palette=pal_image(rgb), dither=Image.Dither.FLOYDSTEINBERG)
 
 
@@ -147,11 +150,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     ch = sub.add_parser("chart")
-    ch.add_argument("--palette", default="pimoroni")
+    ch.add_argument("--palette", default="current")
     ph = sub.add_parser("photo")
     ph.add_argument("image")
-    ph.add_argument("--a", default="pimoroni")
-    ph.add_argument("--b", default="mid")
+    ph.add_argument("--a", default="current")
+    ph.add_argument("--b", default="pimoroni")
     for p in (ch, ph):
         p.add_argument("--color", type=float, default=None, help="saturation lift (default: palette.ENHANCE)")
         p.add_argument("--contrast", type=float, default=None)
@@ -174,7 +177,7 @@ def main() -> int:
     frame = to_frame(img)
     if a.png:
         pipeline.frame_to_image(frame).save(a.png)
-        print(f"Preview written to {a.png} (as the panel's pure colours, roughly)")
+        print(f"Preview written to {a.png} (in the panel's colours, as the gallery shows a print)")
         return 0
     show(frame)
     print("\nTo adopt a palette: set RGB (and ENHANCE) in src/inkstant/imaging/palette.py and raise "

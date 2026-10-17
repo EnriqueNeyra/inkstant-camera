@@ -313,7 +313,7 @@ You'll use **Raspberry Pi Imager**, a free app from Raspberry Pi, to put the ope
 
 1. **Watch the light:** solid, then a slow blink while the camera starts (up to about half a minute), then solid. Solid means ready.
 2. **Take a photo:** with a print in, press the shutter. The light winks, then blinks slowly while the photo develops on the print, which takes about 15 seconds.
-3. **Open the gallery:** tap BTN on the PiSugar. The print shows a QR code; scan it with your phone's camera ([more below](#getting-your-photos-the-gallery)).
+3. **Open the gallery:** hold BTN on the PiSugar for 2 seconds. The print shows a QR code; scan it with your phone's camera ([more below](#getting-your-photos-the-gallery)).
 4. **Run the setup check:** in the gallery, tap the **Settings** button (the sliders icon, top right), open **Advanced**, and look at **Setup check**. Every row should have a tick. If one doesn't, it says how to fix it.
 
 ### Check the light
@@ -346,8 +346,10 @@ Over SSH, before the setup script, `pinctrl set 26 op dh` turns the ring on and 
 | **Shutter** (the button with the light ring) | Press | Take a photo. If the camera is asleep, it wakes and takes the photo a second or two later |
 | **PWR** (on the PiSugar's edge) | Short press, then press and hold | Turn on |
 | | Long press while on | Turn off. A photo that's developing finishes first |
-| **BTN** (on the PiSugar's edge) | Tap | Sharing on or off: the print shows a QR code for the gallery |
-| | Double tap | Share over the camera's own Wi-Fi, even at home (for a guest's phone) |
+| **BTN** (on the PiSugar's edge) | Hold for 2 seconds | Sharing on or off: the print shows a QR code for the gallery |
+| | Double tap while sharing | Switch between home Wi-Fi and the camera's own Wi-Fi (for a guest's phone) |
+
+- **A quick tap on BTN does nothing,** so a bump in a bag can't start sharing.
 
 - **While a photo develops** (about 15 to 20 seconds), the shutter and BTN are ignored. They work again as soon as the photo is showing.
 - **While sharing,** you can still take photos. They appear in the gallery straight away, and develop on the print when sharing ends.
@@ -408,13 +410,13 @@ The gallery is a small website that the camera runs while sharing is on. It work
 
 ### At home
 
-1. **Tap BTN** on the PiSugar. The camera looks for your home Wi-Fi for a few seconds, and the light changes to long on, short off.
+1. **Hold BTN** on the PiSugar for 2 seconds. The camera looks for your home Wi-Fi for a few seconds, and the light changes to long on, short off.
 2. **The print shows a QR code.** Scan it with your phone's camera, and the gallery opens in your browser.
 3. **Without the QR code** (no print in, or on a laptop), open a browser on any device on the same Wi-Fi and go to the address printed next to the QR code (like `http://192.168.1.23`), or to **`http://inkstant.local`** (your hostname, followed by `.local`).
 
 ### Away from home
 
-When the camera can't find your home Wi-Fi, it makes its own Wi-Fi network instead. **Double-tap BTN** to do this even at home, for a guest whose phone isn't on your Wi-Fi.
+When the camera can't find your home Wi-Fi, it makes its own Wi-Fi network instead. To use it even at home, for a guest whose phone isn't on your Wi-Fi, **double-tap BTN** while the home QR code is showing. Double-tap again to go back to home Wi-Fi.
 
 1. The print shows **two QR codes**, with the network's name and password underneath.
 2. Scan the first QR code ("1. Join Wi-Fi") to join the camera's Wi-Fi. (Or join it by hand in your phone's Wi-Fi settings, with the name and password from the end of setup.)
@@ -429,11 +431,12 @@ Your phone may say this Wi-Fi has no internet. That's expected: stay connected.
 - **Save many:** tap **Select**, choose photos or whole days, then **Download**. They come as one ZIP file. **Download all…** in the ⋯ menu gets every photo.
 - **Delete:** tap **Select**, choose photos, then **Delete**.
 - **Show on camera:** puts the photo you're looking at on the print in the camera.
+- **See the print:** while looking at a photo, switch from **Photo** to **Print** at the top to see it as the camera's display shows it, in the display's six colours. Save or download it the same way as a photo. The gallery keeps one tile per photo; the print is stored with it.
 - **Settings:** the sliders icon at the top right.
 
 ### Stop sharing
 
-Tap BTN again, tap **Stop sharing** in the gallery, or just leave it: on battery, sharing stops by itself after 10 minutes without anyone using the gallery. The print goes back to showing your photo.
+Hold BTN again for 2 seconds, tap **Stop sharing** in the gallery, or just leave it: on battery, sharing stops by itself after 10 minutes without anyone using the gallery. The print goes back to showing your photo.
 
 > [!NOTE]
 > The gallery has no login. At home, anyone on your Wi-Fi can open it while sharing is on, including deleting photos. Sharing only runs when you turn it on, and stops by itself.
@@ -477,7 +480,8 @@ In the gallery, tap the sliders icon at the top right.
 | Three quick blinks | Something needs attention. Start sharing, and the gallery shows what's wrong at the top of the page |
 | The print never updates | Check the light's fast-blink "no print" signal. If it shows with a print in, the print-detect wiring isn't reaching pin 15: check the print's GND, 9 and 10 join, and connector contact 9 to pin 15 |
 | The light never lights | The LED wires on pins 37 and 39 are probably swapped. A blue ring is also quite dim at 3.3 V |
-| The gallery won't open from the QR code | Check your phone is on the same Wi-Fi (at home) or joined the camera's Wi-Fi (away). Some guest and office networks block devices from reaching each other: double-tap BTN to use the camera's Wi-Fi instead |
+| The gallery won't open from the QR code | Check your phone is on the same Wi-Fi (at home) or joined the camera's Wi-Fi (away). Some guest and office networks block devices from reaching each other: double-tap BTN while sharing to switch to the camera's Wi-Fi |
+| The browser says the site can't be reached, though the phone is on the right Wi-Fi | Some browsers, like Chrome on iPhone, insist on a secure (`https`) connection, which the gallery doesn't use. Open the address in Safari, or turn off the browser's "Always use secure connections" setting |
 | `inkstant.local` doesn't open on some phones | Some Android phones don't support `.local` names. Use the number address printed next to the QR code |
 
 **More help:** the gallery's Settings → Advanced → Setup check names the problem and the fix. Over SSH, `sudo inkstant-ctl selftest` runs the same check, `sudo journalctl -u inkstant` shows the camera's log, and the installer's log is in `/var/log/inkstant-install.log`.
@@ -564,7 +568,7 @@ uv venv --python 3.13 .venv && uv pip install --python .venv -r requirements-dev
 .venv/bin/python tools/sim.py --port 8080
 ```
 
-The simulator runs the real camera app with fake hardware. Type `s` and Enter for the shutter, `b` / `d` for a BTN tap or double tap, `m` to slide a print in or out, and `q` to quit. Open `http://localhost:8080` for the gallery; the print's picture is written to `sim/display.png`.
+The simulator runs the real camera app with fake hardware. Type `s` and Enter for the shutter, `h` to hold BTN (sharing on or off), `d` for a BTN double tap, `m` to slide a print in or out, and `q` to quit. Open `http://localhost:8080` for the gallery; the print's picture is written to `sim/display.png`.
 
 </details>
 
@@ -607,7 +611,7 @@ Bump `VERSION`, then push a tag `v<VERSION>` (for example `v1.0.1`). CI runs the
 
 ## Project status
 
-The software is complete, with automated tests against simulated hardware. On a real Raspberry Pi 4, it's been tested taking photos, developing them on the display, the gallery, and sharing over home Wi-Fi. Still to test on the real hardware: sharing over the camera's own Wi-Fi, the slideshow waking the camera, and the PWR and BTN buttons. The case design and the first published release are still to come.
+The software is complete, with automated tests against simulated hardware. On a real Raspberry Pi 4, it's been tested taking photos, developing them on the display (with colours measured on the panel), the gallery, sharing over home Wi-Fi and over the camera's own Wi-Fi, the slideshow waking the camera, and BTN. Still to test on the real hardware: the PWR button, plugging in the charger, and sliding a print in and out. The case design and the first published release are still to come.
 
 ## Credits
 

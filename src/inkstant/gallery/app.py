@@ -111,6 +111,9 @@ def create_app(paths: Paths | None = None, *, control_sock: Path | None = None,
         if request.path.startswith(("/photos/", "/thumbs/")) and resp.status_code == 200:
             # An ID is never reused, so a photo never changes.
             resp.headers["Cache-Control"] = f"public, max-age={ONE_YEAR}, immutable"
+        elif request.path.startswith("/prints/"):
+            # Remade when the palette changes: revalidate (a cheap 304 through the ETag).
+            resp.headers["Cache-Control"] = "no-cache"
         elif request.path.startswith("/static/"):
             # ES modules import each other by plain URL, so after an update they must revalidate
             # (a cheap 304 through the ETag) instead of being cached for a year.
@@ -178,6 +181,19 @@ def create_app(paths: Paths | None = None, *, control_sock: Path | None = None,
         if not name.endswith(".jpg") or not store.valid_id(name[:-4]):
             abort(404)
         return _send(photos.thumb_path(name[:-4]))
+
+    @app.get("/prints/<name>")
+    def print_file(name: str):
+        """The photo as the camera's display shows it."""
+        if not name.endswith(".png") or not store.valid_id(name[:-4]):
+            abort(404)
+        pid = name[:-4]
+        path = photos.print_path(pid)
+        if not path.is_file():
+            abort(404)
+        dl = f"inkstant_{pid}_print.png" if request.args.get("dl") == "1" else None
+        return send_file(path, mimetype="image/png", conditional=True, etag=True,
+                         as_attachment=dl is not None, download_name=dl)
 
     # API ---------------------------------------------------------------------------------------
     @app.get("/api/photos")
