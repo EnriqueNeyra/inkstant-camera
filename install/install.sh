@@ -154,6 +154,11 @@ else
   # --no-install-recommends skips Picamera2's Qt and OpenGL preview packages.
   retry 3 apt-get install "${APT_OPTS[@]}" --no-install-recommends python3-picamera2 \
     || stop "Installing python3-picamera2 failed."
+  # rpicam-apps is built against one exact libcamera build, but only asks for "this one or
+  # newer", so the line above can leave it behind: rpicam-hello 1.13.0 crashed against
+  # libcamera 0.7.2+rpt20261009 (2026-10-16). Upgrade whichever of these is installed.
+  retry 3 apt-get install "${APT_OPTS[@]}" --only-upgrade librpicam-app1 rpicam-apps-core rpicam-apps-lite rpicam-apps \
+    || say "  warning  couldn't upgrade rpicam-apps; rpicam-hello may not work, the camera app is unaffected"
   retry 3 apt-get install "${APT_OPTS[@]}" "${PACKAGES[@]}" || stop "Installing packages failed."
 fi
 pyver="$(python3 -c 'import sys; print("%d.%d" % sys.version_info[:2])')"
