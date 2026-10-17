@@ -9,6 +9,10 @@
     <button class="tbtn" type="button" id="v-info-btn" aria-label="Info"><svg class="i"><use href="#i-info"/></svg></button>
   </div>
   <p class="counter" id="v-counter" aria-live="polite"></p>
+  <div class="vmode segs" role="radiogroup" aria-label="Show">
+    <label><input type="radio" name="vmode" value="photo" checked><span>Photo</span></label>
+    <label><input type="radio" name="vmode" value="print"><span>Print</span></label>
+  </div>
   <p class="tip" id="v-tip" hidden>Press and hold the photo to save it to your phone. <button class="tbtn" type="button" id="v-tip-ok">OK</button></p>
   <div class="vbot">
     <button class="act" type="button" id="v-show"><svg class="i"><use href="#i-display"/></svg>Show on camera<small id="v-show-why"></small></button>

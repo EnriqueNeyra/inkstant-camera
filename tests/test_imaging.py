@@ -82,14 +82,26 @@ def test_dither_indices_stay_in_range():
 
 def test_frame_orientation_roundtrip():
     # A red block in the top-left of the landscape picture stays there after encode → decode.
-    img = Image.new("RGB", (972, 648), (161, 164, 165))
-    img.paste((156, 72, 75), (0, 0, 200, 200))
+    img = Image.new("RGB", (972, 648), (255, 255, 255))
+    img.paste((255, 0, 0), (0, 0, 200, 200))
     frame = pipeline.screen_frame(img)
     out = np.asarray(pipeline.frame_to_image(frame))
     assert out.shape == (400, 600, 3)
-    red = palette.DISPLAY_RGB[3]
-    assert tuple(out[20, 20]) == red
-    assert tuple(out[380, 580]) != red
+    is_red = (out == np.array(palette.DISPLAY_RGB[3])).all(axis=2)
+    assert is_red[5:60, 5:60].mean() > 0.3
+    assert not is_red[300:, 450:].any()
+
+
+def test_highlights_keep_their_detail():
+    # Light grey and near-white used to dither to the same solid white (the panel's white is a grey).
+    def white_share(level):
+        frame = pipeline.screen_frame(Image.new("RGB", (972, 648), (level, level, level)))
+        codes = np.frombuffer(frame, dtype=np.uint8)
+        return float(((codes >> 4) == epdfile.WHITE_CODE).mean())
+
+    assert white_share(255) > 0.97
+    assert white_share(255) - white_share(200) > 0.1
+    assert white_share(200) - white_share(150) > 0.1
 
 
 def test_from_lores_and_from_jpeg(tmp_path):
@@ -134,3 +146,10 @@ def test_share_screens_render():
         assert set(np.unique(arr)) <= {0, 255} or arr.min() == 0
     frame = share_screen.frame_away("Inkstant-4F2A", "abcd2345efgh")
     assert set(epdfile.codes(frame)) <= {0, 1}
+
+
+def test_the_go_back_home_line_fits_on_the_camera_wifi_screen():
+    for hint in (False, True):
+        img = share_screen.render_away("Inkstant-4F2A", "abcd2345efgh", home_hint=hint)
+        ink_rows = np.where((np.asarray(img) < 128).any(axis=1))[0]
+        assert ink_rows.max() < 400 - 8  # clear of the panel's edge

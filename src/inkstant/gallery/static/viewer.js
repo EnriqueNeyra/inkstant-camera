@@ -39,6 +39,7 @@ export class Viewer {
     this.full = $("#v-full");
     this.thumb = $("#v-thumb");
     this.index = 0;
+    this.mode = "photo"; // or "print": the photo as the camera's display shows it
     this.pushed = false;
     this.preloaded = new Map();
     this._wire();
@@ -61,8 +62,18 @@ export class Viewer {
       this._preloadNeighbours();
     });
     this.full.addEventListener("error", () => {
-      if (!this.root.hidden) $("#v-gone").hidden = false;
+      if (this.root.hidden || !this.full.getAttribute("src")) return;
+      if (this.mode === "print") {
+        // Not made yet: an older photo whose print the camera is still making.
+        toast(S.printNotReady);
+        this.setMode("photo");
+      } else {
+        $("#v-gone").hidden = false;
+      }
     });
+    for (const r of document.querySelectorAll('input[name="vmode"]')) {
+      r.addEventListener("change", () => { if (r.checked) this.setMode(r.value); });
+    }
     document.addEventListener("keydown", (e) => {
       if (this.root.hidden || document.querySelector("dialog[open]")) return;
       if (e.key === "ArrowLeft") this.go(-1);
@@ -98,6 +109,17 @@ export class Viewer {
 
   photo() {
     return this.list()[this.index];
+  }
+
+  src(p) {
+    return this.mode === "print" ? `/prints/${p.id}.png` : `/photos/${p.id}.jpg`;
+  }
+
+  setMode(mode) {
+    this.mode = mode;
+    for (const r of document.querySelectorAll('input[name="vmode"]')) r.checked = r.value === mode;
+    this.preloaded.clear();
+    this._render();
   }
 
   open(id, { push = true } = {}) {
@@ -150,12 +172,13 @@ export class Viewer {
     $("#v-gone").hidden = true;
     this.full.classList.remove("loaded");
     $("#v-stage").classList.remove("ready");
-    this.thumb.src = `/thumbs/${p.id}.jpg`;
-    this.full.src = `/photos/${p.id}.jpg`;
-    this.full.alt = `Photo, ${longWhen(p.day, p.time)}`;
+    // The blurred stand-in: the thumbnail for a photo; a print is small enough to be its own.
+    this.thumb.src = this.mode === "print" ? this.src(p) : `/thumbs/${p.id}.jpg`;
+    this.full.src = this.src(p);
+    this.full.alt = `${this.mode === "print" ? "Print" : "Photo"}, ${longWhen(p.day, p.time)}`;
     $("#v-when").textContent = longWhen(p.day, p.time);
     $("#v-counter").textContent = S.photoOf(this.index + 1, this.total());
-    $("#v-download").href = `/photos/${p.id}.jpg?dl=1`;
+    $("#v-download").href = `${this.src(p)}?dl=1`;
     this.updateShow(status());
   }
 
@@ -174,7 +197,7 @@ export class Viewer {
       const p = this.list()[this.index + d];
       if (p && !this.preloaded.has(p.id)) {
         const img = new Image();
-        img.src = `/photos/${p.id}.jpg`;
+        img.src = this.src(p);
         this.preloaded.set(p.id, img);
         if (this.preloaded.size > 6) this.preloaded.delete(this.preloaded.keys().next().value);
       }

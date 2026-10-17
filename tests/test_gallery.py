@@ -12,7 +12,7 @@ def gallery(paths):
     st = store.PhotoStore(paths, web_group=None)
     ids = ["000001_20261014-120000", "000002_20261015-090000", "000003_20261015-100000", "000004"]
     for pid in ids:
-        st.commit(pid, b"E" * 10, b"T" * 10, b"\xff\xd8" + pid.encode() + b"\xff\xd9")
+        st.commit(pid, b"E" * 10, b"T" * 10, b"\xff\xd8" + pid.encode() + b"\xff\xd9", b"\x89PNG" + pid.encode())
     calls = []
     status = {"current": ids[2], "undeveloped": None, "module_present": True, "lifecycle": "ACTIVE"}
 
@@ -83,6 +83,20 @@ def test_photo_files_and_caching(gallery):
     assert c.get("/photos/000099.jpg", headers=H).status_code == 404
     assert c.get(f"/thumbs/{ids[0]}.jpg", headers=H).status_code == 200
     assert c.get("/static/app.css", headers=H).headers["Cache-Control"] == "no-cache"
+
+
+def test_print_files(gallery):
+    c, _, ids = gallery
+    r = c.get(f"/prints/{ids[0]}.png", headers=H)
+    assert r.status_code == 200 and r.mimetype == "image/png" and r.data == b"\x89PNG" + ids[0].encode()
+    assert r.headers["Cache-Control"] == "no-cache"  # remade when the palette changes
+    r = c.get(f"/prints/{ids[0]}.png?dl=1", headers=H)
+    assert f"filename=inkstant_{ids[0]}_print.png" in r.headers["Content-Disposition"]
+    assert c.get(f"/prints/{ids[0]}.jpg", headers=H).status_code == 404
+    assert c.get("/prints/000099.png", headers=H).status_code == 404
+    # The grid shows only the photos: one tile each, never a separate tile for the print.
+    page = c.get("/", headers=H).get_data(as_text=True)
+    assert "/prints/" not in page and page.count(f"/thumbs/{ids[0]}.jpg") == 1
 
 
 def test_api_photos_paging(gallery):

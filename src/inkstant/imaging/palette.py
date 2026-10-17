@@ -7,24 +7,30 @@ Bump PALETTE_VERSION whenever RGB or ENHANCE change: older .epd files are rebuil
 
 from __future__ import annotations
 
-PALETTE_VERSION = 1
+PALETTE_VERSION = 4  # 4: measured on our panel; the photo is mapped into its range before dithering
 
 NAMES = ("black", "white", "yellow", "red", "blue", "green")
 CODES = (0, 1, 2, 3, 5, 6)
 
-# The panel's real, muted colours: Pimoroni's measured values (inky_e640.py) until tuned on our panel.
+# Measured on our panel: the median of each swatch in a phone photo of tools/palette_tuner.py's
+# chart, indoors. Black, red, yellow and blue fall within published Spectra 6 measurements
+# (epdoptimize, esp32-photoframe); our green is lighter than theirs.
 RGB = (
-    (0, 0, 0),
-    (161, 164, 165),
-    (208, 190, 71),
-    (156, 72, 75),
-    (61, 59, 94),
-    (58, 91, 70),
+    (24, 21, 38),
+    (212, 223, 225),
+    (229, 214, 67),
+    (114, 33, 29),
+    (48, 92, 170),
+    (85, 112, 103),
 )
 
-# Pure colours, for decoding a frame back to an image the way the panel would show it brightly.
-DISPLAY_RGB = {0: (20, 20, 20), 1: (235, 235, 230), 2: (230, 200, 40), 3: (190, 40, 40),
-               5: (40, 60, 160), 6: (40, 120, 70)}
+# Pimoroni's measured values for its Spectra 6 panel (inky_e640.py), used before version 3.
+PIMORONI = ((0, 0, 0), (161, 164, 165), (208, 190, 71), (156, 72, 75), (61, 59, 94), (58, 91, 70))
+
+# The panel as a phone screen should show it (the gallery's print, the simulator): our colours,
+# scaled so the panel's white looks like paper.
+DISPLAY_RGB = {code: tuple(min(255, round(c * 235 / w)) for c, w in zip(rgb, RGB[1], strict=True))
+               for code, rgb in zip(CODES, RGB, strict=True)}
 
 # Saturation and contrast lift before dithering, tuned with the palette.
 ENHANCE = {"color": 1.2, "contrast": 1.1}
@@ -39,14 +45,16 @@ def lut():
     return table
 
 
-def palette_image():
-    """A `P` image holding the six colours at 0..5; the rest repeat black, as Waveshare pads."""
+def palette_image(rgb=RGB):
+    """A `P` image holding the six colours at 0..5; the rest repeat black, as Waveshare pads.
+    The padding is this palette's black: a plain (0, 0, 0) would be nearer to dark pixels than a
+    measured black, and Pillow would dither against a colour the panel doesn't have."""
     from PIL import Image
 
     flat = []
-    for rgb in RGB:
-        flat.extend(rgb)
-    flat.extend((0, 0, 0) * (256 - len(RGB)))
+    for c in rgb:
+        flat.extend(c)
+    flat.extend(rgb[0] * (256 - len(rgb)))
     img = Image.new("P", (1, 1))
     img.putpalette(flat)
     return img

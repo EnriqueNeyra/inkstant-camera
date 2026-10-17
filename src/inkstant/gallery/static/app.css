@@ -172,6 +172,10 @@ dialog p { margin: 0; color: var(--ink-2); font-size: .9375rem; }
 .vbot .act.danger { color: #F7A3A7; }
 .vbot .act small { color: rgba(242,242,242,.75); max-width: 14ch; text-align: center; }
 .viewer.bare .vtop, .viewer.bare .vbot, .viewer.bare .counter { opacity: 0; pointer-events: none; }
+.vmode { position: absolute; top: calc(78px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); z-index: 2; background: rgba(38,41,45,.85); transition: opacity .15s; }
+.vmode span { color: rgba(242,242,242,.8); min-width: 64px; }
+.vmode input:checked + span { background: rgba(242,242,242,.95); color: #1B1D20; }
+.viewer.bare .vmode { opacity: 0; pointer-events: none; }
 .counter { position: absolute; top: calc(56px + env(safe-area-inset-top, 0px)); left: 0; right: 0; text-align: center; font-size: .75rem; color: rgba(242,242,242,.7); z-index: 2; margin: 0; }
 .tip { position: absolute; left: 14px; right: 14px; bottom: calc(110px + env(safe-area-inset-bottom, 0px)); z-index: 3; background: rgba(38,41,45,.95); border-radius: 10px; padding: 10px 12px; font-size: .875rem; margin: 0; display: flex; align-items: center; gap: 8px; }
 .tip .tbtn { color: #C9CCFA; margin-left: auto; min-height: 32px; }

@@ -20,6 +20,7 @@ class CaptureResult:
     epd: bytes
     thumb: bytes
     metadata: dict
+    print_png: bytes
 
 
 class CaptureWorker:
@@ -68,6 +69,7 @@ class CaptureWorker:
         def screen_job(lores, md):
             try:
                 made["epd"], made["thumb"] = pipeline.from_lores(lores)
+                made["print"] = pipeline.print_png(made["epd"])
             except Exception as e:  # reported below
                 made["error"] = e
 
@@ -83,7 +85,7 @@ class CaptureWorker:
         made["thread"].join()
         if "error" in made:
             raise made["error"]
-        return CaptureResult(shot.jpeg, made["epd"], made["thumb"], shot.metadata)
+        return CaptureResult(shot.jpeg, made["epd"], made["thumb"], shot.metadata, made["print"])
 
     async def capture(self, flush_ns: int, taken: datetime | None, wake_first: bool, fps: int) -> CaptureResult:
         return await self._call(self._capture, flush_ns, taken, wake_first, fps)

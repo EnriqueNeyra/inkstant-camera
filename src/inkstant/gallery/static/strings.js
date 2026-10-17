@@ -29,6 +29,7 @@ export const S = {
   tryAgain: "Try again",
   // Toasts
   photoDeleted: "Photo deleted",
+  printNotReady: "This photo's print isn't ready yet. Try again in a minute.",
   photosDeleted: (n) => `${fmtInt(n)} photos deleted`,
   developing: "Developing on the camera, about 20 seconds",
   queued: "Queued: the camera will show it after the current photo",

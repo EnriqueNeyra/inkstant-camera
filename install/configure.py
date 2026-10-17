@@ -804,7 +804,7 @@ def cmd_summary(a) -> int:
     say("Inkstant is installed.")
     say(f"  Camera Wi-Fi:  {s['hotspot']['ssid']}")
     say(f"  Password:      {s['hotspot']['password']}")
-    say("  To share: press the PiSugar's BTN. The display module shows a QR code for the gallery.")
+    say("  To share: hold the PiSugar's BTN for 2 seconds. The display module shows a QR code for the gallery.")
     say("  The light: solid, then a slow blink while starting, then solid when ready (README: the status light).")
     if dev:
         say("  Developer mode is on: the camera joins your home Wi-Fi at every start, so SSH keeps working.")

@@ -4,7 +4,8 @@
     python3 tools/sim.py [--root sim] [--port 8080] [--no-module]
 
 Commands (type then Enter, or write lines to <root>/ctl, a FIFO):
-    s  shutter          b  BTN single tap     d  BTN double tap
+    s  shutter          h  BTN hold (sharing on / off)
+    b  BTN single tap   d  BTN double tap (while sharing: home Wi-Fi <-> the camera's own)
     p  PWR (on / off)   w  power on as a slideshow (timed) wake
     m  module in/out    c  plug the charger in/out
     l  battery level, e.g. "l 15"      q  quit
@@ -132,8 +133,8 @@ class Sim:
             return False
         if c == "s":
             await self.press(gpio.SHUTTER)
-        elif c in ("b", "d"):
-            await self.server.tap("single" if c == "b" else "double")
+        elif c in ("h", "b", "d"):
+            await self.server.tap({"h": "long", "b": "single", "d": "double"}[c])
         elif c == "p":
             if self.app_task and not self.app_task.done():
                 r = await self.app.handle_command("power.button", {}, "root")

@@ -87,6 +87,7 @@ class ShareInfo:
     mode: str | None = None  # home or hotspot
     url: str | None = None
     network: str | None = None
+    chosen: bool = False  # hotspot asked for (a double tap), not a fallback for no home Wi-Fi
 
 
 @dataclass
@@ -332,8 +333,11 @@ class CameraApp:
         showing = self.display_job is not None and self.display_job.photo_id == und
         if self.module_present and und and not showing and self.store.get(und):
             self.queue_job(Job(DEVELOP, und))
+        elif self.module_present and not und and self.state.display_content == "share":
+            self._restore_display()  # a QR code left by a restart or power cut no longer works
         self.spawn(self.start_camera())
         self.spawn(self._first_start_selftest())
+        self.spawn(self.queue_palette_rebuilds())
 
     async def start_camera(self) -> None:
         if self._camera_opening or self.camera_state not in ("off", "failed", "starting"):
@@ -408,7 +412,7 @@ class CameraApp:
                 self.last_camera_use = self.clock()
             seq = max(self.state.next_seq, self.store.max_seq() + 1)
             pid = store.make_id(seq, taken)
-            await self.in_io(self.store.commit, pid, result.epd, result.thumb, result.jpeg)
+            await self.in_io(self.store.commit, pid, result.epd, result.thumb, result.jpeg, result.print_png)
             self.state.next_seq = seq + 1
             self.save_state()
             self.on_photo_committed(pid)
@@ -502,19 +506,25 @@ class CameraApp:
 
     # Events: buttons ----------------------------------------------------------------------------
     def on_btn(self, tap: str) -> None:
+        """A hold starts or stops sharing, so brushing BTN does nothing. A double tap while sharing
+        switches between home Wi-Fi and the camera's own, as the share screen says."""
         self.last_use = self.clock()
-        if tap == "long" or self.lifecycle in (STARTING, SHUTTING_DOWN):
+        self.log(f"button: BTN {tap}")
+        if self.lifecycle in (STARTING, SHUTTING_DOWN):
             return
         if self.lifecycle == WAKE:
-            self.spawn(self.switch_to_active("button", share=tap))
+            if tap == "long":
+                self.spawn(self.switch_to_active("button", share=True))
             return
         if not machine.btn_accepted(self.view()):
             return
-        if self.share in ("on", "starting"):
+        if tap == "long":
             if self.share == "on":
                 self.spawn(self.share_stop())
-        else:
-            self.spawn(self.share_start(force_hotspot=(tap == "double")))
+            elif self.share == "off":
+                self.spawn(self.share_start())
+        elif tap == "double" and self.share == "on":
+            self.spawn(self.share_switch())
 
     def power_button(self) -> str:
         """`inkstant-ctl power-button` (run by pisugar-server). Must answer at once: pisugar-server waits for it."""
@@ -861,14 +871,14 @@ class CameraApp:
         if self.lifecycle == WAKE:
             self.request_shutdown("slideshow")
 
-    async def switch_to_active(self, trigger: str, share: str | None = None) -> None:
+    async def switch_to_active(self, trigger: str, share: bool = False) -> None:
         if self.lifecycle != WAKE:
             return
         self.log(f"wake: switching to normal use ({trigger})")
         self.wake_armed = False
         await self.start_active()
-        if share in ("single", "double"):
-            await self.share_start(force_hotspot=(share == "double"))
+        if share:
+            await self.share_start()
 
     async def arm_next_wake(self) -> float | None:
         has_photos = bool(self.store.list())
@@ -902,18 +912,26 @@ class CameraApp:
         self.update_led()
         net = self.hw.network
         info = ShareInfo()
+        t0 = self.clock()
+        # The gallery listens on every address, so it starts while Wi-Fi comes up.
+        gallery = asyncio.create_task(self._start_gallery())
         try:
             await self.in_io(net.radio, True)
             await self.in_io(net.wait_wlan0, 10)
             if not force_hotspot:
                 homes = await self.in_io(net.homes)
-                if homes:
+                active = await self.in_io(net.active_profile)
+                joined = next((h for h in homes if active == f"{HOME_PREFIX}{h.n}"), None)
+                if joined:
+                    # Already on it (developer mode keeps it for SSH): no scan, and bringing it up
+                    # again would drop SSH for a moment.
+                    ip = await self.in_io(net.address)
+                    if ip:
+                        info = ShareInfo("home", f"http://{ip}/", joined.ssid)
+                if info.mode is None and homes:
                     visible = await self.in_io(net.scan)
-                    # Already joined in developer mode: bringing it up again would drop SSH for a moment.
-                    active = await self.in_io(net.active_profile)
                     for h in sorted((h for h in homes if h.ssid in visible), key=lambda h: -visible[h.ssid]):
-                        profile = f"{HOME_PREFIX}{h.n}"
-                        if active == profile or await self.in_io(net.up, profile, 20):
+                        if await self.in_io(net.up, f"{HOME_PREFIX}{h.n}", 20):
                             ip = await self.in_io(net.address)
                             if ip:
                                 info = ShareInfo("home", f"http://{ip}/", h.ssid)
@@ -921,10 +939,12 @@ class CameraApp:
             if info.mode is None:
                 if not await self.in_io(net.up_hotspot):
                     raise RuntimeError("couldn't start the camera's Wi-Fi")
-                info = ShareInfo("hotspot", "http://10.42.0.1/", self.settings["hotspot"]["ssid"])
-            if not await self._start_gallery():
+                info = ShareInfo("hotspot", "http://10.42.0.1/", self.settings["hotspot"]["ssid"], force_hotspot)
+            if not await gallery:
                 raise RuntimeError("the gallery didn't start")
         except Exception as e:
+            with contextlib.suppress(Exception):
+                await gallery  # let it finish starting, so stopping it below doesn't race
             self.log(f"share: {e}")
             self.errors.set("wifi", f"Couldn't start sharing: {e}")
             self.problem_until = self.clock() + 10
@@ -937,6 +957,7 @@ class CameraApp:
         self.share = "on"
         self.share_activity = self.clock()
         self.log(f"share: on ({info.mode}) at {info.url}")
+        self.log(f"timing: sharing started in {self.clock() - t0:.1f} s")
         self.update_led()
         if self.module_present:
             await self._queue_share_screen()
@@ -957,13 +978,16 @@ class CameraApp:
         if info.mode is None:
             return
 
+        # Going back to home Wi-Fi only works if there is one.
+        home_hint = info.chosen and bool(await self.in_io(self.hw.network.homes))
+
         def render():
             from inkstant.imaging import share_screen
 
             if info.mode == "home":
                 return share_screen.frame_home(info.url, info.network or "")
             hs = self.settings["hotspot"]
-            return share_screen.frame_away(hs["ssid"], hs["password"], info.url)
+            return share_screen.frame_away(hs["ssid"], hs["password"], info.url, home_hint=home_hint)
 
         try:
             frame = await self.capture.run(render)
@@ -1027,15 +1051,34 @@ class CameraApp:
         self.last_use = self.clock()
         self.log("share: off")
         self.update_led()
-        if restore and self.lifecycle == ACTIVE and self.module_present:
-            if self.state.undeveloped and self.store.get(self.state.undeveloped):
-                self.queue_job(Job(DEVELOP, self.state.undeveloped))
-            elif self.state.display_content == "share" or (
-                    self.display_job is not None and self.display_job.kind == SHARE_SCREEN):
-                if self.state.current and self.store.get(self.state.current):
-                    self.queue_job(Job(SHOW, self.state.current, why="restore"))
-                else:
-                    self.queue_job(Job(BLANK, why="restore"))
+        if restore:
+            self._restore_display()
+
+    def _restore_display(self) -> None:
+        """Put back what the print showed before the share screen."""
+        if self.lifecycle != ACTIVE or not self.module_present:
+            return
+        if self.state.undeveloped and self.store.get(self.state.undeveloped):
+            self.queue_job(Job(DEVELOP, self.state.undeveloped))
+        elif self.state.display_content == "share" or (
+                self.display_job is not None and self.display_job.kind == SHARE_SCREEN):
+            if self.state.current and self.store.get(self.state.current):
+                self.queue_job(Job(SHOW, self.state.current, why="restore"))
+            else:
+                self.queue_job(Job(BLANK, why="restore"))
+
+    async def share_switch(self) -> None:
+        """Home Wi-Fi → the camera's own, for a phone that isn't on the home network, and back.
+        If home Wi-Fi can't be found on the way back, sharing carries on over the camera's."""
+        if self.share != "on":
+            return
+        to_hotspot = self.share_info.mode == "home"
+        if not to_hotspot and not await self.in_io(self.hw.network.homes):
+            return  # no home network saved
+        self.log(f"share: switching to {'the camera' if to_hotspot else 'home'} Wi-Fi")
+        await self.share_stop(restore=False)
+        if await self.share_start(force_hotspot=to_hotspot) is not None:
+            self._restore_display()  # it failed: don't leave a QR code up that no longer works
 
     # Shutdown ------------------------------------------------------------------------------------------
     def request_shutdown(self, reason: str, reboot: bool = False) -> None:
@@ -1149,6 +1192,7 @@ class CameraApp:
 
                 epd, thumb = pipeline.from_jpeg(path)
                 self.store.write_epd(pid, epd)
+                self.store.write_print(pid, pipeline.print_png(epd))
                 if not self.store.thumb_path(pid).exists():
                     self.store.write_thumb(pid, thumb)
 
@@ -1159,8 +1203,9 @@ class CameraApp:
                 self.log(f"rebuild {pid}: {e!r}")
             await asyncio.sleep(0.2)
 
-    def queue_palette_rebuilds(self) -> int:
-        n = 0
+    def _stale_screen_images(self) -> list[str]:
+        """Photos whose screen image was made with an older palette (or is unreadable)."""
+        stale = []
         for p in self.store.list():
             try:
                 with open(self.store.epd_path(p.id), "rb") as f:
@@ -1169,9 +1214,19 @@ class CameraApp:
                     int.from_bytes(head[6:8], "little") == palette.PALETTE_VERSION
             except OSError:
                 ok = False
-            if not ok and p.id not in self.rebuild_queue:
-                self.rebuild_queue.append(p.id)
+            if not ok:
+                stale.append(p.id)
+        return stale
+
+    async def queue_palette_rebuilds(self) -> int:
+        """After a palette change, remake every screen image and print, oldest last."""
+        n = 0
+        for pid in await self.in_io(self._stale_screen_images):
+            if pid not in self.rebuild_queue:
+                self.rebuild_queue.append(pid)
                 n += 1
+        if n:
+            self.log(f"palette changed: rebuilding {n} screen images")
         self._kick_rebuild()
         return n
 

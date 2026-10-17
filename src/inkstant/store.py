@@ -77,6 +77,10 @@ class PhotoStore:
     def thumb_path(self, photo_id: str) -> Path:
         return self.paths.thumbs / f"{photo_id}.jpg"
 
+    def print_path(self, photo_id: str) -> Path:
+        """The print as the panel shows it, for the gallery (beside the thumbnail)."""
+        return self.paths.thumbs / f"{photo_id}.png"
+
     def epd_path(self, photo_id: str) -> Path:
         return self.paths.epd / f"{photo_id}.epd"
 
@@ -128,13 +132,14 @@ class PhotoStore:
         return photos[0].seq if photos else 0
 
     # Saving --------------------------------------------------------------
-    def commit(self, photo_id: str, epd: bytes, thumb: bytes, jpeg: bytes) -> None:
-        """Screen image, then thumbnail, then the JPEG: a photo exists once its JPEG is in place."""
+    def commit(self, photo_id: str, epd: bytes, thumb: bytes, jpeg: bytes, print_png: bytes) -> None:
+        """Screen image, thumbnail and print, then the JPEG: a photo exists once its JPEG is in place."""
         if not valid_id(photo_id):
             raise ValueError(f"bad photo id {photo_id!r}")
         tmp = self.paths.tmp
         atomic_write(self.epd_path(photo_id), epd, mode=0o600, tmp_dir=tmp)
         atomic_write(self.thumb_path(photo_id), thumb, mode=0o640, group=self.web_group, tmp_dir=tmp)
+        atomic_write(self.print_path(photo_id), print_png, mode=0o640, group=self.web_group, tmp_dir=tmp)
         atomic_write(self.photo_path(photo_id), jpeg, mode=0o640, group=self.web_group, tmp_dir=tmp)
 
     def write_epd(self, photo_id: str, epd: bytes) -> None:
@@ -143,6 +148,9 @@ class PhotoStore:
     def write_thumb(self, photo_id: str, thumb: bytes) -> None:
         atomic_write(self.thumb_path(photo_id), thumb, mode=0o640, group=self.web_group, tmp_dir=self.paths.tmp)
 
+    def write_print(self, photo_id: str, print_png: bytes) -> None:
+        atomic_write(self.print_path(photo_id), print_png, mode=0o640, group=self.web_group, tmp_dir=self.paths.tmp)
+
     def delete(self, ids: list[str]) -> tuple[list[str], list[str]]:
         deleted, missing = [], []
         for pid in ids:
@@ -150,7 +158,7 @@ class PhotoStore:
                 missing.append(pid)
                 continue
             # JPEG first, so a crash midway leaves only orphans that recovery removes.
-            for p in (self.photo_path(pid), self.thumb_path(pid), self.epd_path(pid)):
+            for p in (self.photo_path(pid), self.thumb_path(pid), self.print_path(pid), self.epd_path(pid)):
                 with contextlib.suppress(FileNotFoundError):
                     p.unlink()
             deleted.append(pid)
@@ -161,22 +169,22 @@ class PhotoStore:
 
     # Recovery -----------------------------------------------------
     def recover(self) -> list[str]:
-        """Clean up after a power cut. Returns IDs whose thumbnail or screen image must be rebuilt."""
+        """Clean up after a power cut. Returns IDs whose thumbnail, print or screen image must be rebuilt."""
         self.paths.ensure_dirs()
         for entry in self.paths.tmp.iterdir():
             with contextlib.suppress(OSError):
                 if entry.is_file() or entry.is_symlink():
                     entry.unlink()
         jpegs = {p.id for p in self.list()}
-        for folder, suffix in ((self.paths.epd, ".epd"), (self.paths.thumbs, ".jpg")):
+        for folder, suffixes in ((self.paths.epd, (".epd",)), (self.paths.thumbs, (".jpg", ".png"))):
             for entry in folder.iterdir():
-                pid = entry.name[: -len(suffix)] if entry.name.endswith(suffix) else None
-                if pid is None or not valid_id(pid) or pid not in jpegs:
+                stem, dot, ext = entry.name.rpartition(".")
+                if f".{ext}" not in suffixes or not dot or not valid_id(stem) or stem not in jpegs:
                     with contextlib.suppress(OSError):
                         entry.unlink()
         rebuild = []
         for pid in sorted(jpegs, key=seq_of):
-            if not self.thumb_path(pid).exists() or not self.epd_path(pid).exists():
+            if not all(p.exists() for p in (self.thumb_path(pid), self.print_path(pid), self.epd_path(pid))):
                 rebuild.append(pid)
         return rebuild
 
