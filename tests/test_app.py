@@ -339,6 +339,49 @@ def test_share_mode_on_and_off(paths, health_url):
             await h.until(lambda: h.app.share == "off")
             await h.idle_display()
             assert h.app.state.display_content == "photo" and h.app.state.current == pid
+            assert h.net.state == "off" and h.net.log[-2:] == ["down", "radio False"]
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_dev_mode_sharing_at_home_keeps_the_home_wifi(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start(cfg={"dev_mode": True})
+        h.net.state = "inkstant-home-1"  # NetworkManager joined it at boot
+        try:
+            await h.server.tap("single")
+            await h.until(lambda: h.app.share == "on")
+            assert h.app.share_info.mode == "home"
+            await h.until(lambda: h.app.state.display_content == "share")  # BTN is ignored mid-refresh
+            await h.idle_display()
+            await h.server.tap("single")
+            await h.until(lambda: h.app.share == "off")
+            # Still joined, never dropped: SSH keeps working, and NetworkManager isn't left blocking it.
+            assert h.net.state == "inkstant-home-1"
+            assert not any(e.startswith(("up", "down", "radio False")) for e in h.net.log)
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_dev_mode_hotspot_stop_leaves_the_radio_on(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start(module=False, cfg={"dev_mode": True})
+        h.net.state = "inkstant-home-1"
+        try:
+            await h.server.tap("double")
+            await h.until(lambda: h.app.share == "on")
+            assert h.app.share_info.mode == "hotspot"
+            await h.cmd("share.stop")
+            await h.until(lambda: h.app.share == "off")
+            # The hotspot goes down; NetworkManager then rejoins inkstant-home-1 by itself.
+            assert h.net.state == "off" and h.net.log[-1] == "down"
+            assert "radio False" not in h.net.log
         finally:
             await h.stop()
 
