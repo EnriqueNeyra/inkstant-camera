@@ -213,6 +213,7 @@ def run(paths: Paths, *, family: str = "pi3", install: bool = False,
         pisugar_get: Callable[[str], str] | None = None,
         camera_present: Callable[[], bool] | None = None,
         display_probe: Callable[[], bool | None] | None = None,
+        module_present: Callable[[], bool] | None = None,
         rtc_epoch: int | None = None) -> list[Check]:
     root = paths.root
     checks: list[Check] = []
@@ -242,7 +243,9 @@ def run(paths: Paths, *, family: str = "pi3", install: bool = False,
     if display_probe is not None:
         result = display_probe()
         if result is None:
-            checks.append(Check("Display module", True, False, "no module in: not tested"))
+            present = module_present is not None and module_present()
+            checks.append(Check("Display module", True, False,
+                                "module in, not tested while idle" if present else "no module in: not tested"))
         else:
             checks.append(Check("Display module", result, True, "answers" if result else "doesn't answer",
                                 "Slide the module out and back in; check the connector's wiring."))

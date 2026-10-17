@@ -346,9 +346,10 @@ class CameraApp:
             self.camera_retry_at = None
             self.last_camera_use = self.clock()
         except Exception as e:
-            self.log(f"camera: {e}")
+            why = str(e) or type(e).__name__  # some exceptions, like TimeoutError, have no message
+            self.log(f"camera: {why}")
             self.camera_state = "failed"
-            self.errors.set("camera", f"Camera problem: {e}")
+            self.errors.set("camera", f"Camera problem: {why}")
             self.camera_retry_at = self.clock() + 60
             with contextlib.suppress(Exception):
                 await self.capture.close()
@@ -1203,7 +1204,7 @@ class CameraApp:
             rtc = int(time.time())
         checks = await self.in_io(lambda: selftest.run(
             self.paths, family=self.device.family, pisugar_get=pis_get, camera_present=camera_present,
-            display_probe=display_probe, rtc_epoch=rtc))
+            display_probe=display_probe, module_present=self.hw.pins.module_present, rtc_epoch=rtc))
         result = selftest.summary(checks)
         result["version"] = version.VERSION
         result["at"] = datetime.now().astimezone().isoformat(timespec="seconds")
