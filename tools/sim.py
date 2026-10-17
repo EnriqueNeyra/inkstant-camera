@@ -53,7 +53,6 @@ class PrintingLed(led.FakeLed):
     def set_pattern(self, pattern, repeat):
         super().set_pattern(pattern, repeat)
         names = {v[1]: k for k, v in led.STEADY.items() if v[0] == "pattern"}
-        names.update({v[0]: f"cue: {k}" for k, v in led.CUES.items()})
         self._say(names.get(pattern, pattern))
 
 

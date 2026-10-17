@@ -148,8 +148,14 @@ def test_share_screens_render():
     assert set(epdfile.codes(frame)) <= {0, 1}
 
 
-def test_the_go_back_home_line_fits_on_the_camera_wifi_screen():
-    for hint in (False, True):
-        img = share_screen.render_away("Inkstant-4F2A", "abcd2345efgh", home_hint=hint)
-        ink_rows = np.where((np.asarray(img) < 128).any(axis=1))[0]
-        assert ink_rows.max() < 400 - 8  # clear of the panel's edge
+def test_every_line_fits_on_the_share_screens():
+    # The away screen's hints (stay connected, how to stop sharing, how to go back home) and the
+    # home screen's, with a 32-byte name and a 63-character password.
+    screens = [share_screen.render_home("http://192.168.100.200/", "A" * 32)]
+    longest = ("Our-Holiday-Cottage-WiFi-5G-Mesh", "Kd8mPq2xRt7vLw4nZb9cHy3fGs6jTa5eNu1oQi8rXp4kMd7wBv2zCe9hFg3yJ6s")
+    for ssid, pw in (("Inkstant-4F2A", "abcd2345efgh"), longest):
+        screens += [share_screen.render_away(ssid, pw, home_hint=hint) for hint in (False, True)]
+    for img in screens:
+        ink = np.asarray(img) < 128
+        rows, cols = np.where(ink.any(axis=1))[0], np.where(ink.any(axis=0))[0]
+        assert rows.max() < 400 - 8 and cols.min() >= 8 and cols.max() < 600 - 8  # clear of the edges

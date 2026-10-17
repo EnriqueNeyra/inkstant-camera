@@ -1,4 +1,4 @@
-"""The status light: one steady pattern, a wink, and cues.
+"""The status light: one steady pattern, and a wink when the shutter takes a photo.
 
 The kernel's `gpio-led` driver owns GPIO 26; patterns are written to
 /sys/class/leds/status. Without the `pattern` trigger, an asyncio task blinks instead.
@@ -7,7 +7,6 @@ The kernel's `gpio-led` driver owns GPIO 26; patterns are written to
 from __future__ import annotations
 
 import asyncio
-from collections import deque
 from pathlib import Path
 
 # name: (trigger, value). For "pattern" the value is the kernel pattern string.
@@ -16,16 +15,7 @@ STEADY = {
     "ready": ("none", 1),
     "off": ("none", 0),
     "wait": ("pattern", "1 500 1 0 0 500 0 0"),
-    "share": ("pattern", "1 1700 1 0 0 300 0 0"),
-    "asleep": ("pattern", "1 100 1 0 0 3900 0 0"),
-    "problem": ("pattern", "1 100 1 0 0 150 0 0 1 100 1 0 0 150 0 0 1 100 1 0 0 1900 0 0"),
 }
-# name: (pattern, repeat, seconds)
-CUES = {
-    "no_module": ("1 125 1 0 0 125 0 0", 8, 2.0),
-    "battery": ("1 100 1 0 0 150 0 0 1 100 1 0 0 650 0 0", 3, 3.0),
-}
-CUE_OK = frozenset({"ready", "asleep", "share"})
 WINK_SECONDS = 0.4
 
 
@@ -106,11 +96,10 @@ class LedController:
         self.loop = loop
         self.log = log or (lambda *_: None)
         self.steady = "starting"
-        self.playing: str | None = None  # "wink" or a cue name
-        self.queue: deque[str] = deque()
+        self.winking = False
         self._timer: asyncio.TimerHandle | None = None
         self._soft_task: asyncio.Task | None = None
-        self.shown = "starting"  # what's on the light now: a steady name, "wink" or a cue
+        self.shown = "starting"  # what's on the light now: a steady name or "wink"
 
     def _loop(self) -> asyncio.AbstractEventLoop:
         return self.loop or asyncio.get_running_loop()
@@ -165,32 +154,20 @@ class LedController:
             raise ValueError(name)
         changed = name != self.steady
         self.steady = name
-        if name not in CUE_OK:
-            self.queue.clear()
-            if self.playing not in (None, "wink"):
-                self._end_overlay(show=False)
-        if self.playing is None and (changed or self.shown != name):
+        if not self.winking and (changed or self.shown != name):
             self._show_steady()
 
     def wink(self) -> None:
+        """Off for a moment: the shutter took a photo. Then back to the steady pattern."""
         self._cancel_timer()
-        self.playing = "wink"
+        self.winking = True
         self.shown = "wink"
         self._stop_soft()
         try:
             self.w.set_level(0)
         except OSError as e:
             self.log(f"led: {e}")
-        self._timer = self._loop().call_later(WINK_SECONDS, self._next)
-
-    def cue(self, name: str) -> None:
-        if name not in CUES:
-            raise ValueError(name)
-        if self.steady not in CUE_OK:
-            return
-        self.queue.append(name)
-        if self.playing is None:
-            self._next()
+        self._timer = self._loop().call_later(WINK_SECONDS, self._end_wink)
 
     # Internals --------------------------------------------------------------
     def _cancel_timer(self) -> None:
@@ -198,26 +175,9 @@ class LedController:
             self._timer.cancel()
             self._timer = None
 
-    def _end_overlay(self, show: bool) -> None:
-        self._cancel_timer()
-        self.playing = None
-        if show:
-            self._show_steady()
-
-    def _next(self) -> None:
+    def _end_wink(self) -> None:
         self._timer = None
-        self.playing = None
-        while self.queue:
-            name = self.queue.popleft()
-            if self.steady not in CUE_OK:
-                self.queue.clear()
-                break
-            pattern, repeat, secs = CUES[name]
-            self.playing = name
-            self.shown = name
-            self._write_pattern(pattern, repeat)
-            self._timer = self._loop().call_later(secs, self._next)
-            return
+        self.winking = False
         self._show_steady()
 
     def close(self) -> None:

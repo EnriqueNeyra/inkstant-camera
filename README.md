@@ -311,7 +311,7 @@ You'll use **Raspberry Pi Imager**, a free app from Raspberry Pi, to put the ope
 
 ## Step 4: First start
 
-1. **Watch the light:** solid, then a slow blink while the camera starts (up to about half a minute), then solid. Solid means ready.
+1. **Watch the light:** it blinks slowly while the camera starts (up to about half a minute), then stays solid. Solid means ready.
 2. **Take a photo:** with a print in, press the shutter. The light winks, then blinks slowly while the photo develops on the print, which takes about 15 seconds.
 3. **Open the gallery:** hold BTN on the PiSugar for 2 seconds. The print shows a QR code; scan it with your phone's camera ([more below](#getting-your-photos-the-gallery)).
 4. **Run the setup check:** in the gallery, tap the **Settings** button (the sliders icon, top right), open **Advanced**, and look at **Setup check**. Every row should have a tick. If one doesn't, it says how to fix it.
@@ -331,7 +331,7 @@ Over SSH, before the setup script, `pinctrl set 26 op dh` turns the ring on and 
 
 - [ ] The light ring is bright enough indoors and in daylight. If not, see [a brighter light](#a-brighter-light).
 - [ ] A print snaps on firmly every time, and the magnets hold it.
-- [ ] Sliding a print out gives the fast "no print" blink.
+- [ ] With the print out, **Show on camera** in the gallery says there's no display module; slide it back in and it works.
 - [ ] Swapping prints while the camera is on doesn't restart anything.
 - [ ] PWR and BTN press reliably through the case.
 - [ ] While charging, the PiSugar doesn't get too hot inside the case.
@@ -352,24 +352,22 @@ Over SSH, before the setup script, `pinctrl set 26 op dh` turns the ring on and 
 - **A quick tap on BTN does nothing,** so a bump in a bag can't start sharing.
 
 - **While a photo develops** (about 15 to 20 seconds), the shutter and BTN are ignored. They work again as soon as the photo is showing.
-- **While sharing,** you can still take photos. They appear in the gallery straight away, and develop on the print when sharing ends.
+- **While sharing,** the shutter is off, so a photo can't be taken by accident while you show the print to someone. The light blinks slowly, and the print says how to stop. Hold BTN to stop sharing, and the shutter works again once the print shows your photo.
 - Plugging in to charge doesn't turn the camera on.
 
 ### The status light
 
-The ring around the shutter is the camera's only light.
+The ring around the shutter is the camera's only light, and it has just four looks:
 
 | Light | Meaning |
 |---|---|
-| Solid | Ready to shoot |
-| Slow blink (on half a second, off half a second) | Wait: starting up, developing a photo, or updating |
-| A short wink (off for a moment) | The shutter press worked: the photo is being taken |
-| Long on, short off | Sharing is on |
-| A short flash every 4 seconds | Asleep: press the shutter to shoot |
-| Three quick blinks, repeating | A problem. Open the gallery, which says what's wrong |
-| Fast blinking for 2 seconds | No print in the camera (shown once, at start-up, when you take one out, and after each photo) |
-| Three double blinks | Battery low (15% or less) |
+| Solid | On: press the shutter to take a photo |
+| Slow blink (on half a second, off half a second) | Wait, the shutter won't take a photo: starting up, developing a photo, sharing, or finishing before it turns off |
+| A short wink (off for a moment) | Your photo was taken |
 | Off | The camera is off. It also stays off while the slideshow changes the picture |
+
+- **No wink when you press the shutter?** No photo was taken. Start sharing, and the gallery says why at the top of the page.
+- **Everything else shows elsewhere:** sharing shows its QR code on the print, and the battery level and any problems show in the gallery. The PiSugar's own four lights show the charge when you press PWR.
 
 The gallery has the same list under Settings → Light → What it means.
 
@@ -389,10 +387,10 @@ The gallery has the same list under Settings → Light → What it means.
 
 ### Sleep, turning off and the battery
 
-- **Sleep:** after 5 minutes without taking photos, the camera rests its image sensor to save battery. The light flashes every 4 seconds. Press the shutter to wake it and shoot.
+- **Sleep:** after 5 minutes without taking photos, the camera rests its image sensor to save battery. The light stays solid: press the shutter as usual, and the photo is taken a second or two later.
 - **Turning off:** after 10 minutes without use, the camera turns itself off. Before it does, it sets an alarm for the next slideshow picture.
 - **Battery saver** turns on by itself at 20%: the camera sleeps and turns off sooner.
-- **Low battery:** the light warns at 15%, and the camera turns itself off at 5%.
+- **Low battery:** the gallery warns at 15%, and the camera turns itself off at 5%.
 - **Charging:** plug a USB-C charger into the PiSugar. Charging doesn't turn the camera on. The PiSugar's four small lights show the charge level.
 - **The PiSugar gets hot while charging:** its charging chip reaches 50 to 80 °C. Don't touch it, and leave air around it in the case.
 - **The battery keeps the camera's clock.** If the battery runs completely flat or is unplugged, the clock resets: share at home to set it from the internet, or use "Use this phone's time" in Settings.
@@ -410,7 +408,7 @@ The gallery is a small website that the camera runs while sharing is on. It work
 
 ### At home
 
-1. **Hold BTN** on the PiSugar for 2 seconds. The camera looks for your home Wi-Fi for a few seconds, and the light changes to long on, short off.
+1. **Hold BTN** on the PiSugar for 2 seconds. The camera looks for your home Wi-Fi for a few seconds.
 2. **The print shows a QR code.** Scan it with your phone's camera, and the gallery opens in your browser.
 3. **Without the QR code** (no print in, or on a laptop), open a browser on any device on the same Wi-Fi and go to the address printed next to the QR code (like `http://192.168.1.23`), or to **`http://inkstant.local`** (your hostname, followed by `.local`).
 
@@ -436,7 +434,7 @@ Your phone may say this Wi-Fi has no internet. That's expected: stay connected.
 
 ### Stop sharing
 
-Hold BTN again for 2 seconds, tap **Stop sharing** in the gallery, or just leave it: on battery, sharing stops by itself after 10 minutes without anyone using the gallery. The print goes back to showing your photo.
+Hold BTN again for 2 seconds, tap **Stop sharing** in the gallery, or just leave it: on battery, sharing stops by itself after 10 minutes without anyone using the gallery. The print goes back to showing your photo, and the shutter works again once it has.
 
 > [!NOTE]
 > The gallery has no login. At home, anyone on your Wi-Fi can open it while sharing is on, including deleting photos. Sharing only runs when you turn it on, and stops by itself.
@@ -477,8 +475,8 @@ In the gallery, tap the sliders icon at the top right.
 | Setup warns "No camera found" | Turn off, then reseat the ribbon at both ends with the metal contacts facing away from the flaps. On a Pi 3 or 4, the cable must be 15-pin at both ends |
 | Can't SSH in after setup | Expected without developer mode: the camera turns its Wi-Fi off to save battery. SSH works again while sharing at home, or turn on Settings → Advanced → Developer mode |
 | A monitor shows nothing | Expected: setup turns HDMI off to save power. Use SSH |
-| Three quick blinks | Something needs attention. Start sharing, and the gallery shows what's wrong at the top of the page |
-| The print never updates | Check the light's fast-blink "no print" signal. If it shows with a print in, the print-detect wiring isn't reaching pin 15: check the print's GND, 9 and 10 join, and connector contact 9 to pin 15 |
+| The light doesn't wink when you press the shutter | No photo was taken. Start sharing, and the gallery shows what's wrong at the top of the page |
+| The print never updates | Open a photo in the gallery: if **Show on camera** says "No display module in the camera" with a print in, the print-detect wiring isn't reaching pin 15. Check the print's GND, 9 and 10 join, and connector contact 9 to pin 15 |
 | The light never lights | The LED wires on pins 37 and 39 are probably swapped. A blue ring is also quite dim at 3.3 V |
 | The gallery won't open from the QR code | Check your phone is on the same Wi-Fi (at home) or joined the camera's Wi-Fi (away). Some guest and office networks block devices from reaching each other: double-tap BTN while sharing to switch to the camera's Wi-Fi |
 | The browser says the site can't be reached, though the phone is on the right Wi-Fi | Some browsers, like Chrome on iPhone, insist on a secure (`https`) connection, which the gallery doesn't use. Open the address in Safari, or turn off the browser's "Always use secure connections" setting |
