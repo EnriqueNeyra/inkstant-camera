@@ -243,10 +243,12 @@ class FakeNetwork:
         return {h.ssid: 70 for h in self.home} if self.home_visible else {}
 
     def up(self, profile: str, wait: int) -> bool:
+        self.log.append(f"up {profile}")
         self.state = profile
         return True
 
     def up_hotspot(self) -> bool:
+        self.log.append(f"up {HOTSPOT}")
         self.state = HOTSPOT
         return True
 
@@ -257,6 +259,7 @@ class FakeNetwork:
         return self.state if self.state != "off" else None
 
     def down(self) -> None:
+        self.log.append("down")
         self.state = "off"
 
     def set_hotspot(self, ssid: str, password: str) -> None:

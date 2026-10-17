@@ -28,11 +28,13 @@ from inkstant.camera_app.capture import CaptureWorker
 from inkstant.camera_app.display import BLANK, DEVELOP, SHARE_SCREEN, SHOW, DisplayWorker, Job
 from inkstant.camera_app.machine import ACTIVE, SHUTTING_DOWN, STARTING, WAKE
 from inkstant.hw import led as led_mod
+from inkstant.hw.network import HOME_PREFIX
 from inkstant.hw.pisugar import PiSugarClient, PiSugarError, ensure_settings
 from inkstant.imaging import epdfile, palette
 from inkstant.paths import Paths
 
 GALLERY_UNIT = "inkstant-gallery.service"
+DEV_HOME = f"{HOME_PREFIX}1"  # the home network developer mode joins at every start (§16.2)
 CTL_COMMAND = "/usr/local/bin/inkstant-ctl power-button"
 INSERT_SETTLE = 0.3
 WAKE_TIMEOUT = 120.0
@@ -904,8 +906,11 @@ class CameraApp:
                 homes = await self.in_io(net.homes)
                 if homes:
                     visible = await self.in_io(net.scan)
+                    # Already joined in developer mode: bringing it up again would drop SSH for a moment.
+                    active = await self.in_io(net.active_profile)
                     for h in sorted((h for h in homes if h.ssid in visible), key=lambda h: -visible[h.ssid]):
-                        if await self.in_io(net.up, f"inkstant-home-{h.n}", 20):
+                        profile = f"{HOME_PREFIX}{h.n}"
+                        if active == profile or await self.in_io(net.up, profile, 20):
                             ip = await self.in_io(net.address)
                             if ip:
                                 info = ShareInfo("home", f"http://{ip}/", h.ssid)
@@ -997,9 +1002,15 @@ class CameraApp:
                 await self.in_io(self.hw.system.stop_unit, GALLERY_UNIT)
         except Exception as e:
             self.log(f"share: stopping the gallery: {e}")
+        dev = self.settings["dev_mode"]
         with contextlib.suppress(Exception):
-            await self.in_io(net.down)
-        if not self.settings["dev_mode"]:
+            # Developer mode keeps its home network up for SSH (§16.2). `nmcli connection down` would
+            # also stop NetworkManager reconnecting it until a reboot (nmcli(1)). After the hotspot or
+            # another home network goes down, NetworkManager rejoins DEV_HOME by itself: it was replaced,
+            # not taken down, so its autoconnect isn't blocked.
+            if not (dev and await self.in_io(net.active_profile) == DEV_HOME):
+                await self.in_io(net.down)
+        if not dev:
             with contextlib.suppress(Exception):
                 await self.in_io(net.radio, False)
         self.share = "off"
