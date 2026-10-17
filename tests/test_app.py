@@ -251,6 +251,27 @@ def test_white_screen_when_no_wake(paths, health_url):
     run(main())
 
 
+@pytest.mark.parametrize("stopping, white", [(None, False), ("reboot", False), ("poweroff", True)])
+def test_outside_stop_whitens_only_at_power_off(paths, health_url, stopping, white):
+    # `systemctl restart inkstant` (an install, a crash) used to wipe the photo (seen on a Pi 4).
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start(cfg={"slideshow": {"enabled": False}})
+        try:
+            await h.shoot()
+            await h.idle_display()
+            shown = len(h.epd.shown)
+            h.sys.stopping = stopping
+            h.app._on_sigterm()
+            await asyncio.wait_for(h.task, 10)
+            assert (len(h.epd.shown) > shown) == white
+            assert (state.load_state(paths.state).display_content == "blank") == white
+        finally:
+            await h.stop()
+
+    run(main())
+
+
 def test_battery_saver_automatic_and_plug_in(paths, health_url):
     async def main():
         h = Harness(paths, health_url)

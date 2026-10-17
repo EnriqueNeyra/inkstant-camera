@@ -348,9 +348,10 @@ class CameraApp:
             self.camera_retry_at = None
             self.last_camera_use = self.clock()
         except Exception as e:
-            self.log(f"camera: {e}")
+            why = str(e) or type(e).__name__  # some exceptions, like TimeoutError, have no message
+            self.log(f"camera: {why}")
             self.camera_state = "failed"
-            self.errors.set("camera", f"Camera problem: {e}")
+            self.errors.set("camera", f"Camera problem: {why}")
             self.camera_retry_at = self.clock() + 60
             with contextlib.suppress(Exception):
                 await self.capture.close()
@@ -1033,14 +1034,6 @@ class CameraApp:
         if self._shutdown_task is None:
             self._shutdown_task = self.spawn(self._shutdown(reason, reboot))
 
-    async def _reboot_queued(self) -> bool:
-        try:
-            out = await self.in_io(lambda: __import__("subprocess").run(
-                ["systemctl", "list-jobs", "--no-legend"], capture_output=True, text=True, timeout=3).stdout)
-            return "reboot.target" in out
-        except Exception:
-            return False
-
     async def _shutdown(self, reason: str, reboot: bool = False) -> None:
         if self.power_after_update and reason == "update":
             reason, reboot = "power_button", False
@@ -1059,8 +1052,16 @@ class CameraApp:
                 await self.wait_display_idle(5)
         self.shutdown_display_busy = False
         self.update_led()
+        # Stopped from outside: a reboot, the Pi turning off, or only this service restarting
+        # (an install, a crash). Only the camera turning off may turn the screen white.
+        service_only = False
         if self.external_stop:
-            reboot = reboot or await self._reboot_queued()
+            try:
+                why = await self.in_io(self.hw.system.stopping_for)
+            except Exception:
+                why = "poweroff"
+            reboot = reboot or why == "reboot"
+            service_only = why is None
         # 3: the next wake decides whether the screen turns white.
         if reason == "low_battery":
             next_wake = None
@@ -1069,7 +1070,8 @@ class CameraApp:
         else:
             next_wake = slideshow.next_wake(time.time(), self.settings, self.battery_level, self.plugged,
                                             self.clock_valid, bool(self.store.list()))
-        white = next_wake is None and not reboot and self.module_present and self.hw.pins.module_present()
+        white = (next_wake is None and not reboot and not service_only and self.module_present
+                 and self.hw.pins.module_present())
         side = [self.spawn(self.share_stop(restore=False)), self.spawn(self.capture.close())]
         if white:
             self.shutdown_display_busy = True
@@ -1214,7 +1216,7 @@ class CameraApp:
             rtc = int(time.time())
         checks = await self.in_io(lambda: selftest.run(
             self.paths, family=self.device.family, pisugar_get=pis_get, camera_present=camera_present,
-            display_probe=display_probe, rtc_epoch=rtc))
+            display_probe=display_probe, module_present=self.hw.pins.module_present, rtc_epoch=rtc))
         result = selftest.summary(checks)
         result["version"] = version.VERSION
         result["at"] = datetime.now().astimezone().isoformat(timespec="seconds")

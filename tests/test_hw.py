@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 import threading
 import time
 from datetime import UTC
@@ -206,6 +207,76 @@ def test_fake_camera_capture():
     assert cam.mode == "full"
 
 
+class FramesPicam2:
+    """Stands in for Picamera2's frame waits: each entry is a frame, or None for a timeout."""
+
+    def __init__(self, frames):
+        self.frames = list(frames)
+        self.waits = []
+
+    def capture_metadata(self, wait=None):
+        self.waits.append(wait)
+        if not self.frames or self.frames.pop(0) is None:
+            raise TimeoutError()  # what Picamera2's job raises: no message
+        return {"AfState": 0}
+
+    def set_controls(self, ctrls):
+        pass
+
+    def start(self):
+        pass
+
+
+def real_camera(picam2):
+    cam = camera.Camera(type("Dev", (), {"camera_fps": None})(), log=lambda *a: None)
+    cam.picam2 = picam2
+    return cam
+
+
+def test_settle_waits_per_frame_and_names_a_timeout():
+    # A Pi 4 at full resolution: ~1.6 s to the first frame, then ~0.2 s a frame (2026-10-16).
+    p = FramesPicam2([{}] * camera.SETTLE_FRAMES)
+    real_camera(p)._settle(camera.SETTLE_FRAMES)
+    assert p.waits == [camera.FIRST_FRAME_TIMEOUT] + [camera.FRAME_TIMEOUT] * (camera.SETTLE_FRAMES - 1)
+    with pytest.raises(camera.CameraError, match="didn't deliver frames"):
+        real_camera(FramesPicam2([{}, None]))._settle(camera.SETTLE_FRAMES)
+
+
+def test_a_late_frame_ends_the_wake_wait(monkeypatch):
+    import sys
+    import types
+
+    enums = types.SimpleNamespace(AfStateEnum=types.SimpleNamespace(Focused=2, Failed=3))
+    monkeypatch.setitem(sys.modules, "libcamera", types.SimpleNamespace(controls=enums))
+    cam = real_camera(FramesPicam2([{}, {}, None]))
+    cam.mode = "asleep"
+    cam.wake(for_shot=True)  # doesn't raise: the capture that follows has its own timeout
+    assert cam.mode == "full"
+
+
+def test_close_forgets_the_tuning_file(tmp_path, monkeypatch):
+    f = tmp_path / "tuning.json"
+    f.write_text("{}")
+    monkeypatch.setenv(camera.TUNING_ENV, str(f))
+    cam = real_camera(None)
+    cam._tuning_file = str(f)
+    cam.close()
+    # A path left behind would hide the camera at the next listing (seen on a Pi 4, 2026-10-16).
+    assert camera.TUNING_ENV not in os.environ and not f.exists() and cam._tuning_file is None
+
+
+def test_selftest_says_when_a_module_is_in_but_untested(paths):
+    from inkstant import selftest
+
+    def display(present):
+        checks = selftest.run(paths, pisugar_get=lambda n: "x", display_probe=lambda: None,
+                              module_present=lambda: present)
+        return next(c.detail for c in checks if c.name == "Display module")
+
+    assert display(True) == "module in, not tested while idle"
+    assert display(False) == "no module in: not tested"
+
+
 # PiSugar ------------------------------------------------------------------------------
 def test_pisugar_client_against_fake_server(paths):
     async def main():
@@ -236,6 +307,20 @@ def test_pisugar_client_against_fake_server(paths):
             await client.alarm_set(datetime(2026, 10, 16, 9, 0, tzinfo=UTC))
             enabled, when = await client.alarm_read()
             assert enabled and when.hour == 9
+            # An I2C error now and then (seen on a real PiSugar 3 after an alarm write) is retried,
+            # never taken as the value: "is it plugged in?" mustn't become "no".
+            server.values["battery_power_plugged"] = "true"
+            server.io_errors = {"battery_power_plugged": 2, "rtc_alarm_set": 1}
+            assert await client.plugged() is True
+            await client.alarm_set(datetime(2026, 10, 16, 10, 0, tzinfo=UTC))
+            server.io_errors = {"battery": pisugar.IO_RETRIES}
+            with pytest.raises(pisugar.PiSugarError, match="I/O error"):
+                await client.battery()
+            # The setup checks' blocking reader retries too.
+            from inkstant.selftest import pisugar_sync_get
+            server.io_errors = {"model": 2}
+            get = pisugar_sync_get(paths.pisugar_sock)
+            assert await asyncio.get_running_loop().run_in_executor(None, get, "model") == "PiSugar 3"
         finally:
             await client.close()
             await server.stop()

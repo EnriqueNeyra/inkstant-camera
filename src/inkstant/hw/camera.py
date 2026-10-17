@@ -6,8 +6,12 @@ so slideshow wakes never load it. Every method here blocks; call them from that 
 
 from __future__ import annotations
 
+import contextlib
 import copy
 import io
+import json
+import os
+import tempfile
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -17,11 +21,16 @@ CAMERA_FPS = 5  # set from M1's measurements (§6.4); device.toml's camera_fps o
 SAVER_FPS = 5
 SETTLE_FPS = 14  # the full-resolution maximum is 14.35 fps (§3 finding 22)
 SETTLE_FRAMES = 10
+# Measured on a Pi 4 at full resolution (2026-10-16): the first frame comes ~1.6 s after start,
+# then one every ~0.2 s (about 5 fps reach us, whatever the sensor's rate). So wait per frame.
+FIRST_FRAME_TIMEOUT = 10.0
+FRAME_TIMEOUT = 2.0
 MAIN_SIZE = (4608, 2592)
 LORES_SIZE = (1152, 648)
 CAPTURE_TIMEOUT = 5.0
 WAKE_FOCUS_TIMEOUT = 1.5
 WAKE_MIN_FRAMES = 4
+TUNING_ENV = "LIBCAMERA_RPI_TUNING_FILE"
 
 # The tuning override for 5 fps (§6.4 table). Absolute values, used at every frame rate.
 TUNING_OVERRIDE = {
@@ -104,6 +113,7 @@ class Camera:
         self.mode = "off"  # off, full, fallback, asleep
         self._full_config = None
         self._preview_config = None
+        self._tuning_file: str | None = None
 
     # Opening -------------------------------------------------------------------
     def _tuning(self, model: str) -> dict | None:
@@ -116,17 +126,39 @@ class Camera:
                 self.log(f"camera: tuning {name}: {e}")
         return None
 
+    def _use_tuning(self, tuning: dict) -> None:
+        """Make the camera use `tuning`.
+
+        libcamera reads the tuning file when it lists the camera, not when Picamera2 opens it,
+        and listing it once already happened above. Picamera2(tuning=dict) also deletes its
+        temporary file but leaves LIBCAMERA_RPI_TUNING_FILE set, which hides the camera at the
+        next listing. So: our own file, kept until close(), and the camera listed again."""
+        from picamera2 import Picamera2
+
+        fd, self._tuning_file = tempfile.mkstemp(prefix="inkstant-tuning-", suffix=".json")
+        with os.fdopen(fd, "w") as f:
+            json.dump(tuning, f)
+        os.environ[TUNING_ENV] = self._tuning_file
+        reset = getattr(Picamera2._cm, "reset", None)
+        if reset is not None:
+            reset()
+        else:
+            self.log("camera: this Picamera2 can't list the camera again; the tuning override may not apply")
+
     def open(self) -> str:
         """Open and start the camera, settling at 14 fps. Returns "full" or "fallback"."""
         from libcamera import Transform, controls
         from picamera2 import Picamera2
 
+        os.environ.pop(TUNING_ENV, None)  # list the camera with its default tuning first
         info = Picamera2.global_camera_info()
         if not info:
             raise CameraError("No camera found")
         model = info[0].get("Model", "imx708")
         tuning = self._tuning(model)
-        self.picam2 = Picamera2(tuning=tuning)
+        if tuning is not None:
+            self._use_tuning(tuning)
+        self.picam2 = Picamera2(tuning=self._tuning_file)
         transform = Transform(hflip=self.device.camera_hflip, vflip=self.device.camera_vflip)
         settle = frame_duration_us(SETTLE_FPS)
         ctrl = {
@@ -164,7 +196,7 @@ class Camera:
             except Exception as e:
                 self.close()
                 raise CameraError(f"Camera won't start: {e or last_error}") from e
-        self._settle(SETTLE_FRAMES, timeout=3.0)
+        self._settle(SETTLE_FRAMES)
         self.set_fps(self.fps)
         try:
             sensor = self.picam2.camera_configuration().get("sensor")
@@ -173,13 +205,12 @@ class Camera:
         self.log(f"camera: {model} started ({self.mode}), sensor {sensor}, CmaFree {cma_free_kb()} kB")
         return self.mode
 
-    def _settle(self, frames: int, timeout: float) -> None:
-        deadline = time.monotonic() + timeout
-        for _ in range(frames):
-            remaining = deadline - time.monotonic()
-            if remaining <= 0:
-                raise CameraError("Camera didn't deliver frames")
-            self.picam2.capture_metadata(wait=remaining)
+    def _settle(self, frames: int) -> None:
+        for i in range(frames):
+            try:
+                self.picam2.capture_metadata(wait=FIRST_FRAME_TIMEOUT if i == 0 else FRAME_TIMEOUT)
+            except TimeoutError as e:
+                raise CameraError("Camera didn't deliver frames") from e
 
     def _safe_stop(self) -> None:
         try:
@@ -237,7 +268,10 @@ class Camera:
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 break
-            md = self.picam2.capture_metadata(wait=max(remaining, 0.1))
+            try:
+                md = self.picam2.capture_metadata(wait=max(remaining, 0.1))
+            except TimeoutError:
+                break  # out of time; the capture that follows has its own timeout
             frames += 1
             if frames < WAKE_MIN_FRAMES:
                 continue
@@ -259,6 +293,11 @@ class Camera:
                 pass
         self.picam2 = None
         self.mode = "off"
+        os.environ.pop(TUNING_ENV, None)
+        if self._tuning_file:
+            with contextlib.suppress(OSError):
+                os.unlink(self._tuning_file)
+            self._tuning_file = None
 
 
 class FakeCamera:
