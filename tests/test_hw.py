@@ -15,7 +15,7 @@ FIX = Path(__file__).parent / "fixtures"
 
 
 # Status light --------------------------------------------------------------------------
-def test_led_steady_wink_and_cues():
+def test_led_steady_and_wink():
     async def main():
         w = led.FakeLed()
         c = led.LedController(w)
@@ -24,35 +24,18 @@ def test_led_steady_wink_and_cues():
         c.wink()
         assert w.log[-1] == ("level", 0) and c.shown == "wink"
         c.set_steady("wait")  # during the wink: written when it ends
+        assert w.log[-1] == ("level", 0)
         await asyncio.sleep(led.WINK_SECONDS + 0.05)
-        assert w.log[-1] == ("pattern", led.STEADY["wait"][1], -1)
-        c.cue("no_module")  # dropped: cues only over ready, asleep, share
-        assert c.queue == type(c.queue)() and c.playing is None
-        c.set_steady("ready")
-        c.cue("no_module")
-        c.cue("battery")
-        assert c.playing == "no_module" and list(c.queue) == ["battery"]
-        assert w.log[-1] == ("pattern", led.CUES["no_module"][0], 8)
-        c.set_steady("problem")  # a non-cue state ends cues at once
-        assert c.playing is None and not c.queue
-        assert w.log[-1][0] == "pattern" and w.log[-1][1] == led.STEADY["problem"][1]
+        assert w.log[-1] == ("pattern", led.STEADY["wait"][1], -1) and c.shown == "wait"
+        c.set_steady("off")
+        assert w.log[-1] == ("level", 0) and not c.winking
 
     asyncio.run(main())
 
 
-def test_led_cue_sequence_then_steady():
-    async def main():
-        w = led.FakeLed()
-        c = led.LedController(w)
-        c.set_steady("asleep")
-        c.cue("battery")
-        await asyncio.sleep(0.01)
-        assert c.playing == "battery"
-        c._timer.cancel()
-        c._next()  # pretend the 3 s passed
-        assert w.log[-1] == ("pattern", led.STEADY["asleep"][1], -1)
-
-    asyncio.run(main())
+def test_led_has_four_looks():
+    # Solid, a slow blink (also the kernel's blink while starting) and off, plus the wink.
+    assert set(led.STEADY) == {"starting", "ready", "wait", "off"}
 
 
 def test_led_soft_fallback_blinks():

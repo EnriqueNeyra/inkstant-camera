@@ -3,10 +3,9 @@ is accepted, timers, battery levels and the battery saver. No hardware, no I/O."
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 STARTING, WAKE, ACTIVE, SHUTTING_DOWN = "STARTING", "WAKE", "ACTIVE", "SHUTTING_DOWN"
-LIGHT_ERRORS = frozenset({"camera", "display", "storage", "storage_full"})
 SAVER_SLEEP_MIN = 1
 SAVER_OFF_MIN = 5
 SAVER_SHARE_MIN = 5
@@ -23,29 +22,23 @@ class View:
     develop_pending: bool = False
     shutdown_display_busy: bool = False
     share: str = "off"  # off, starting, on, stopping
-    errors: set[str] = field(default_factory=set)
     storage: str = "ok"
-    problem_active: bool = False
     update_running: bool = False
 
 
 def led_steady(v: View) -> str:
-    """The status light's steady pattern: the first rule that matches wins."""
+    """The status light: solid when the shutter takes a photo, a slow blink while it won't (busy, or
+    sharing), off when off. Only four things to learn; problems and the battery show in the gallery,
+    and sharing on the print."""
     if v.lifecycle == STARTING:
         return "starting"
     if v.lifecycle == WAKE:
         return "off"
     if v.lifecycle == SHUTTING_DOWN:
         return "wait" if v.shutdown_display_busy else "off"
-    if (v.errors & LIGHT_ERRORS) or v.storage == "full" or v.problem_active:
-        return "problem"
     if (v.display == "refreshing" or v.develop_pending or v.capture_busy
-            or v.camera in ("starting", "waking") or v.update_running):
+            or v.camera in ("starting", "waking") or v.update_running or v.share != "off"):
         return "wait"
-    if v.share in ("starting", "on"):
-        return "share"
-    if v.camera == "asleep":
-        return "asleep"
     return "ready"
 
 
@@ -53,7 +46,7 @@ def shutter_accepted(v: View) -> bool:
     """Whether a shutter press takes a photo now."""
     return (v.lifecycle == ACTIVE and v.camera in ("ready", "fallback", "asleep", "waking")
             and not v.capture_busy and v.display != "refreshing" and v.storage != "full"
-            and not v.update_running)
+            and not v.update_running and v.share == "off")  # no shooting while sharing
 
 
 def btn_accepted(v: View) -> bool:

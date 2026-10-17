@@ -230,17 +230,8 @@ input[type="time"] { font: inherit; font-size: 1rem; min-height: 40px; border: 1
 .lamp { width: 18px; height: 18px; border-radius: 50%; margin: 3px; background: #c33; box-shadow: 0 0 8px #e44; }
 .lamp[data-p="off"] { background: var(--surface-2); box-shadow: none; }
 .lamp[data-p="wait"] { animation: l-wait 1s steps(1) infinite; }
-.lamp[data-p="share"] { animation: l-share 2s steps(1) infinite; }
-.lamp[data-p="asleep"] { animation: l-asleep 4s steps(1) infinite; }
-.lamp[data-p="problem"] { animation: l-problem 2.5s steps(1) infinite; }
-.lamp[data-p="nomodule"] { animation: l-wait .25s steps(1) infinite; }
-.lamp[data-p="battery"] { animation: l-battery 1s steps(1) infinite; }
 .lamp[data-p="wink"] { animation: l-wink 2s steps(1) infinite; }
 @keyframes l-wait { 50% { opacity: .1; } }
-@keyframes l-share { 85% { opacity: .1; } }
-@keyframes l-asleep { 0% { opacity: 1; } 2.5% { opacity: .1; } }
-@keyframes l-problem { 0% { opacity: 1; } 4% { opacity: .1; } 10% { opacity: 1; } 14% { opacity: .1; } 20% { opacity: 1; } 24% { opacity: .1; } }
-@keyframes l-battery { 0% { opacity: 1; } 10% { opacity: .1; } 25% { opacity: 1; } 35% { opacity: .1; } }
 @keyframes l-wink { 80% { opacity: .1; } }
 .noscroll { overflow: hidden; }
 .sentinel { height: 1px; }

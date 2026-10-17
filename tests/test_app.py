@@ -166,7 +166,6 @@ def test_no_module_then_insert_develops_newest(paths, health_url):
         try:
             ids = [await h.shoot() for _ in range(5)]
             assert h.epd.shown == [] and h.app.state.undeveloped == ids[-1]
-            assert any(e[0] == "pattern" and e[1] == led.CUES["no_module"][0] for e in h.led.log)
             await h.insert_module()
             await h.idle_display()
             assert len(h.epd.shown) == 1 and h.app.state.current == ids[-1]
@@ -202,7 +201,7 @@ def test_sleep_then_shutter_wakes_and_shoots(paths, health_url):
         try:
             h.clock.advance(5 * 60 + 1)
             await h.app.tick()
-            assert h.app.camera_state == "asleep" and h.steady() == "asleep"
+            assert h.app.camera_state == "asleep" and h.steady() == "ready"  # the shutter still works
             await h.shoot()
             assert "wake shot" in h.cam.history and h.app.camera_state == "ready"
         finally:
@@ -384,7 +383,7 @@ def test_share_mode_on_and_off(paths, health_url):
             assert h.app.share == "off"
             await h.server.tap("long")
             await h.until(lambda: h.app.share == "on")
-            assert h.app.share_info.mode == "home" and h.steady() in ("share", "wait")
+            assert h.app.share_info.mode == "home" and h.steady() == "wait"  # no shooting while sharing
             await h.until(lambda: h.app.state.display_content == "share")
             await h.idle_display()
             st = await h.cmd("status")
@@ -397,6 +396,63 @@ def test_share_mode_on_and_off(paths, health_url):
             await h.idle_display()
             assert h.app.state.display_content == "photo" and h.app.state.current == pid
             assert h.net.state == "off" and h.net.log[-2:] == ["down", "radio False"]
+            assert h.steady() == "ready"
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_no_photos_while_sharing(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start()
+        try:
+            gate = threading.Event()
+            scan = h.net.scan
+            h.net.scan = lambda: (gate.wait(5), scan())[1]
+            start = asyncio.ensure_future(h.app.share_start())
+            await h.until(lambda: h.app.share == "starting")
+            assert h.steady() == "wait"  # the slow blink: the shutter won't take a photo
+            winks = h.led.log.count(("level", 0))
+            await h.press()
+            gate.set()
+            await start
+            await h.idle_display()  # the QR code
+            assert h.app.share == "on" and h.steady() == "wait"
+            await h.press()
+            await asyncio.sleep(0.2)
+            assert h.app.store.list() == [] and h.led.log.count(("level", 0)) == winks  # no photo, no wink
+            assert h.logs.count("shutter: refused") == 2
+            await h.app.share_stop()
+            await h.idle_display()
+            assert h.steady() == "ready"
+            await h.shoot()  # the shutter works again
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_a_failed_share_start_develops_the_photo_it_held_back(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start()
+        try:
+            h.cam.delay = 0.5  # the shutter was pressed just before sharing started
+            gate = threading.Event()
+            h.net.scan = lambda: (gate.wait(5), {})[1]  # no home Wi-Fi in range...
+            h.net.up_hotspot = lambda: False  # ...and the camera's own won't start
+            await h.press()
+            start = asyncio.ensure_future(h.app.share_start())
+            await h.until(lambda: len(h.app.store.list()) == 1)
+            pid = h.app.store.list()[0].id
+            assert h.app.share == "starting" and h.app.state.undeveloped == pid and h.epd.shown == []
+            gate.set()
+            assert await start == "couldn't start the camera's Wi-Fi"
+            await h.until(lambda: h.app.display_job is not None)
+            await h.idle_display()
+            assert h.app.state.current == pid and h.app.state.undeveloped is None
         finally:
             await h.stop()
 
@@ -636,8 +692,8 @@ def test_storage_full_refuses_shutter(paths, health_url, monkeypatch):
             monkeypatch.setattr(h.app.store, "disk", lambda: (100 << 20, 10 << 30))
             await h.press()
             await asyncio.sleep(0.2)
-            assert h.app.store.list() == [] and h.steady() == "problem"
-            assert ("level", 0) not in h.led.log  # no wink
+            assert h.app.store.list() == [] and h.steady() == "ready"
+            assert ("level", 0) not in h.led.log  # no wink: the gallery says why
             st = await h.cmd("status")
             assert st["storage"]["state"] == "full"
         finally:
@@ -708,12 +764,12 @@ def test_update_defers_power_button(paths, health_url):
     run(main())
 
 
-def test_camera_failure_shows_problem(paths, health_url):
+def test_camera_failure_shows_in_the_gallery(paths, health_url):
     async def main():
         h = Harness(paths, health_url)
         await h.start(camera_fail=True)
         try:
-            assert h.app.camera_state == "failed" and h.steady() == "problem"
+            assert h.app.camera_state == "failed"
             assert any(e["code"] == "camera" for e in (await h.cmd("status"))["errors"])
         finally:
             await h.stop()
@@ -721,14 +777,18 @@ def test_camera_failure_shows_problem(paths, health_url):
     run(main())
 
 
-def test_power_on_cues_no_module_and_low_battery(paths, health_url):
+def test_no_print_and_low_battery_show_in_the_gallery_not_the_light(paths, health_url):
     async def main():
         h = Harness(paths, health_url)
         await h.start(module=False, battery="12.0")
         try:
-            patterns = [e[1] for e in h.led.log if e[0] == "pattern"]
-            assert led.CUES["no_module"][0] in patterns
-            await h.until(lambda: led.CUES["battery"][0] in [e[1] for e in h.led.log if e[0] == "pattern"])
+            await h.until(lambda: h.app.battery_low)
+            await h.shoot()
+            st = await h.cmd("status")
+            assert st["module_present"] is False and st["battery"]["low"] is True
+            assert h.steady() == "ready"
+            # Only the four looks: solid, the slow blink, the wink (off for a moment) and off.
+            assert {e[1] for e in h.led.log if e[0] == "pattern"} <= {led.STEADY["wait"][1]}
         finally:
             await h.stop()
 

@@ -151,12 +151,10 @@ class CameraApp:
         self.storage = "ok"
         self.clock_valid = False
         self.boot_utc = time.time()
-        self.problem_until = 0.0
         self.update_running = False
         self.update_status: dict = {"state": "idle", "step": None, "message": None}
         self.power_after_update = False
         self.power_button_pending = False
-        self.first_ready_done = False
         self.shutdown_display_busy = False
         self.last_use = clock()
         self.last_camera_use = clock()
@@ -227,9 +225,8 @@ class CameraApp:
             lifecycle=self.lifecycle, camera=self.camera_state, capture_busy=self.capture_busy,
             display=self.display,
             develop_pending=self.pending_job is not None and self.pending_job.kind == DEVELOP,
-            shutdown_display_busy=self.shutdown_display_busy, share=self.share,
-            errors=self.errors.codes(), storage=self.storage,
-            problem_active=self.problem_until > self.clock(), update_running=self.update_running)
+            shutdown_display_busy=self.shutdown_display_busy, share=self.share, storage=self.storage,
+            update_running=self.update_running)
 
     def update_led(self) -> None:
         self.led.set_steady(machine.led_steady(self.view()))
@@ -365,15 +362,9 @@ class CameraApp:
         self.update_led()
         if self.camera_state in ("ready", "fallback"):
             self.uptime_mark("ready")
-            if not self.first_ready_done:
-                self.first_ready_done = True
-                if not self.module_present:
-                    self.led.cue("no_module")
-                if self.battery_low:
-                    self.led.cue("battery")
             self._kick_rebuild()
 
-    # Status light cues happen through self.led; steady patterns through update_led().
+    # The status light: its steady pattern through update_led(), the shutter's wink through self.led.
 
     # Events: shutter -------------------------------------------------------------------------
     def on_shutter(self, press_ns: int, wall: float) -> None:
@@ -448,9 +439,6 @@ class CameraApp:
         elif not self.module_present:
             self.capture_busy = False
             self.update_led()
-            self.led.cue("no_module")
-            if self.battery_low:
-                self.led.cue("battery")
 
     # Events: module ---------------------------------------------------------------------------
     def on_detect(self, present: bool) -> None:
@@ -481,8 +469,6 @@ class CameraApp:
         self.save_state()
         self.errors.clear("display")
         self.update_led()
-        if self.lifecycle == ACTIVE:
-            self.led.cue("no_module")
 
     def on_module_inserted(self) -> None:
         self.log("module: inserted")
@@ -581,8 +567,6 @@ class CameraApp:
             self.update_led()
             if self.lifecycle == WAKE:
                 self.spawn(self._wake_after_shown())
-            elif job.kind == DEVELOP and self.battery_low and self.lifecycle == ACTIVE:
-                self.led.cue("battery")
             return
         # finished
         result = detail
@@ -679,9 +663,6 @@ class CameraApp:
             elif now - self._last_plug_poll >= 10:
                 self._last_plug_poll = now
                 await self.poll_plug()
-        if self.problem_until and now >= self.problem_until:
-            self.problem_until = 0.0
-            self.update_led()
         if self.lifecycle == WAKE:
             if self.wake_deadline is not None and now >= self.wake_deadline:
                 self.request_shutdown("wake_timeout")
@@ -947,9 +928,9 @@ class CameraApp:
                 await gallery  # let it finish starting, so stopping it below doesn't race
             self.log(f"share: {e}")
             self.errors.set("wifi", f"Couldn't start sharing: {e}")
-            self.problem_until = self.clock() + 10
             self.share = "on"  # so share_stop tears everything down
-            await self.share_stop(restore=False)
+            # Develops a photo saved while this was starting (pressed just before), if there is one.
+            await self.share_stop()
             self.errors.clear("wifi")
             self.update_led()
             return str(e)
@@ -1077,8 +1058,8 @@ class CameraApp:
             return  # no home network saved
         self.log(f"share: switching to {'the camera' if to_hotspot else 'home'} Wi-Fi")
         await self.share_stop(restore=False)
-        if await self.share_start(force_hotspot=to_hotspot) is not None:
-            self._restore_display()  # it failed: don't leave a QR code up that no longer works
+        # If it fails, share_start puts the photo back: no QR code is left up that no longer works.
+        await self.share_start(force_hotspot=to_hotspot)
 
     # Shutdown ------------------------------------------------------------------------------------------
     def request_shutdown(self, reason: str, reboot: bool = False) -> None:
@@ -1091,7 +1072,6 @@ class CameraApp:
         self.log(f"shutdown: {reason}{' (reboot)' if reboot else ''}")
         previous = self.lifecycle
         self.lifecycle = SHUTTING_DOWN
-        self.led.queue.clear()
         start = self.clock()
         # 2: let a running screen update finish (up to 30 s), drop the pending one.
         self.pending_job = None
@@ -1240,7 +1220,6 @@ class CameraApp:
         result = await self.run_selftest()
         if not result["passed"]:
             self.errors.set("setup", f"Setup check found a problem: {', '.join(result['failed'][:2])}")
-            self.problem_until = self.clock() + 30
             self.update_led()
             self.spawn(self._clear_setup_error_later())
 
