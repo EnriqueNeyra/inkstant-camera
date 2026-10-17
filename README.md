@@ -44,13 +44,24 @@ It's a Raspberry Pi, a camera module, a battery board and a 3.6" six-colour e-pa
 | Display, one per print | [Waveshare 3.6" e-Paper HAT+ (E)](https://www.amazon.com/dp/B0G656R3M9) | The **HAT+ (E)** with its driver board and 9-pin cable, not the bare panel. Six colours, 600 × 400 |
 | Display connector, one pair per print | [JHYOSSTHI magnetic pogo pin connector, 10Pin/E](https://www.amazon.com/dp/B0FF1VJGYS) | Lets the print snap on and slide out. The first pair also gives you the camera's half |
 | Battery | [PiSugar 3 Plus](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series) | 5000 mAh battery with a clock, a power button (PWR) and a second button (BTN). It needs firmware 1.2.4 or newer; the setup script checks this for you |
-| Shutter button | [uxcell 12 mm momentary push button with an LED ring](https://www.amazon.com/dp/B08HHZCPGN), 3–6 V | Get the **momentary** one, not "latching". The ring is the camera's only light. A blue ring may look dim at 3.3 V; red is brighter |
+| Shutter button | [uxcell 12 mm momentary push button with an LED ring](https://www.amazon.com/dp/B08HHZCPGN), 3–6 V | Get the **momentary** one, not "latching". The flat-topped version ([B07Z2TDDTZ](https://www.amazon.com/dp/B07Z2TDDTZ)) wires the same. The ring is the camera's only light; a blue ring may look dim ([brighter light](#a-brighter-light)) |
 | microSD card | 32 GB or larger, A1-rated, from a known brand | Holds several thousand photos |
 | Jumper wires | 14 female-to-female jumper wires | 10 for the display connector, 4 for the button |
 | Joining wires | [Solder-seal heat-shrink connectors](https://www.amazon.com/s?k=solder+seal+wire+connectors), or solder and heat-shrink | For joining wires to wires. Nothing is soldered to the Pi or the boards |
 | Small parts | Small screws for the connector halves; small neodymium magnets for the back of each print | |
 | Charging | A USB-C cable and any 5 V USB charger | |
 | Case | 3D-printed | The case design isn't published yet. See [what the case needs](#what-the-case-needs) |
+
+### Which Raspberry Pi?
+
+| Board | Camera cable | Notes |
+|---|---|---|
+| Pi 3A+ | 15-to-15 pin | The smallest (65 × 56 mm) and uses the least power, so the battery lasts longest |
+| Pi 3B, 3B+ | 15-to-15 pin | 85 × 56 mm. The 3B can only join 2.4 GHz Wi-Fi |
+| Pi 4B | 15-to-15 pin | 85 × 56 mm. The board Inkstant has been tested on |
+| Pi 5 | 15-to-22 pin (usually in the camera's box) | 85 × 56 mm. The PiSugar's spring pins need careful lining up, and the official Active Cooler may not fit with the PiSugar underneath |
+
+The Pi Zero 2 W isn't supported: it needs a different PiSugar and camera cable.
 
 ### Tools
 
@@ -59,6 +70,7 @@ It's a Raspberry Pi, a camera module, a battery board and a 3.6" six-colour e-pa
 - A heat gun for solder-seal connectors, or a soldering iron
 - Small screwdrivers
 - Masking tape and a pen, for labelling wires
+- Optional: a Dupont crimp kit, for the no-solder route
 - A computer (Mac, Windows or Linux) on the same Wi-Fi as the camera, to install the software
 
 ## How it fits together
@@ -87,6 +99,7 @@ It's a Raspberry Pi, a camera module, a battery board and a 3.6" six-colour e-pa
 - The **camera** plugs into the Pi's camera connector with a ribbon cable.
 - The **shutter button** has four wires: two for the switch and two for its light.
 - Each **print** is a complete Waveshare display with half of a magnetic connector on its edge. The other half sits in the camera, wired to the Pi. Slide a print in, and the magnets snap the two halves together.
+- The display's own plug is a tiny latching connector that isn't made to be unplugged again and again, so it stays plugged in, and the magnetic connector does the sliding in and out.
 
 ## Step 1: Build the hardware
 
@@ -124,6 +137,18 @@ The button has four metal tabs on the back: two for the switch and two for the l
 2. **Find the light's + tab:** set the multimeter to diode test and touch the other two tabs, then swap the probes. The way round that shows a reading (about 2.5 to 3 V for a blue ring) has the **red** probe on LED+. If neither way shows anything, you'll find it at first power-on instead ([Check the light](#check-the-light)).
 3. Label the tabs with tape: SW, SW, LED+, LED−.
 4. Join a female jumper wire to each tab (solder, then heat-shrink), and keep the wires short.
+
+> [!TIP]
+> **No-solder option:** many 12 mm buttons are sold with a plug-in harness that pushes onto the four tabs. It isn't a formal standard, so check it fits your button. Its wire colours vary by seller: find the switch and LED+ wires with the multimeter as above, then join them to jumper wires with solder-seal connectors.
+
+#### A brighter light
+
+A blue ring is dim on the Pi's 3.3 V, and may be hard to see in daylight. Check it before you close the case. If it's too dim, either:
+
+- **Fit the red version of the button** ([flat-topped red: B07Z2THFCL](https://www.amazon.com/dp/B07Z2THFCL)). It's wired the same way.
+- **Or power the ring from 5 V through a transistor:** an NPN transistor (2N2222, BC337 or similar) and a 1 kΩ resistor. LED+ goes to 5 V (pin 2 or 4), LED− to the transistor's collector, its emitter to GND (pin 39), and pin 37 through the 1 kΩ resistor to its base. This is the only thing that ever goes on a 5 V pin.
+
+The software works the same either way.
 
 ### Build the camera half of the display connector
 
@@ -171,27 +196,9 @@ All 14 wires go on top of the Pi's 40-pin header. The PiSugar touches the header
 | Shutter LED+ | 37 |
 | Shutter LED− | 39 |
 
-The same thing as a picture of the header. Look down on the Pi and turn it so the header runs down the right-hand side, with the USB ports at the bottom; pin 1 is then at the top:
+The same thing as a picture. Look down on the Pi and turn it so the header runs down the right-hand side, with the USB ports at the bottom; pin 1 is then at the top:
 
-```text
-                     inner row   outer row (board edge)
-   Connector 1 (VCC)  ──  1 ●  ● 2   (5 V: leave empty!)
-                          3 ●  ● 4   (5 V: leave empty!)
-                          5 ●  ● 6
-                          7 ●  ● 8
-                          9 ●  ● 10
-   Connector 3 (RST)  ── 11 ●  ● 12 ──  Connector 2 (PWR)
-   Shutter switch     ── 13 ●  ● 14 ──  Shutter switch
-   Connector 9 (detect) ─15 ●  ● 16
-                         17 ●  ● 18 ──  Connector 4 (BUSY)
-   Connector 8 (DIN)  ── 19 ●  ● 20 ──  Connector 10 (GND)
-                         21 ●  ● 22 ──  Connector 5 (DC)
-   Connector 7 (CLK)  ── 23 ●  ● 24 ──  Connector 6 (CS)
-                         25 ●  ● 26
-                          …    …
-   Shutter LED+       ── 37 ●  ● 38
-   Shutter LED−       ── 39 ●  ● 40
-```
+![Where each wire goes on the Pi's 40-pin header](docs/wiring.svg)
 
 These pins are the same on every supported Pi.
 
@@ -235,7 +242,7 @@ With everything still off:
 
 The case design isn't published yet. If you design your own, it needs:
 
-- A slot at the back for the print, shaped so it only goes in one way round. The camera's half of the connector screws in at the end of the slot, facing the incoming print.
+- A slot at the back for the print, shaped so it only goes in one way round: the magnets may not stop a print going in backwards. The camera's half of the connector screws in at the end of the slot, facing the incoming print.
 - A shaded or recessed window for the display: long direct sunlight can permanently damage e-paper.
 - A 12 mm hole for the shutter button, with room behind it for the button's 23 mm length and its wires.
 - Openings or printed caps for the PiSugar's PWR and BTN buttons, its USB-C port and its four battery lights, which are all on one edge.
@@ -266,7 +273,7 @@ You'll use **Raspberry Pi Imager**, a free app from Raspberry Pi, to put the ope
 
 1. Put the microSD card in the Pi, and a print in the camera if you've built one.
 2. **Turn the camera on:** press PWR briefly, then press and hold it. The PiSugar's lights count up from 1 to 4 and the Pi starts.
-3. **Wait about two minutes.** The first start takes a while because the Pi sets itself up.
+3. **Wait about two minutes.** The first start takes a while because the Pi sets itself up. The shutter's light stays off until the software is installed; that's normal.
 4. **Connect to the Pi from your computer.** Open **Terminal** on a Mac or Linux, or **PowerShell** on Windows, and type (with your username):
 
    ```bash
@@ -320,6 +327,16 @@ Over SSH, before the setup script, `pinctrl set 26 op dh` turns the ring on and 
 
 </details>
 
+### Before you close the case
+
+- [ ] The light ring is bright enough indoors and in daylight. If not, see [a brighter light](#a-brighter-light).
+- [ ] A print snaps on firmly every time, and the magnets hold it.
+- [ ] Sliding a print out gives the fast "no print" blink.
+- [ ] Swapping prints while the camera is on doesn't restart anything.
+- [ ] PWR and BTN press reliably through the case.
+- [ ] While charging, the PiSugar doesn't get too hot inside the case.
+- [ ] The screen is easy to read outdoors in the shade.
+
 ## Using the camera
 
 ### Buttons
@@ -361,7 +378,12 @@ The gallery has the same list under Settings → Light → What it means.
 - **A print you slide in keeps whatever it shows,** unless a photo is waiting to develop. A kept photo is never overwritten by accident.
 - **Pulling a print out while it's developing** stops it, like pulling an instant photo out early. That photo develops on the next print instead.
 - **To put any photo on the print in the camera,** open it in the gallery and tap **Show on camera**.
-- **Look after the prints:** e-paper doesn't like long direct sunlight or temperatures below freezing. Waveshare advises storing displays with a white screen: put the print in the camera with the slideshow off, then turn the camera off, and the screen turns white.
+- **Swapping is safe** while the camera is on.
+- **Look after the prints** (Waveshare's advice):
+  - Keep them out of long direct sunlight, which can damage the screen for good.
+  - Use them between 0 and 40 °C. Cold can give the colours a tint.
+  - A picture left on a print for many months can burn in. To store a print, give it a white screen first: put it in the camera with the slideshow off, then turn the camera off, and the screen turns white. Waveshare suggests storing them for at most 6 months.
+  - Each print is rated for about a million picture changes.
 
 ### Sleep, turning off and the battery
 
@@ -369,7 +391,10 @@ The gallery has the same list under Settings → Light → What it means.
 - **Turning off:** after 10 minutes without use, the camera turns itself off. Before it does, it sets an alarm for the next slideshow picture.
 - **Battery saver** turns on by itself at 20%: the camera sleeps and turns off sooner.
 - **Low battery:** the light warns at 15%, and the camera turns itself off at 5%.
-- **Charging:** plug a USB-C charger into the PiSugar. Charging doesn't turn the camera on.
+- **Charging:** plug a USB-C charger into the PiSugar. Charging doesn't turn the camera on. The PiSugar's four small lights show the charge level.
+- **The PiSugar gets hot while charging:** its charging chip reaches 50 to 80 °C. Don't touch it, and leave air around it in the case.
+- **The battery keeps the camera's clock.** If the battery runs completely flat or is unplugged, the clock resets: share at home to set it from the internet, or use "Use this phone's time" in Settings.
+- The PiSugar's small round button is a reset, for emergencies only.
 
 ### Slideshow
 
@@ -588,7 +613,7 @@ The software is complete, with automated tests against simulated hardware. On a 
 
 - The e-paper driver (`src/inkstant/hw/epd.py`) follows Waveshare's [epd3in6e driver](https://github.com/waveshareteam/e-Paper); their permission notice is in that file.
 - The battery board runs PiSugar's [pisugar-server](https://github.com/PiSugar/pisugar-power-manager-rs), which the setup script downloads from PiSugar's releases.
-- Inspired by other e-paper cameras, including Strange Inventions' [*I Invented Digital Film*](https://www.youtube.com/watch?v=9giyTIqTx1w).
+- Inspired by other e-paper cameras: Strange Inventions' [*I Invented Digital Film*](https://www.youtube.com/watch?v=9giyTIqTx1w), Cameron Dowd's [ESP32 e-paper Polaroid](https://liliputing.com/this-diy-e-paper-instant-camera-is-like-a-digital-polaroid-for-ephemeral-photos/), and befinitiv's [*Digital Film Cartridge for Analog Cameras*](https://www.youtube.com/watch?v=5DdQN0NVVT0).
 
 ## License
 
