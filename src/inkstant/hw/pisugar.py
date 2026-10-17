@@ -16,6 +16,9 @@ from pathlib import Path
 TAPS = frozenset({"single", "double", "long"})
 REPLY_TIMEOUT = 2.0
 CONNECT_TIMEOUT = 10.0
+IO_ERROR = "I/O error"
+IO_RETRIES = 3
+IO_RETRY_DELAY = 0.1
 
 
 class PiSugarError(Exception):
@@ -132,6 +135,19 @@ class PiSugarClient:
             errors.append(text)
 
     async def request(self, line: str, expect: str) -> str:
+        """Send one command and return its value.
+
+        pisugar-server passes I2C errors on as the value ("I/O error: Remote I/O error (os
+        error 121)"). The PiSugar 3 gives one now and then, for example straight after an alarm
+        write (about 1 read in 20 on the bench, 2026-10-16), so those are retried."""
+        for _ in range(IO_RETRIES):
+            value = await self._request(line, expect)
+            if not value.startswith(IO_ERROR):
+                return value
+            await asyncio.sleep(IO_RETRY_DELAY)
+        raise PiSugarError(f"{line}: {value}")
+
+    async def _request(self, line: str, expect: str) -> str:
         """Send one command and return its value. Reconnects and retries once."""
         async with self._lock:
             for attempt in (1, 2):
@@ -256,6 +272,7 @@ class FakePiSugarServer:
         self.log: list[str] = []
         self.rtc_offset = 0.0
         self.fail_next: str | None = None
+        self.io_errors: dict[str, int] = {}  # value or command → I2C errors to give first
         self._server = None
         self._writers: list[asyncio.StreamWriter] = []
 
@@ -287,6 +304,10 @@ class FakePiSugarServer:
         if self.fail_next and parts[0] == self.fail_next:
             self.fail_next = None
             return f"{parts[0]}: I2C error"
+        key = parts[1] if parts[0] == "get" and len(parts) > 1 else parts[0]
+        if self.io_errors.get(key):
+            self.io_errors[key] -= 1
+            return f"{key}: I/O error: Remote I/O error (os error 121)"  # as pisugar-server words it
         if parts[0] == "get" and len(parts) > 1:
             name = parts[1]
             if name == "rtc_time":

@@ -307,6 +307,20 @@ def test_pisugar_client_against_fake_server(paths):
             await client.alarm_set(datetime(2026, 10, 16, 9, 0, tzinfo=UTC))
             enabled, when = await client.alarm_read()
             assert enabled and when.hour == 9
+            # An I2C error now and then (seen on a real PiSugar 3 after an alarm write) is retried,
+            # never taken as the value: "is it plugged in?" mustn't become "no".
+            server.values["battery_power_plugged"] = "true"
+            server.io_errors = {"battery_power_plugged": 2, "rtc_alarm_set": 1}
+            assert await client.plugged() is True
+            await client.alarm_set(datetime(2026, 10, 16, 10, 0, tzinfo=UTC))
+            server.io_errors = {"battery": pisugar.IO_RETRIES}
+            with pytest.raises(pisugar.PiSugarError, match="I/O error"):
+                await client.battery()
+            # The setup checks' blocking reader retries too.
+            from inkstant.selftest import pisugar_sync_get
+            server.io_errors = {"model": 2}
+            get = pisugar_sync_get(paths.pisugar_sock)
+            assert await asyncio.get_running_loop().run_in_executor(None, get, "model") == "PiSugar 3"
         finally:
             await client.close()
             await server.stop()

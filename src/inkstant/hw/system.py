@@ -42,6 +42,19 @@ class System:
     def reboot(self) -> None:
         self.run("systemctl", "reboot", "--no-block")
 
+    def stopping_for(self) -> str | None:
+        """Why systemd is stopping the camera app, from its queued jobs: "reboot", "poweroff",
+        or None when only the service is stopping (a restart, an install)."""
+        try:
+            jobs = self.run("systemctl", "list-jobs", "--no-legend", timeout=3).stdout
+        except (OSError, subprocess.SubprocessError):
+            return "poweroff"  # can't tell: take it as the camera turning off
+        if "reboot.target" in jobs or "kexec.target" in jobs:
+            return "reboot"
+        if any(t in jobs for t in ("poweroff.target", "halt.target", "shutdown.target")):
+            return "poweroff"
+        return None
+
     # Units -------------------------------------------------------------------------
     def start_unit(self, unit: str) -> bool:
         return self.run("systemctl", "start", unit, timeout=30).returncode == 0
@@ -123,12 +136,16 @@ class FakeSystem:
         self.rtc_epoch: int | None = int(time.time())
         self._model = "Raspberry Pi 3 Model A Plus Rev 1.1 (simulated)"
         self._t0 = time.monotonic()
+        self.stopping: str | None = "poweroff"  # what an outside stop is for (stopping_for)
 
     def poweroff(self) -> None:
         self.calls.append(("poweroff",))
 
     def reboot(self) -> None:
         self.calls.append(("reboot",))
+
+    def stopping_for(self) -> str | None:
+        return self.stopping
 
     def start_unit(self, unit: str) -> bool:
         self.units.add(unit)

@@ -12,6 +12,7 @@ import re
 import socket
 import stat
 import subprocess
+import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -38,9 +39,19 @@ def parse_version(text: str) -> tuple[int, ...]:
 
 
 def pisugar_sync_get(sock: Path, timeout: float = 2.0) -> Callable[[str], str]:
-    """A minimal blocking pisugar-server client for tools (the app uses its async one)."""
+    """A minimal blocking pisugar-server client for tools (the app uses its async one).
+
+    Retries the PiSugar's occasional I2C error, as the async client does."""
 
     def get(name: str) -> str:
+        for _ in range(3):
+            value = get_once(name)
+            if not value.startswith("I/O error"):
+                return value
+            time.sleep(0.1)
+        raise OSError(f"{name}: {value}")
+
+    def get_once(name: str) -> str:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
             s.settimeout(timeout)
             s.connect(str(sock))
