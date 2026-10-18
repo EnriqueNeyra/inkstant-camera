@@ -2,7 +2,7 @@
 
 An instant camera that never runs out of film. Every photo "develops" on a small colour e-paper print that pops off the back of the camera for you to keep. Each photo is also saved at full size, so you can open them on your phone, with no app and no internet needed.
 
-It's a Raspberry Pi, a camera module, a battery board and a 3.6" six-colour e-paper display. It goes together with no soldering and no wiring: the boards plug into each other, and the camera plugs in with its ribbon cable.
+It's a Raspberry Pi 3A+, a camera module, a battery board and a 3.6" six-colour e-paper display. It goes together with no soldering and no wiring: the boards plug into each other, and the camera plugs in with its ribbon cable.
 
 <!-- Add a photo of the finished camera here. -->
 
@@ -38,9 +38,9 @@ It's a Raspberry Pi, a camera module, a battery board and a 3.6" six-colour e-pa
 
 | Part | What to get | Notes |
 |---|---|---|
-| Computer | Raspberry Pi 3A+ | The smallest option. The Pi 3B, 3B+, 4B and 5 work too. The Pi Zero 2 W isn't supported |
+| Computer | [Raspberry Pi 3A+](https://www.raspberrypi.com/products/raspberry-pi-3-model-a-plus/) | The board the build and its case are designed for ([why](#why-the-pi-3a)) |
 | Camera | [Arducam 12MP IMX708 autofocus camera module](https://www.arducam.com/arducam-12mp-imx708-autofocus-camera-module-with-hdr-pdaf-for-raspberry-pi.html) ([Amazon](https://www.amazon.com/dp/B0C9PYCV9S)) | The 75° lens. Raspberry Pi's own Camera Module 3 (standard lens) uses the same sensor and should work, but only the Arducam has been tested |
-| Camera cable | A standard **15-pin to 15-pin** Pi camera cable | Needed for the Pi 3 and 4. The Arducam box may only include a 15-to-22-pin cable, which fits only the Pi 5 |
+| Camera cable | A standard **15-pin to 15-pin** Pi camera cable | The Arducam box may only include a 15-to-22-pin cable, which is for the Pi 5 and doesn't fit the 3A+ |
 | Display, one per print | [Waveshare 3.6" e-Paper HAT+ (E)](https://www.amazon.com/dp/B0G656R3M9) | The **HAT+ (E)**: the display on a driver board, with a 40-pin socket on the back that pushes straight onto the Pi. Not the bare panel. Six colours, 600 × 400 |
 | Battery | [PiSugar 3 Plus](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series) | 5000 mAh battery with a clock and two buttons: **BTN is the shutter**, and PWR turns the camera on and off. It needs firmware 1.2.4 or newer; the setup script checks this for you |
 | Light pipe | A short clear light pipe, or a piece of 3 mm clear acrylic rod | Carries the Pi's own green light to the outside of the case. That light is the camera's status light |
@@ -49,16 +49,24 @@ It's a Raspberry Pi, a camera module, a battery board and a 3.6" six-colour e-pa
 | Case | 3D-printed | The case design isn't published yet. See [what the case needs](#what-the-case-needs) |
 | Magnets (optional) | Small neodymium magnets | On the back of each print's frame, so a print you keep can go on the fridge |
 
-### Which Raspberry Pi?
+### Why the Pi 3A+?
+
+The build and its case are for the Raspberry Pi 3A+ only. It's the cheapest board Inkstant supports, and exactly the size of the PiSugar under it (65 × 56 mm). It uses the least power, so the battery lasts longest, and Raspberry Pi will keep making it until at least January 2030.
+
+<details>
+<summary><b>Using another Raspberry Pi</b></summary>
+
+The software also runs on these boards, but the case won't fit them: they're 85 × 56 mm, with their ports in different places. To use one, design your own case. [HARDWARE.md](HARDWARE.md#other-boards-not-for-this-case) has their measurements.
 
 | Board | Camera cable | Notes |
 |---|---|---|
-| Pi 3A+ | 15-to-15 pin | The smallest (65 × 56 mm) and uses the least power, so the battery lasts longest |
-| Pi 3B, 3B+ | 15-to-15 pin | 85 × 56 mm. The 3B can only join 2.4 GHz Wi-Fi |
-| Pi 4B | 15-to-15 pin | 85 × 56 mm. The board Inkstant has been tested on |
-| Pi 5 | 15-to-22 pin (usually in the camera's box) | 85 × 56 mm. The PiSugar's spring pins need careful lining up, and the official Active Cooler may not fit with the PiSugar underneath |
+| Pi 3B, 3B+ | 15-to-15 pin | The 3B can only join 2.4 GHz Wi-Fi |
+| Pi 4B | 15-to-15 pin | The board Inkstant has been tested on |
+| Pi 5 | 15-to-22 pin (usually in the camera's box) | Clean any flux off the bottom of the header pins, and check that every PiSugar spring pin lands on its pin. The official Active Cooler may not fit. The camera can go on either connector: the setup script asks which one, and you answer 0 or 1, as printed next to it |
 
-The Pi Zero 2 W isn't supported: it needs a different PiSugar and camera cable.
+In Imager (Step 2), choose your own board as the **Device**. The Pi Zero 2 W isn't supported: it needs a different PiSugar and camera cable.
+
+</details>
 
 ### Tools
 
@@ -100,7 +108,7 @@ Work with everything switched off: the Pi unplugged and the PiSugar off. Touch s
 ### Check the parts
 
 1. The display is the **HAT+ (E)**: a display on a driver board, with a black 40-hole socket on the back.
-2. You have a **15-to-15-pin camera cable** if you're using a Pi 3 or 4.
+2. You have a **15-to-15-pin camera cable**. A 15-to-22 one doesn't fit the 3A+.
 3. Charge the PiSugar fully over USB-C, then make sure it's off. If its four little lights are on, hold PWR until they go out.
 
 ### Mount the Pi on the PiSugar
@@ -108,16 +116,14 @@ Work with everything switched off: the Pi unplugged and the PiSugar off. Touch s
 1. Peel the protective film off the PiSugar's screw posts.
 2. Put the PiSugar under the Pi, with its spring pins under the Pi's 40-pin header and its screw posts under the Pi's mounting holes.
 3. Press the Pi down gently onto the spring pins, and fit the screws that came with the PiSugar.
-4. **Pi 5 only:** clean any flux off the bottom of the header pins first, and check that every spring pin lands on its pin.
 
 ### Connect the camera
 
-1. Find the Pi's connector labelled **CAMERA**. On the Pi 3 and 4 it's between the HDMI port and the audio jack.
+1. Find the Pi's connector labelled **CAMERA**, between the HDMI port and the audio jack.
 2. Gently pull up the connector's plastic flap until it stops.
 3. Push the 15-to-15 cable in straight and all the way, with its **metal contacts facing away from the flap**. Push the flap back down.
 4. Do the same at the camera board: metal contacts facing away from the flap, towards the board.
-5. **Pi 5:** use the 15-to-22-pin cable on either camera connector. The setup script asks which one.
-6. The print sits over the Pi, so lay the cable flat against the board and lead it out past the board's edge.
+5. The print sits over the Pi, so lay the cable flat against the board and lead it out past the board's edge.
 
 ### Put a print on
 
@@ -133,17 +139,18 @@ Work with everything switched off: the Pi unplugged and the PiSugar off. Touch s
 
 ### What the case needs
 
-The case design isn't published yet. If you design your own, it needs:
+The case is being designed for the Pi 3A+, and isn't published yet. If you design your own, it needs:
 
 - **A guide for the print** that lines it up with the Pi's header, so it can only go on straight and the right way round, never a pin or a row out. The guide also sets how far the print presses on, and it should let you pull the print straight off.
 - **A frame for each print:** the display board is 89.5 × 59 mm. Leave its socket open on the back, give it a grip for pulling it off, and add pockets for magnets if you want them.
 - A shaded or recessed window for the display: long direct sunlight can permanently damage e-paper.
-- **A light pipe** from the Pi's green light to the outside. The Pi's small status lights sit at the edge of the board, a red one and a green one (on the Pi 5, one light that shows either colour). Line the pipe up with the green one.
+- **A light pipe** from the Pi's green light to the outside. The Pi's small status lights sit at the edge of the board, a red one and a green one. Line the pipe up with the green one.
 - **Printed caps for the PiSugar's PWR and BTN buttons,** and openings for its USB-C port and its four battery lights, which are all on one edge. BTN is the shutter, so its cap should be easy to find by touch and press cleanly. PWR's cap is best a little recessed, so it isn't pressed by accident.
 - Air around the PiSugar's charging chip, which gets hot (50 to 80 °C) while charging.
 - A window for the camera, and a way to hold the camera board square. If the camera or display ends up upside down, the setup script can flip the picture.
 - A way to reach the microSD card.
-- The Pi 3A+ is 65 × 56 mm; the other boards are 85 × 56 mm with ports in different places.
+
+[HARDWARE.md](HARDWARE.md) has every part's measurements, with links to the makers' drawings and 3D models.
 
 ## Step 2: Prepare the SD card
 
@@ -151,7 +158,7 @@ You'll use **Raspberry Pi Imager**, a free app from Raspberry Pi, to put the ope
 
 1. Download and install Imager from [raspberrypi.com/software](https://www.raspberrypi.com/software/), and put the microSD card in your computer.
 2. In Imager, choose:
-   - **Device:** your Raspberry Pi model.
+   - **Device:** Raspberry Pi 3 (it includes the 3A+).
    - **Operating system:** Raspberry Pi OS (other) → **Raspberry Pi OS Lite (64-bit)**.
    - **Storage:** your microSD card.
 3. When Imager offers to **customise** the settings, fill in:
@@ -196,7 +203,6 @@ You'll use **Raspberry Pi Imager**, a free app from Raspberry Pi, to put the ope
    | Wi-Fi country | Only asked if it isn't set yet: two letters, like `US` or `GB` |
    | Is the camera mounted upside down? | No, unless your case holds it upside down |
    | Is the display module mounted upside down? | No, unless your case holds it upside down |
-   | Which camera connector (Pi 5 only) | 0 or 1, as printed next to the connector you used |
 
 7. **Wait** about 15 to 25 minutes. It shows each step as it goes. If anything goes wrong, it stops and says what to fix. Running the same command again is always safe.
 8. **Write down the camera's Wi-Fi name and password** from the summary at the end. You'll need them to see your photos away from home. (You can also find them later in the gallery: Settings → Camera Wi-Fi.)
@@ -360,7 +366,7 @@ In the gallery, tap the sliders icon at the top right.
 | Setup stops: "No internet" | Check the Pi joined your Wi-Fi (the name and password in Imager), wait a minute for its clock to set, then run the command again |
 | Setup stops: "No PiSugar on I2C" | The PiSugar isn't seated or is switched off. Turn everything off, check the Pi sits flat on the spring pins, press PWR, and run the command again |
 | Setup says "PiSugar firmware is too old" | The board needs firmware 1.2.4 or newer. Contact PiSugar support |
-| Setup warns "No camera found" | Turn off, then reseat the ribbon at both ends with the metal contacts facing away from the flaps. On a Pi 3 or 4, the cable must be 15-pin at both ends |
+| Setup warns "No camera found" | Turn off, then reseat the ribbon at both ends with the metal contacts facing away from the flaps. On the 3A+, the cable must be 15-pin at both ends |
 | Can't SSH in after setup | Expected without developer mode: the camera turns its Wi-Fi off to save battery. SSH works again while sharing at home, or turn on Settings → Advanced → Developer mode |
 | A monitor shows nothing | Expected: setup turns HDMI off to save power. Use SSH |
 | The light doesn't wink when you tap BTN | No photo was taken. Start sharing, and the gallery shows what's wrong at the top of the page |
@@ -497,7 +503,7 @@ Bump `VERSION`, then push a tag `v<VERSION>` (for example `v1.0.1`). CI runs the
 
 ## Project status
 
-The software is complete, with automated tests against simulated hardware. On a real Raspberry Pi 4, it's been tested taking photos with BTN, developing them on a print pushed onto the Pi's header (with colours measured on the panel), the green status light, the gallery, sharing over home Wi-Fi and over the camera's own Wi-Fi, and the slideshow waking the camera. Still to test on the real hardware: the PWR button, plugging in the charger, taking a print off and putting one on while the camera is on, and the light pipe. The case design and the first published release are still to come.
+The software is complete, with automated tests against simulated hardware. On a real Raspberry Pi 4, it's been tested taking photos with BTN, developing them on a print pushed onto the Pi's header (with colours measured on the panel), the green status light, the gallery, sharing over home Wi-Fi and over the camera's own Wi-Fi, and the slideshow waking the camera. Still to test on the real hardware: the Pi 3A+ itself, which the build is for (so far the software has run only on a Pi 4), the PWR button, plugging in the charger, taking a print off and putting one on while the camera is on, and the light pipe. The case design and the first published release are still to come.
 
 ## Credits
 
