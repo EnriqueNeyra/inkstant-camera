@@ -2,8 +2,10 @@
 
 Run by the camera app on its first start after an install or update, by `inkstant-ctl
 selftest`, and by the install script before its reboot (`install=True`: only what can be true
-before the reboot). The camera app owns the e-paper driver, so the display check only reports
-whether a module is in; `tools/bench/epd_show.py --probe` tests one.
+before the reboot). The display check is the camera app's alone, as the app owns the e-paper
+driver: with a print on and no screen update running, it resets the print and watches BUSY dip
+and come back, with no refresh (`tools/bench/epd_show.py --probe` does the same with the app
+stopped).
 """
 
 from __future__ import annotations
@@ -269,7 +271,7 @@ def run(paths: Paths, *, family: str = "pi3", install: bool = False,
         if result is None:
             present = module_present is not None and module_present()
             checks.append(Check("Display module", True, False,
-                                "module in, not tested while idle" if present else "no module in: not tested"))
+                                "module in, not tested" if present else "no module in: not tested"))
         else:
             checks.append(Check("Display module", result, True, "answers" if result else "doesn't answer",
                                 "Take the print off and press it back on, straight, with every pin in its socket."))

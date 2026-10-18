@@ -830,6 +830,121 @@ def test_update_defers_power_button(paths, health_url):
     run(main())
 
 
+async def display_check(h):
+    r = await h.cmd("selftest.run")
+    return next(c for c in r["checks"] if c["name"] == "Display module"), r["failed"]
+
+
+def test_setup_check_tests_the_print_without_changing_it(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start()
+        try:
+            pid = await h.shoot()
+            await h.idle_display()
+            png = paths.root / "display.png"
+            before = (len(h.epd.shown), png.stat().st_mtime_ns)
+            check, failed = await display_check(h)
+            assert (check["ok"], check["detail"]) == (True, "answers") and "Display module" not in failed
+            assert h.logs.count("display: PROBE()") == 1 and h.app.display_job is None
+            assert (len(h.epd.shown), png.stat().st_mtime_ns) == before  # no refresh
+            assert h.app.state.current == pid and h.app.state.display_content == "photo"
+
+            h.epd.module_present = lambda: False  # on the header, but BUSY never answers
+            check, failed = await display_check(h)
+            assert (check["ok"], check["critical"], check["detail"]) == (False, True, "doesn't answer")
+            assert "Display module" in failed and check["hint"].startswith("Take the print off")
+            assert h.app.state.display_content == "photo" and "display" not in h.app.errors.codes()
+
+            await h.remove_module()
+            check, _ = await display_check(h)
+            assert (check["ok"], check["detail"]) == (True, "no module in: not tested")
+            assert h.logs.count("display: PROBE()") == 2
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_setup_check_during_a_screen_update_reports_it_working(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start()
+        try:
+            h.epd.speed = 0.05
+            await h.shoot()
+            await h.until(lambda: h.app.display == "refreshing")
+            check, _ = await display_check(h)
+            assert (check["ok"], check["detail"]) == (True, "answers")
+            assert "display: PROBE()" not in h.logs
+            await h.idle_display()
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_shutter_works_during_the_setup_check_probe(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start()
+        try:
+            h.epd.speed = 4  # a 1 s probe
+            check = asyncio.create_task(display_check(h))
+            await h.until(lambda: h.app.display == "probing")
+            h.epd.speed = 0.002
+            assert h.steady() == "ready"  # not a screen update
+            await h.press()
+            assert h.app.capture_busy and "shutter: refused" not in h.logs
+            assert (await check)[0]["detail"] == "answers"
+            await h.until(lambda: len(h.app.store.list()) == 1 and not h.app.capture_busy)
+            await h.idle_display()
+            assert h.app.state.current == h.app.store.list()[0].id and len(h.epd.shown) == 1
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_pulling_the_print_off_aborts_the_setup_check_probe(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start()
+        try:
+            h.epd.speed = 40  # a 10 s probe
+            check = asyncio.create_task(display_check(h))
+            await h.until(lambda: h.app.display == "probing")
+            t0 = time.monotonic()
+            await h.remove_module()
+            result, failed = await asyncio.wait_for(check, 3)
+            assert (result["ok"], result["detail"]) == (True, "no module in: not tested")
+            assert "Display module" not in failed
+            assert time.monotonic() - t0 < 3 and h.app.display_job is None and h.app.display == "idle"
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_shutdown_waits_for_the_setup_check_probe(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start()
+        try:
+            h.epd.speed = 2  # a 0.5 s probe
+            check = asyncio.create_task(display_check(h))
+            await h.until(lambda: h.app.display == "probing")
+            h.app.request_shutdown("power_button")
+            assert (await check)[0]["detail"] == "answers"  # finished, not aborted
+            h.epd.speed = 0.002
+            await asyncio.wait_for(h.task, 10)
+            assert h.epd.shown == [epdfile.solid(epdfile.WHITE_CODE)]  # then the white screen
+        finally:
+            await h.stop()
+
+    run(main())
+
+
 def test_camera_failure_shows_in_the_gallery(paths, health_url):
     async def main():
         h = Harness(paths, health_url)

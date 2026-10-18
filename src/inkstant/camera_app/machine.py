@@ -18,7 +18,7 @@ class View:
     lifecycle: str = STARTING
     camera: str = "off"  # off, starting, ready, fallback, asleep, waking, failed
     capture_busy: bool = False
-    display: str = "idle"  # idle, refreshing, tail
+    display: str = "idle"  # idle, refreshing, tail, probing (the setup check: not a screen update)
     develop_pending: bool = False
     shutdown_display_busy: bool = False
     share: str = "off"  # off, starting, on, stopping
