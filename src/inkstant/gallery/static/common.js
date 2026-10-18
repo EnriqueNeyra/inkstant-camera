@@ -244,6 +244,7 @@ export function renderBanners(st) {
   if (codes.has("camera")) err(S.cameraError(codes.get("camera").message));
   if (codes.has("display")) err(S.displayError);
   if (codes.has("storage")) err(codes.get("storage").message);
+  if (codes.has("pisugar")) err(codes.get("pisugar").message);
   if (st.setup_check && st.setup_check.passed === false) {
     err(S.setupFailed((st.setup_check.failed || []).join(", ")), { label: S.seeDetails, href: "/settings#checks" });
   }

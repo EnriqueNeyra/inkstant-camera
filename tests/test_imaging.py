@@ -143,7 +143,7 @@ def test_share_screens_render():
     for img in (away, home):
         assert img.size == (600, 400)
         arr = np.asarray(img)
-        assert set(np.unique(arr)) <= {0, 255} or arr.min() == 0
+        assert arr.min() == 0 and arr.max() == 255  # black text and QR codes on white
     frame = share_screen.frame_away("Inkstant-4F2A", "abcd2345efgh")
     assert set(epdfile.codes(frame)) <= {0, 1}
 

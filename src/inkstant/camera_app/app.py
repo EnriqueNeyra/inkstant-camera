@@ -49,7 +49,6 @@ ERROR_TEXT = {
     "storage_full": "Storage full",
     "pisugar": "Battery board not responding",
     "clock": "Set the time from your phone",
-    "setup": "Setup check found a problem",
 }
 
 
@@ -180,6 +179,8 @@ class CameraApp:
         self.loop: asyncio.AbstractEventLoop | None = None
         self.external_stop = False
         self._watchdog_off = False
+        self.pisugar_ready = False  # its settings, charge limit and watchdog are set up
+        self._pisugar_setting_up = False
         self._camera_opening = False
         self._taps_stop = threading.Event()
         self._last_tap: tuple[str, str, float] | None = None
@@ -252,15 +253,7 @@ class CameraApp:
         self.pisugar = PiSugarClient(self.paths.pisugar_sock, on_tap=lambda tap: self.on_tap("pisugar-server", tap),
                                      log=self.log)
         if await self.pisugar.connect():
-            problems = await ensure_settings(self.pisugar, CTL_COMMAND, self.log)
-            for p in problems:
-                self.log(f"pisugar: {p}")
-            await self._apply_charge_limit()
-            try:
-                await self.in_io(self.hw.watchdog.enable)
-            except Exception as e:
-                self.log(f"watchdog: {e}")
-                self.errors.set("pisugar", "Battery board not responding (watchdog)")
+            await self.setup_pisugar()
         else:
             self.log("pisugar: pisugar-server isn't answering; carrying on without it")
             self.errors.set("pisugar")
@@ -733,17 +726,42 @@ class CameraApp:
         if plugged != self.plugged:
             await self.read_battery()
 
+    async def setup_pisugar(self) -> None:
+        """The PiSugar's settings, charge limit and watchdog: at start, and again from the battery
+        poll once a pisugar-server that wasn't answering does, or the watchdog didn't turn on."""
+        if self._pisugar_setting_up:
+            return
+        self._pisugar_setting_up = True
+        try:
+            problems = await ensure_settings(self.pisugar, CTL_COMMAND, self.log)
+            for p in problems:
+                self.log(f"pisugar: {p}")
+            await self._apply_charge_limit()
+            try:
+                await self.in_io(self.hw.watchdog.enable)
+            except Exception as e:
+                self.log(f"watchdog: {e}")
+                self.errors.set("pisugar", "Battery board not responding (watchdog)")
+                return
+            self.pisugar_ready = True
+            self.errors.clear("pisugar")
+        finally:
+            self._pisugar_setting_up = False
+
     async def read_battery(self, initial: bool = False) -> None:
         if not self.pisugar:
             return
         try:
             level = await self.pisugar.battery()
             plugged = await self.pisugar.plugged()
-            self.errors.clear("pisugar")
         except PiSugarError as e:
             self.log(f"battery: {e}")
             self.errors.set("pisugar")
             return
+        if self.pisugar_ready:
+            self.errors.clear("pisugar")
+        elif not initial:
+            self.spawn(self.setup_pisugar())  # in the background: the poll runs on the timer loop
         if plugged != self.plugged and not initial:
             self.log(f"battery: {'plugged in' if plugged else 'unplugged'}")
         self.plugged = plugged
@@ -1249,16 +1267,7 @@ class CameraApp:
         if raw and raw.get("version") == version.VERSION:
             return
         await asyncio.sleep(5)  # let the camera start first
-        result = await self.run_selftest()
-        if not result["passed"]:
-            self.errors.set("setup", f"Setup check found a problem: {', '.join(result['failed'][:2])}")
-            self.update_led()
-            self.spawn(self._clear_setup_error_later())
-
-    async def _clear_setup_error_later(self) -> None:
-        await asyncio.sleep(30)
-        self.errors.clear("setup")
-        self.update_led()
+        await self.run_selftest()  # a failure shows as the gallery's setup-check banner
 
     async def run_selftest(self) -> dict:
         loop = asyncio.get_running_loop()
@@ -1548,7 +1557,7 @@ class CameraApp:
         if reboot and self.power_after_update:
             self.request_shutdown("power_button")
         else:
-            self.request_shutdown("update" if reboot else reason, reboot=bool(reboot))
+            self.request_shutdown("update" if reboot and self.update_running else reason, reboot=bool(reboot))
         return {"started": True}
 
     async def cmd_dev_set(self, enabled: bool = False) -> dict:

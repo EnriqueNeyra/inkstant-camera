@@ -103,10 +103,12 @@ def test_api_photos_paging(gallery):
     c, _, ids = gallery
     r = c.get("/api/photos?limit=2", headers=H).get_json()
     assert [p["id"] for p in r["photos"]] == [ids[3], ids[2]] and r["next_before"] == 3 and r["total"] == 4
+    assert r["offset"] == 0
     r = c.get("/api/photos?before=3&limit=2", headers=H).get_json()
     assert [p["id"] for p in r["photos"]] == [ids[1], ids[0]] and r["next_before"] is None
+    assert r["offset"] == 2  # two newer photos come before this page: the viewer counts from 3
     r = c.get("/api/photos?after=1&limit=2", headers=H).get_json()
-    assert [p["id"] for p in r["photos"]] == [ids[2], ids[1]]
+    assert [p["id"] for p in r["photos"]] == [ids[2], ids[1]] and r["offset"] == 1
     undated = c.get("/api/photos?limit=1", headers=H).get_json()["photos"][0]
     assert undated["day"] is None and undated["time"] is None
     months = c.get("/api/months", headers=H).get_json()

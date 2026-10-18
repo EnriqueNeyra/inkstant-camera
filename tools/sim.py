@@ -68,7 +68,7 @@ class Sim:
         self.app: CameraApp | None = None
         self.app_task: asyncio.Task | None = None
         self.server = pisugar.FakePiSugarServer(self.paths.pisugar_sock)
-        # The setup check needs a real Pi; mark it done so the simulator's light isn't stuck on "problem".
+        # The setup check needs a real Pi; mark it passed so the gallery doesn't show its banner.
         import json
 
         from inkstant import version
