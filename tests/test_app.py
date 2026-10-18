@@ -52,7 +52,7 @@ class Harness:
         self.logs = []
 
     async def start(self, module=True, battery="80.0", plugged="false", cfg=None, epd_speed=0.002,
-                    camera_fail=False, wait_ready=True):
+                    camera_fail=False, wait_ready=True, direct_taps=False):
         p = self.paths
         # The first-start setup check would light the problem pattern on a laptop; skip it here.
         p.selftest.write_text(json.dumps({"version": __import__("inkstant.version").version.VERSION,
@@ -62,7 +62,7 @@ class Harness:
         self.factory = gpio.mock_factory()
         self.pins = gpio.Pins(self.factory)
         if module:
-            self.factory.pin(gpio.DETECT).drive_low()
+            self.factory.pin(gpio.DETECT).drive_high()
         self.server = pisugar.FakePiSugarServer(p.pisugar_sock)
         self.server.values["battery"] = battery
         self.server.values["battery_power_plugged"] = plugged
@@ -75,6 +75,7 @@ class Harness:
         self.bus = pisugar_i2c.FakeBus()
         hw = Hardware(pins=self.pins, led_writer=self.led, epd=self.epd, camera_factory=lambda: self.cam,
                       network=self.net, system=self.sys, watchdog=pisugar_i2c.Watchdog(self.bus, sleep=lambda s: None),
+                      taps=pisugar_i2c.TapReader(self.bus, interval=0.005) if direct_taps else None,
                       gallery_health_url=self.health_url, start_gallery=lambda: None, stop_gallery=lambda: None,
                       trust_all_callers=True)
         self.clock = FakeClock()
@@ -93,11 +94,10 @@ class Harness:
             await asyncio.sleep(0.01)
 
     async def press(self):
-        pin = self.factory.pin(gpio.SHUTTER)
-        pin.drive_low()
-        await asyncio.sleep(0.05)
-        pin.drive_high()
-        await asyncio.sleep(0.05)
+        """Tap BTN, the shutter, and wait until the camera has the tap."""
+        n = self.logs.count("button: BTN single")
+        await self.server.tap("single")
+        await self.until(lambda: self.logs.count("button: BTN single") > n)
 
     async def shoot(self):
         n = len(self.app.store.list())
@@ -106,11 +106,11 @@ class Harness:
         return self.app.store.list()[0].id
 
     async def remove_module(self):
-        self.factory.pin(gpio.DETECT).drive_high()
+        self.factory.pin(gpio.DETECT).drive_low()
         await self.until(lambda: not self.app.module_present)
 
     async def insert_module(self):
-        self.factory.pin(gpio.DETECT).drive_low()
+        self.factory.pin(gpio.DETECT).drive_high()
         await self.until(lambda: self.app.module_present)
 
     async def idle_display(self):
@@ -377,10 +377,6 @@ def test_share_mode_on_and_off(paths, health_url):
         try:
             pid = await h.shoot()
             await h.idle_display()
-            for tap in ("single", "double"):  # a brush against BTN doesn't start sharing
-                await h.server.tap(tap)
-                await h.until(lambda line=f"button: BTN {tap}": line in h.logs)
-            assert h.app.share == "off"
             await h.server.tap("long")
             await h.until(lambda: h.app.share == "on")
             assert h.app.share_info.mode == "home" and h.steady() == "wait"  # no shooting while sharing
@@ -388,15 +384,55 @@ def test_share_mode_on_and_off(paths, health_url):
             await h.idle_display()
             st = await h.cmd("status")
             assert st["share"]["mode"] == "home" and st["share"]["timeout_min"] == 10
-            await h.server.tap("single")
-            await h.until(lambda: h.logs.count("button: BTN single") == 2)
-            assert h.app.share == "on"
+            await h.server.tap("single")  # BTN is the shutter, and there's no shooting while sharing
+            await h.until(lambda: "shutter: refused" in h.logs)
+            assert h.app.share == "on" and len(h.app.store.list()) == 1
             await h.server.tap("long")
             await h.until(lambda: h.app.share == "off")
             await h.idle_display()
             assert h.app.state.display_content == "photo" and h.app.state.current == pid
             assert h.net.state == "off" and h.net.log[-2:] == ["down", "radio False"]
             assert h.steady() == "ready"
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_btn_is_the_shutter(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start()
+        try:
+            for n, tap in enumerate(("single", "double"), 1):  # a double tap takes one photo, not two
+                await h.server.tap(tap)
+                await h.until(lambda n=n: len(h.app.store.list()) == n and not h.app.capture_busy)
+                await h.idle_display()
+            assert h.app.share == "off" and h.app.state.current == h.app.store.list()[0].id
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_btn_read_straight_from_the_pisugar(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start(direct_taps=True)
+        try:
+            h.bus.tap("single")
+            await h.until(lambda: len(h.app.store.list()) == 1 and not h.app.capture_busy)
+            assert h.bus.regs[pisugar_i2c.REG_TAP] == 0 and "button: BTN single" in h.logs
+            await h.idle_display()
+            h.app.on_tap("camera", "single")  # both readers got the same tap: one photo
+            h.app.on_tap("pisugar-server", "single")
+            await h.until(lambda: len(h.app.store.list()) == 2 and not h.app.capture_busy)
+            assert "button: BTN single again from pisugar-server; dropped" in h.logs
+            await h.idle_display()
+            h.clock.advance(1)
+            await h.server.tap("single")  # a tap only pisugar-server saw still counts
+            await h.until(lambda: len(h.app.store.list()) == 3 and not h.app.capture_busy)
+            assert "button: BTN single reached pisugar-server first" in h.logs
         finally:
             await h.stop()
 

@@ -80,7 +80,7 @@ def _fit(draw, text: str, max_w: int, size: int, bold: bool = False):
 
 
 # The shutter is off while sharing: say how to get it back.
-STOP_HINT = "Hold the share button to stop sharing and take photos."
+STOP_HINT = "Hold the shutter button to stop sharing and take photos."
 
 
 def render_away(ssid: str, password: str, url: str = "http://10.42.0.1/", android_hint: bool = True,
@@ -98,7 +98,7 @@ def render_away(ssid: str, password: str, url: str = "http://10.42.0.1/", androi
         hints.append("If your phone asks, choose to stay connected.")
     hints.append(STOP_HINT)
     if home_hint:
-        hints.append("Double-tap the share button to go back to home Wi-Fi.")
+        hints.append("Double-tap the shutter button to go back to home Wi-Fi.")
     y = 268
     gap = 5 if len(hints) > 2 else 8  # room for the extra line
     for label, value in (("Wi-Fi", ssid), ("Password", password), ("Address", url.rstrip("/"))):
@@ -122,10 +122,10 @@ def render_home(url: str, network: str) -> Image.Image:
     on = f"On {network}"
     y = _centered(draw, on, cx, y, _fit(draw, on, W - right - 20, 18)) + 34
     small = _font(14)
-    for line in ("Not on this Wi-Fi? Double-tap", "the share button for the", "camera's own."):
+    for line in ("Not on this Wi-Fi? Double-tap", "the shutter button for the", "camera's own."):
         y = _centered(draw, line, cx, y, small) + 4
     y += 16
-    for line in ("Hold the share button to", "stop sharing and take photos."):
+    for line in ("Hold the shutter button to", "stop sharing and take photos."):
         y = _centered(draw, line, cx, y, small) + 4
     return img
 

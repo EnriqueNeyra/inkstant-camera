@@ -351,6 +351,66 @@ def test_watchdog_gives_up():
         pisugar_i2c.Watchdog(Locked(), sleep=lambda s: None).enable()
 
 
+# BTN taps -------------------------------------------------------------------------------
+def test_tap_reader_reads_and_clears():
+    bus = pisugar_i2c.FakeBus()
+    r = pisugar_i2c.TapReader(bus)
+    assert r.read() is None
+    bus.regs[0x08] = 0b1000_0010  # a double tap, beside a bit that isn't ours
+    assert r.read() == "double" and bus.regs[0x08] == 0b1000_0000
+    assert r.read() is None
+
+
+def test_tap_reader_keeps_a_tap_it_couldnt_clear():
+    class NoWrites(pisugar_i2c.FakeBus):
+        fail = True
+
+        def write_byte_data(self, addr, reg, value):
+            if self.fail:
+                raise OSError(121, "Remote I/O error")
+            super().write_byte_data(addr, reg, value)
+
+    bus = NoWrites()
+    bus.tap("single")
+    r = pisugar_i2c.TapReader(bus)
+    with pytest.raises(OSError):
+        r.read()
+    bus.fail = False
+    assert r.read() == "single" and r.read() is None
+
+
+def _run_reader(reader, until, on_tap=lambda tap: None):
+    stop = threading.Event()
+    t = threading.Thread(target=reader.run, args=(on_tap, stop))
+    t.start()
+    try:
+        deadline = time.monotonic() + 2
+        while not until() and time.monotonic() < deadline:
+            time.sleep(0.005)
+    finally:
+        stop.set()
+        t.join(2)
+    assert not t.is_alive()
+
+
+def test_tap_reader_thread():
+    bus = pisugar_i2c.FakeBus()
+    bus.tap("long")
+    taps = []
+    _run_reader(pisugar_i2c.TapReader(bus, interval=0.001), lambda: taps, taps.append)
+    assert taps == ["long"]
+
+
+def test_tap_reader_slows_down_when_the_pisugar_stops_answering():
+    class Gone(pisugar_i2c.FakeBus):
+        def read_byte_data(self, addr, reg):
+            raise OSError(121, "Remote I/O error")
+
+    logs = []
+    _run_reader(pisugar_i2c.TapReader(Gone(), log=logs.append, interval=0.001), lambda: logs)
+    assert len(logs) == 1 and "once a second" in logs[0]
+
+
 # Network --------------------------------------------------------------------------------
 def test_split_terse():
     assert network.split_terse(r"My\:Net:72") == ["My:Net", "72"]
