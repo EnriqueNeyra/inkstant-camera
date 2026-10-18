@@ -71,6 +71,29 @@ def home_args(n: int, ssid: str, password: str | None, autoconnect: bool, key_mg
 class HomeNetwork:
     n: int
     ssid: str
+    key_mgmt: str | None = None  # wpa-psk or sae; None for an open network
+
+
+@dataclass
+class Visible:
+    """A network in range: its strongest signal, and every security nmcli lists for it ("WPA2", "WPA3" …)."""
+
+    signal: int
+    security: frozenset[str] = frozenset()
+
+    @property
+    def key_mgmt(self) -> str | None:
+        """What a saved profile needs to join it, or None for an open network.
+
+        `wpa-psk` joins WPA2 and WPA2/WPA3 networks, using WPA3 when the Wi-Fi chip can, so it's
+        kept whenever WPA2 is offered. A WPA3-only network gets `sae`: NetworkManager 1.58 and
+        older never auto-connect a `wpa-psk` profile to it.
+        """
+        if self.security & {"WPA1", "WPA2"}:
+            return "wpa-psk"
+        if "WPA3" in self.security:
+            return "sae"
+        return None
 
 
 class Network:
@@ -108,11 +131,11 @@ class Network:
                 raise NetworkError("wlan0 didn't come up")
             self.sleep(0.5)
 
-    def scan(self) -> dict[str, int]:
-        """Visible networks: SSID → best signal."""
-        out = self.nmcli("-t", "-f", "SSID,SIGNAL", "device", "wifi", "list", "ifname", "wlan0",
+    def scan(self) -> dict[str, Visible]:
+        """Networks in range by SSID, merging every access point that shares a name."""
+        out = self.nmcli("-t", "-f", "SSID,SIGNAL,SECURITY", "device", "wifi", "list", "ifname", "wlan0",
                          "--rescan", "yes", timeout=12)
-        seen: dict[str, int] = {}
+        seen: dict[str, Visible] = {}
         for line in out.splitlines():
             f = split_terse(line)
             if len(f) < 2 or not f[0]:
@@ -121,7 +144,9 @@ class Network:
                 sig = int(f[1])
             except ValueError:
                 sig = 0
-            seen[f[0]] = max(sig, seen.get(f[0], 0))
+            sec = frozenset(f[2].split()) if len(f) > 2 else frozenset()
+            v = seen.get(f[0])
+            seen[f[0]] = Visible(max(sig, v.signal), v.security | sec) if v else Visible(sig, sec)
         return seen
 
     def up(self, profile: str, wait: int) -> bool:
@@ -187,6 +212,15 @@ class Network:
         self.nmcli("connection", "modify", "id", f"{HOME_PREFIX}{n}", "connection.autoconnect",
                    "yes" if on else "no", timeout=5, check=False)
 
+    def set_home_key_mgmt(self, n: int, key_mgmt: str) -> bool:
+        """Switch a saved home network between `wpa-psk` and `sae`; its password stays."""
+        try:
+            self.nmcli("connection", "modify", "id", f"{HOME_PREFIX}{n}", "wifi-sec.key-mgmt", key_mgmt, timeout=5)
+            return True
+        except NetworkError as e:
+            self.log(f"network: {HOME_PREFIX}{n}: {e}")
+            return False
+
     def homes(self) -> list[HomeNetwork]:
         """Saved home networks, read from our keyfiles (root only)."""
         out = []
@@ -198,10 +232,11 @@ class Network:
             try:
                 cp.read_string(path.read_text())
                 ssid = cp.get("wifi", "ssid", fallback=None)
+                key_mgmt = cp.get("wifi-security", "key-mgmt", fallback=None)
             except (OSError, configparser.Error):
-                ssid = None
+                ssid = key_mgmt = None
             if ssid:
-                out.append(HomeNetwork(n, keyfile_unescape(ssid)))
+                out.append(HomeNetwork(n, keyfile_unescape(ssid), key_mgmt))
         return out
 
     def free_home_slot(self) -> int | None:
@@ -228,7 +263,8 @@ class FakeNetwork:
     def __init__(self, url: str = "http://127.0.0.1:8080/", home_ssid: str = "Sim Home", home_visible: bool = True):
         self.url = url
         self.home_visible = home_visible
-        self.home = [HomeNetwork(1, home_ssid)]
+        self.home = [HomeNetwork(1, home_ssid, "wpa-psk")]
+        self.security: dict[str, str] = {}  # what a scan lists for an SSID; WPA2 when not set
         self.hotspot = ("Inkstant-SIM", "simulator1")
         self.state = "off"
         self.log: list[str] = []
@@ -239,8 +275,10 @@ class FakeNetwork:
     def wait_wlan0(self, timeout: float = 10.0) -> None:
         pass
 
-    def scan(self) -> dict[str, int]:
-        return {h.ssid: 70 for h in self.home} if self.home_visible else {}
+    def scan(self) -> dict[str, Visible]:
+        if not self.home_visible:
+            return {}
+        return {h.ssid: Visible(70, frozenset(self.security.get(h.ssid, "WPA2").split())) for h in self.home}
 
     def up(self, profile: str, wait: int) -> bool:
         self.log.append(f"up {profile}")
@@ -266,11 +304,18 @@ class FakeNetwork:
         self.hotspot = (ssid, password)
 
     def set_home(self, n: int, ssid: str, password: str | None, autoconnect: bool = False) -> None:
-        self.home = [h for h in self.home if h.n != n] + [HomeNetwork(n, ssid)]
+        self.home = [h for h in self.home if h.n != n] + [HomeNetwork(n, ssid, "wpa-psk" if password else None)]
         self.home.sort(key=lambda h: h.n)
 
     def set_home_autoconnect(self, n: int, on: bool) -> None:
         pass
+
+    def set_home_key_mgmt(self, n: int, key_mgmt: str) -> bool:
+        self.log.append(f"key-mgmt {HOME_PREFIX}{n} {key_mgmt}")
+        for h in self.home:
+            if h.n == n:
+                h.key_mgmt = key_mgmt
+        return True
 
     def remove_profile(self, name: str) -> None:
         if name.startswith(HOME_PREFIX):

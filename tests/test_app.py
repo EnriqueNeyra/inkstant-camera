@@ -570,6 +570,33 @@ def test_dev_mode_hotspot_stop_leaves_the_radio_on(paths, health_url):
     run(main())
 
 
+@pytest.mark.parametrize("security, saved, joins_with", [
+    ("WPA2", "wpa-psk", "wpa-psk"),  # what the gallery saves: today's WPA2 networks are left alone
+    ("WPA2 WPA3", "wpa-psk", "wpa-psk"),
+    ("WPA3", "wpa-psk", "sae"),  # WPA3 only
+    ("WPA2 WPA3", "sae", "wpa-psk"),  # copied from Imager as WPA3, but WPA2 is offered too
+    ("", None, None),  # open
+])
+def test_sharing_at_home_saves_the_network_as_the_camera_sees_it(paths, health_url, security, saved, joins_with):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start(module=False)
+        h.net.security["Sim Home"] = security
+        h.net.home[0].key_mgmt = saved
+        try:
+            r = await h.cmd("share.start")
+            assert r["mode"] == "home" and r["ssid"] == "Sim Home"
+            assert h.net.homes()[0].key_mgmt == joins_with
+            switched = [e for e in h.net.log if e.startswith("key-mgmt")]
+            assert switched == ([] if saved == joins_with else [f"key-mgmt inkstant-home-1 {joins_with}"])
+            if switched:  # before joining, not after
+                assert h.net.log.index(switched[0]) < h.net.log.index("up inkstant-home-1")
+        finally:
+            await h.stop()
+
+    run(main())
+
+
 def test_double_tap_while_sharing_switches_between_home_and_camera_wifi(paths, health_url):
     async def main():
         h = Harness(paths, health_url)

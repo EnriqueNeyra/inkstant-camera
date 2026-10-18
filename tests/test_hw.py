@@ -489,7 +489,7 @@ def test_hotspot_and_home_args():
 
 def test_network_scan_and_address_parsing():
     outputs = {
-        ("-t", "-f", "SSID,SIGNAL"): "Home:70\nHome:40\n\\:odd:20\n:55\n",
+        ("-t", "-f", "SSID,SIGNAL,SECURITY"): "Home:70:WPA2 WPA3\nHome:40:WPA2\n\\:odd:20:\n:55:WPA2\nNew:61:WPA3\n",
         ("-g", "IP4.ADDRESS", "device"): "192.168.1.23/24\n",
     }
 
@@ -504,13 +504,46 @@ def test_network_scan_and_address_parsing():
         return P("")
 
     n = network.Network(run=run)
-    assert n.scan() == {"Home": 70, ":odd": 20}
+    assert n.scan() == {
+        "Home": network.Visible(70, frozenset({"WPA2", "WPA3"})),
+        ":odd": network.Visible(20),
+        "New": network.Visible(61, frozenset({"WPA3"})),
+    }
     assert n.address() == "192.168.1.23"
 
 
+@pytest.mark.parametrize("security, key_mgmt", [
+    ("WPA2", "wpa-psk"),
+    ("WPA2 WPA3", "wpa-psk"),  # transition: wpa-psk still uses WPA3 when the chip can
+    ("WPA1 WPA2", "wpa-psk"),
+    ("WPA3", "sae"),
+    ("", None),
+    ("OWE", None),
+])
+def test_the_profile_a_network_in_range_needs(security, key_mgmt):
+    assert network.Visible(50, frozenset(security.split())).key_mgmt == key_mgmt
+
+
+def test_set_home_key_mgmt_keeps_the_password():
+    calls, logs = [], []
+
+    class P:
+        def __init__(self, rc):
+            self.stdout, self.stderr, self.returncode = "", "Error: no such connection" if rc else "", rc
+
+    n = network.Network(run=lambda args, **kw: calls.append(args) or P(0), log=logs.append)
+    assert n.set_home_key_mgmt(3, "sae")
+    # Only the security changes: nmcli keeps the saved password, so it's never passed (or logged) again.
+    assert calls == [["nmcli", "connection", "modify", "id", "inkstant-home-3", "wifi-sec.key-mgmt", "sae"]]
+    n = network.Network(run=lambda args, **kw: P(10), log=logs.append)
+    assert not n.set_home_key_mgmt(3, "wpa-psk")
+    assert logs and "inkstant-home-3" in logs[0] and "no such connection" in logs[0]
+
+
 def test_homes_from_keyfiles(tmp_path):
-    (tmp_path / "inkstant-home-2.nmconnection").write_text("[connection]\nid=inkstant-home-2\n[wifi]\nssid=Neyra Home\n")
+    (tmp_path / "inkstant-home-2.nmconnection").write_text(
+        "[connection]\nid=inkstant-home-2\n[wifi]\nssid=Neyra Home\n[wifi-security]\nkey-mgmt=sae\npsk=secret123\n")
     (tmp_path / "inkstant-home-4.nmconnection").write_text("[wifi]\nssid=72;105;\n")
     n = network.Network(conn_dir=tmp_path)
-    assert [(h.n, h.ssid) for h in n.homes()] == [(2, "Neyra Home"), (4, "Hi")]
+    assert [(h.n, h.ssid, h.key_mgmt) for h in n.homes()] == [(2, "Neyra Home", "sae"), (4, "Hi", None)]
     assert n.free_home_slot() == 1
