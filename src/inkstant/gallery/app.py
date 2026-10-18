@@ -206,16 +206,22 @@ def create_app(paths: Paths | None = None, *, control_sock: Path | None = None,
             return api_error("invalid", "Bad page.")
         month = request.args.get("month")
         all_photos = photos.list()
+
+        def offset(page: list[store.Photo]) -> int:
+            """How many photos come before the page's first, newest first: for "Photo n of N"."""
+            return next((i for i, p in enumerate(all_photos) if p.seq == page[0].seq), 0) if page else 0
+
         if after is not None:  # newer photos: the `limit` closest to `after`, newest first
             newer = [p for p in all_photos if p.seq > after][-limit:]
-            return jsonify({"photos": [photo_json(p) for p in newer], "next_before": None, "total": len(all_photos)})
+            return jsonify({"photos": [photo_json(p) for p in newer], "next_before": None, "total": len(all_photos),
+                            "offset": offset(newer)})
         sel = [p for p in all_photos if before is None or p.seq < before]
         if month:
             sel = [p for p in sel if (p.day or "")[:7] <= month] if month != "none" else [p for p in sel if not p.day]
         page = sel[:limit]
         return jsonify({"photos": [photo_json(p) for p in page],
                         "next_before": page[-1].seq if len(sel) > limit else None,
-                        "total": len(all_photos)})
+                        "total": len(all_photos), "offset": offset(page)})
 
     @app.get("/api/photos/<photo_id>")
     def api_photo(photo_id: str):

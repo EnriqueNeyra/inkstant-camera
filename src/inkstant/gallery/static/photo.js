@@ -6,6 +6,7 @@ const root = $("#photo-root");
 const me = { id: root.dataset.id, seq: Number(root.dataset.seq), size: Number(root.dataset.size), day: root.dataset.day || null, time: root.dataset.time || null };
 let photos = [me];
 let total = 1;
+let offset = 0;
 
 async function neighbours() {
   try {
@@ -13,6 +14,7 @@ async function neighbours() {
     const older = await api("GET", `/api/photos?before=${me.seq}&limit=30`);
     photos = [...newer.photos, me, ...older.photos];
     total = older.total;
+    offset = newer.photos.length ? newer.offset : 0;
     viewer.index = photos.findIndex((p) => p.id === me.id);
     viewer._render();
   } catch (e) {
@@ -23,6 +25,7 @@ async function neighbours() {
 const viewer = new Viewer({
   list: () => photos,
   total: () => total,
+  offset: () => offset,
   standalone: true,
   onDeleted: (ids) => { photos = photos.filter((p) => !ids.includes(p.id)); },
 });

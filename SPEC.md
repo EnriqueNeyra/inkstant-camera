@@ -49,7 +49,7 @@ What the camera does and the rules it follows, from the user's side. Sections 4 
 ### 1.1 What it does
 
 - **Shoot:** tap the shutter, the battery board's BTN. The photo is saved at full size and "develops" on the colour e-paper display module on the back of the camera. The panel's 15 s colour refresh is the developing.
-- **Keep:** pull the module off to keep the photo. E-paper holds its image with no power, and optional magnets on its frame let a module go on a fridge. Put the same module or a fresh one back on.
+- **Keep:** pull the module off to keep the photo. E-paper holds its image with no power, and optional magnets in its own case let a module go on a fridge. Put the same module or a fresh one back on.
 - **No film:** with no module on, photos are still saved. The newest one develops on the next module put on.
 - **Every photo on your phone:** hold the shutter for 2 s and the module shows a QR code. It opens the photo gallery in the phone's browser, over the home Wi-Fi or the camera's own Wi-Fi. No app, no internet, no account.
 - **Slideshow:** while the camera is off, it wakes on a timer to put the next photo on the module in the camera (on by default, hourly). Whenever it won't wake itself again, it turns the screen white as it powers off. Take the module off first to keep its photo.
@@ -57,7 +57,7 @@ What the camera does and the rules it follows, from the user's side. Sections 4 
 
 ### 1.2 Controls
 
-No wiring (decided 2026-10-17): the battery board's two side buttons are the only controls, and the Pi's own green activity LED, seen through a light pipe in the case, is the only light. **BTN is the shutter** and also turns sharing on and off; PWR turns the camera on and off. Until 2026-10-17 the shutter was a wired button with an LED ring, and BTN only shared. The parts and how they fit: README.md (What you need, How it fits together).
+No wiring (decided 2026-10-17): the battery board's two side buttons are the only controls, and the Pi's own green activity LED, seen through a small opening in the case, is the only light. **BTN is the shutter** and also turns sharing on and off; PWR turns the camera on and off. Until 2026-10-17 the shutter was a wired button with an LED ring, and BTN only shared. The parts and how they fit: README.md (What you need, How it fits together).
 
 | Control | Press | What happens |
 |---|---|---|
@@ -82,7 +82,7 @@ No wiring (decided 2026-10-17): the battery board's two side buttons are the onl
 
 ### 1.3 Status light
 
-The Pi's own green activity LED (ACT), seen through a light pipe in the case, is the only light (decided 2026-10-17, replacing the ring around the wired shutter). It can only be on or off. Since 2026-10-17 it has just four looks, built around one question, "will a tap take a photo?" (replacing the 2026-10-15 scheme of rhythm families, cues, and the share, asleep and problem patterns):
+The Pi's own green activity LED (ACT), seen through a small opening in the case, is the only light (decided 2026-10-17, replacing the ring around the wired shutter). It can only be on or off. Since 2026-10-17 it has just four looks, built around one question, "will a tap take a photo?" (replacing the 2026-10-15 scheme of rhythm families, cues, and the share, asleep and problem patterns):
 
 - **Solid:** yes.
 - **Slow blink:** wait, it won't.
@@ -132,7 +132,7 @@ Each module (the "print" in the README and on the camera's screens) is a complet
 **In every state:**
 
 - Inserting or removing a module counts as use: it restarts the sleep and turn-off timers.
-- A normal power-on with nothing undeveloped doesn't update the screen. That keeps start-up fast and doesn't overwrite a kept photo.
+- A normal power-on with nothing undeveloped doesn't update the screen. That keeps start-up fast and doesn't overwrite a kept photo. The one exception: if the module still shows the share screen (left by a restart or a power cut while sharing), its QR codes no longer work, so the current photo goes back on, or a white screen if there's none.
 - A slideshow wake shows an undeveloped photo first, if there is one, before going back to the slideshow order.
 - **Current photo:** the camera remembers the last photo it put on a module: the newest shot, a slideshow photo, or one chosen with "Show on camera". That's what goes back on when sharing ends.
 
@@ -143,7 +143,7 @@ Each module (the "print" in the README and on the camera's screens) is a complet
 - **Refresh at least once every 24 h**, or the image can burn in. The slideshow covers this for the module in the camera. Whenever the camera won't wake itself again, it turns the screen white as it powers off instead (decided 2026-10-15, replacing a daily redraw). That happens when the slideshow is off, the clock isn't set, there are no photos, or the battery is too low. Waveshare advises storing panels white.
 - **Kept modules break these rules** (accepted, decided 2026-10-14). A module on the fridge is never refreshed, and Waveshare warns a long-held image "may burn out and be difficult to repair". Its FAQ says to store panels white, for at most 6 months.
 - After each refresh, put the panel to sleep or power it off; leaving it powered can damage it permanently. Our driver does both.
-- Rated for about 1,000,000 refreshes. Use between 0 and 50 °C by the spec table, or 0 and 40 °C by the FAQ; cold can cause a colour cast. Long direct sunlight or UV can damage the panel for good, so the case recesses or shades the screen. ✅ [Waveshare wiki](https://www.waveshare.com/wiki/3.6inch_e-Paper_HAT%2B_%28E%29_Manual) The README passes all of this on to users.
+- Rated for about 1,000,000 refreshes. Use between 0 and 50 °C by the spec table, or 0 and 40 °C by the FAQ; cold can cause a colour cast. Long direct sunlight or UV can damage the panel for good. ✅ [Waveshare wiki](https://www.waveshare.com/wiki/3.6inch_e-Paper_HAT%2B_%28E%29_Manual) The README passes all of this on to users.
 
 ### 1.5 Power, sleep and battery saver
 
@@ -164,7 +164,7 @@ Each module (the "print" in the README and on the camera's screens) is a complet
   - **Turns itself on at 20%** on battery (setting "Turn on at 20%", on by default). When it turned on by itself, it turns off once the camera is plugged in. Turned on by hand, it stays on until turned off.
   - **While it's on:**
     - The camera sleeps after 1 min and turns off after 5 min, or after your own times if they're shorter.
-    - The camera runs at its lowest frame rate, 5 fps. Focus takes about 1 s to follow a new subject instead of about 0.5 s. This changes nothing if the bench picks 5 fps as the normal rate anyway (§6.4).
+    - The camera runs at its lowest frame rate, 5 fps. Focus takes about 1 s to follow a new subject instead of about 0.5 s. The bench chose 5 fps as the normal rate too (`CAMERA_FPS`, §6.4), so for now this changes nothing.
     - Share mode stops after 5 min without use, or your own time if that's shorter. On battery only, like the normal timeout.
 - **Low battery (decided 2026-10-15):**
   - **Warning at 15%:** a gallery banner (since 2026-10-17 the light has no battery cue).
@@ -211,7 +211,8 @@ The phone web app, specified in full in §11.
 - **Layout:** newest first, grouped by day, square thumbnails. Tap one for the full photo, and press and hold to save it.
 - **Select mode:** pick photos or whole days to download as one ZIP, or to delete. Everything can also be downloaded at once. Nothing tracks what was downloaded before (decided 2026-10-15).
 - **Show on camera** puts a chosen photo on the module in the camera (decided 2026-10-15). It's also how to fill a blank module or redo a kept one. It counts as developed and becomes the current photo.
-- **Delete**, with a confirmation. It removes all three files. If the photo was the undeveloped one, nothing is waiting any more.
+- **Photo or print:** the photo viewer switches between the photo and the print as the module shows it, in its six colours (added 2026-10-17). The grid keeps one tile per photo.
+- **Delete**, with a confirmation. It removes all four files. If the photo was the undeveloped one, nothing is waiting any more.
 - **Banners:**
   - Storage low (below 1 GB free) and storage full (below 500 MB).
   - Battery low, clock unset, camera or display problems, a failed setup check, and a software update in progress.
@@ -247,13 +248,14 @@ On the gallery's settings page (decided 2026-10-14; sleep and battery saver adde
 
 ### 1.9 Photos
 
-- **Three files per photo:**
+- **Four files per photo:**
   - the full 4608 × 2592 JPEG (quality 90, about 3 to 5 MB);
   - a 480 × 270 thumbnail for the gallery;
+  - a 600 × 400 PNG of the print as the module shows it, for the gallery's Print view (added 2026-10-17);
   - the ready-to-send screen image for the module.
 - **Saving:** they're saved so that a power cut never leaves half a photo (decided 2026-10-15; §5).
 - **Filling the screen (decided 2026-10-14):** the screen version is the centre 3:2 of the 16:9 frame, resized to 600 × 400 and dithered to the panel's six colours. The saved original stays the full frame.
-- **Names** are a six-digit counter plus the date and time, for example `000123_20261015-143022`. Downloads are `inkstant_<name>.jpg`. Photos sort by the counter, so a wrong clock never breaks the order.
+- **Names** are a six-digit counter plus the date and time, for example `000123_20261015-143022`. Downloads are `inkstant_<name>.jpg`, and a print `inkstant_<name>_print.png`. Photos sort by the counter, so a wrong clock never breaks the order.
 - **Date taken:** each JPEG's EXIF records the shutter press time, so photos saved to a phone sort by when they were taken. With the clock unset, there's no date.
 - **Orientation:** there's no tilt sensor, so every photo is landscape relative to the camera body. Camera and display mounting (upright or upside down) are set once per build.
 - **Storage:**
@@ -314,11 +316,12 @@ Every product decision, with the date it was made. The user decides product beha
 | 2026-10-15 | Light | Revised scheme: rhythm families, a 0.4 s wink, cues for no module and low battery, an asleep pattern, storage full on the light, slow blink while starting, during shutdown screen updates and during software updates (2026-10-17: four looks instead) | 1.3, 6.2, 8.6 |
 | 2026-10-17 | Build | No wiring and no soldering. The display module (the "print") pushes straight onto the Pi's 40-pin header and pulls off to keep, replacing the magnetic pogo connector and its jumper wires. Print detect moves from pin 15 (GPIO22, not connected on the HAT) to ID_SD (GPIO0, pin 27) | 1.4, 6.1 |
 | 2026-10-17 | Shutter | The PiSugar's BTN is the shutter, replacing the wired uxcell button on GPIO27: a tap takes a photo, and so does a double tap unless sharing. A 2 s hold turns sharing on or off; a double tap while sharing switches Wi-Fi. The camera reads BTN itself every 20 ms; the PiSugar's double-tap wait before a single tap was judged acceptable on the bench | 1.2, 1.6, 6.6 |
-| 2026-10-17 | Light | The Pi's own green ACT LED through a light pipe, replacing the shutter's LED ring on GPIO26. Four looks: solid (a tap takes a photo), slow blink (it won't), the wink (it did), off. The share, asleep and problem patterns and both cues are gone; sharing shows on the module, problems and the battery in the gallery | 1.3, 6.2, 8.6 |
+| 2026-10-17 | Light | The Pi's own green ACT LED through a light pipe (later the same day: through a small opening in the case, with no light pipe), replacing the shutter's LED ring on GPIO26. Four looks: solid (a tap takes a photo), slow blink (it won't), the wink (it did), off. The share, asleep and problem patterns and both cues are gone; sharing shows on the module, problems and the battery in the gallery | 1.3, 6.2, 8.6 |
 | 2026-10-17 | Docs | HARDWARE.md retired: this spec is the design record, and the README is the public build guide. HARDWARE.md held the parts list, the wired build (wiring, the connector and button assembly), the case requirements and the hardware bench tests. The facts still needed are now in §1.4, §3, §6 and §19.6 | — |
 | 2026-10-17 | Sharing | No photos while sharing starts, is on, or stops; the light blinks slowly, and the share screen says to hold the shutter to stop sharing and take photos | 1.2, 9 |
 | 2026-10-17 | Docs | A new HARDWARE.md, written from scratch as the hardware reference for designing the case: every part's dimensions in one coordinate frame, the stack-up, what the case has to do, the measurements still needed, and links to the drawings, schematics and 3D models. SPEC.md and HARDWARE.md are published in the repo, and the README links to both as design notes | — |
 | 2026-10-17 | Boards | The build is for the Pi 3A+ only: the README's build guide, HARDWARE.md and the case cover just that board. It's the cheapest and smallest, uses the least power, has the PiSugar 3 Plus's outline (which leaves the print's 22 mm overhang free for the camera), and stays in production until at least January 2030 ✅ [product page](https://www.raspberrypi.com/products/raspberry-pi-3-model-a-plus/). The software still supports the 3B, 3B+, 4B and 5, so anyone can design a case for another board, and the bench camera stays a Pi 4 | 15.1 |
+| 2026-10-17 | Case | Each print has its own printed enclosure, separate from the camera body, so it pops out like a piece of film, with pockets for optional magnets so a kept print can go on a fridge. Every part is 3D-printed, in as few parts as possible, without excessive supports. It holds together with no extra hardware: no screws, glue or inserts beyond the screws that come with the PiSugar. No light pipe or second material: the ACT LED shines out through a small opening in the case. The display isn't shaded or recessed against sunlight; that small risk is accepted. Real 3D models are used where they exist | HARDWARE.md |
 
 ### 2.2 Rejected
 
@@ -354,7 +357,7 @@ Facts checked against source code, packaging and vendor docs while writing this 
 7. **The PiSugar 3 has a DS3231-compatible RTC at I2C address 0x68** that PiSugar documents for `dtoverlay=i2c-rtc,ds3231` and `hwclock`. The kernel sets the system clock as soon as `rtc0` registers (`RTC_HCTOSYS`, on by default), even when the driver is a module. ✅ [PiSugar RTC docs](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-rtc), [class.c](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/drivers/rtc/class.c), [Kconfig](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/drivers/rtc/Kconfig)
 8. **`rtc_web` does internet time in one command:** SNTP from `pool.ntp.org`, then it sets both the system clock and the PiSugar RTC. **So** `systemd-timesyncd` isn't needed. ✅ [lib.rs](https://github.com/PiSugar/pisugar-power-manager-rs/blob/v2.3.5/pisugar-core/src/lib.rs), [cmds.rs](https://github.com/PiSugar/pisugar-power-manager-rs/blob/v2.3.5/pisugar-server/src/cmds.rs)
 9. **CMA defaults to 256 MB on every board.** `vc4-kms-v3d` includes the `cma` overlay, whose size is fixed at 256 MB "for backwards compatibility", so even the 512 MB 3A+ gets 256 MB. **So:** config.txt sets `cma-128` explicitly. ✅ [cma-overlay.dts](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/overlays/cma-overlay.dts)
-10. **Camera memory depends on a config file Picamera2 picks.** On Pi 4 and earlier, libcamera's default pipeline settings add two internal raw buffers and one internal main-size buffer. That is about 117 MB of CMA for our configuration. Picamera2's `__init__.py` points `LIBCAMERA_RPI_CONFIG_FILE` at `rpi_apps.yaml` (raw and main marked mandatory), which drops them: about 69 MB. **So:** the install script checks that `/usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml` exists, and the app logs libcamera's "Using configuration file" line. ✅ [vc4.cpp](https://github.com/raspberrypi/libcamera/blob/main/src/libcamera/pipeline/rpi/vc4/vc4.cpp), [rpi_apps.yaml](https://github.com/raspberrypi/libcamera/blob/main/src/libcamera/pipeline/rpi/vc4/data/rpi_apps.yaml), [picamera2/\_\_init\_\_.py](https://github.com/raspberrypi/picamera2/blob/v0.3.38/picamera2/__init__.py)
+10. **Camera memory depends on a config file Picamera2 picks.** On Pi 4 and earlier, libcamera's default pipeline settings add two internal raw buffers and one internal main-size buffer. That is about 117 MB of CMA for our configuration. Picamera2's `__init__.py` points `LIBCAMERA_RPI_CONFIG_FILE` at `rpi_apps.yaml` (raw and main marked mandatory), which drops them: about 69 MB. **So:** the install script checks that `/usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml` exists (it comes in Raspberry Pi's `libcamera-ipa` package ✅ [archive contents](https://archive.raspberrypi.com/debian/dists/trixie/main/Contents-arm64.gz)), and the app logs libcamera's "Using configuration file" line. ✅ [vc4.cpp](https://github.com/raspberrypi/libcamera/blob/main/src/libcamera/pipeline/rpi/vc4/vc4.cpp), [rpi_apps.yaml](https://github.com/raspberrypi/libcamera/blob/main/src/libcamera/pipeline/rpi/vc4/data/rpi_apps.yaml), [picamera2/\_\_init\_\_.py](https://github.com/raspberrypi/picamera2/blob/v0.3.38/picamera2/__init__.py)
 11. **Picamera2 already writes EXIF** on the YUV420 path: Make "Raspberry Pi", Model set to libcamera's long camera ID, and `DateTimeOriginal` set to the time of saving. Its `exif_data` argument replaces whole IFDs. **So** we pass our own `0th` and `Exif` IFDs. ✅ [request.py](https://github.com/raspberrypi/picamera2/blob/v0.3.38/picamera2/request.py)
 12. **`capture_request(flush=…)`** takes `True` or a `CLOCK_MONOTONIC` timestamp in nanoseconds, and returns the first frame whose exposure started at or after it. **So** the app passes the timestamp taken as the BTN tap is handled (§8.4), not the time the capture call runs. ✅ [picamera2.py](https://github.com/raspberrypi/picamera2/blob/v0.3.38/picamera2/picamera2.py)
 13. **IMX708 exposure modes** (Pi 4 and earlier tuning): Normal goes to 60 ms at 4× gain before 16× gain at 66.7 ms; Short stops at 20 ms and 6× gain before going longer. **So** the default is `AeExposureMode: Short`, to limit handheld blur indoors. 🧪 Compare both. ✅ [imx708.json](https://github.com/raspberrypi/libcamera/blob/main/src/ipa/rpi/vc4/data/imx708.json)
@@ -475,20 +478,22 @@ ACT LED      ◄───    ├─ LED service ── /sys/class/leds/ACT      
 
 ```text
 inkstant-camera/
-├── README.md, LICENSE             # this SPEC.md sits beside them and is never committed
+├── README.md, LICENSE             # the build guide and the license
+├── SPEC.md, HARDWARE.md           # this design record, and the hardware reference for the case
 ├── mockups/gallery.html          # visual mockup of the gallery screens
 ├── setup.sh                        # one-command install: downloads a release (or main), runs install/install.sh
 ├── VERSION                         # e.g. 1.0.0; also baked into the build as BUILD_EPOCH
 ├── pyproject.toml                  # dev tooling only (pytest, ruff); not used on the Pi
 ├── requirements-dev.txt            # pip pins that match Trixie's apt versions
 ├── src/inkstant/
-│   ├── __main__.py                 # python3 -m inkstant {camera|gallery|ctl|tool}
+│   ├── __main__.py                 # python3 -m inkstant {camera|gallery|ctl}
 │   ├── version.py                  # VERSION and BUILD_EPOCH
 │   ├── paths.py, device.py         # fixed paths; /etc/inkstant/device.toml loader
 │   ├── settings.py, state.py       # user settings and runtime state (schemas, atomic save)
 │   ├── store.py                    # photo store: IDs, commit, list, delete, free space
 │   ├── atomic.py                   # atomic_write(), fsync helpers
 │   ├── ipc.py                      # control-socket protocol: server, client, messages
+│   ├── selftest.py                 # the setup check (§17): standard library only
 │   ├── hw/
 │   │   ├── gpio.py                 # pins via gpiozero (lgpio backend); fake for tests
 │   │   ├── led.py                  # status light (the ACT LED) through sysfs: steady pattern, wink; fake
@@ -500,20 +505,18 @@ inkstant-camera/
 │   │   └── system.py               # poweroff, clock_settime, hwclock, systemctl
 │   ├── imaging/
 │   │   ├── epdfile.py              # .epd read/write/rotate: standard library only
+│   │   ├── exifinfo.py             # exposure and ISO for the gallery's info sheet (piexif only)
 │   │   ├── palette.py              # panel colours and codes
-│   │   ├── pipeline.py             # lores → screen image; thumbnail; EXIF
+│   │   ├── pipeline.py             # lores → screen image; thumbnail; print; EXIF
 │   │   └── share_screen.py         # QR codes and text for the share screen
 │   ├── camera_app/
-│   │   ├── app.py                  # wiring, lifecycle, asyncio main
-│   │   ├── machine.py              # state machine (pure logic, no hardware)
+│   │   ├── main.py                 # starts the app on the real hardware (inkstant.service)
+│   │   ├── app.py                  # CameraApp: lifecycle, events, share mode, timers, sleep, battery, clock, shutdown
+│   │   ├── machine.py              # the rules as pure functions: light, shutter, timers, battery saver
 │   │   ├── display.py              # display jobs, worker thread, abort
 │   │   ├── capture.py              # shutter → files
-│   │   ├── share.py                # share mode
-│   │   ├── power.py                # timers, sleep, battery saver, battery, shutdown, wake scheduling
 │   │   ├── slideshow.py            # next photo, next wake time (pure)
-│   │   ├── clock.py                # RTC checks and syncing
-│   │   ├── update.py               # update state, deferred PWR (§16.1)
-│   │   └── wake.py                 # slideshow-wake decisions (standard library only)
+│   │   └── update.py               # checking for and fetching a release (§16.1)
 │   ├── gallery/
 │   │   ├── app.py                  # Flask app factory and routes
 │   │   ├── zipstream.py            # streaming ZIP writer
@@ -565,7 +568,7 @@ inkstant-camera/
 ### 4.5 Inside the camera app
 
 - **One event loop:** the main thread runs asyncio. All state lives in one `CameraApp` object and changes only on the loop, so the state machine needs no locks.
-- **One event queue:** GPIO callbacks (gpiozero threads), the BTN reader, the PiSugar socket reader, the control socket server and timers turn everything into `Event` objects on one `asyncio.Queue`. A single task takes them in order and hands each to the state machine (§8).
+- **Events reach the loop as calls:** GPIO callbacks (gpiozero threads), the BTN reader and the display worker hand each event to the loop with `loop.call_soon_threadsafe`; the PiSugar socket reader, the control socket server and the timers already run on it. Each handler runs to completion on the loop, in order, and asks `machine.py`'s pure rules what's allowed (§8).
 - **Worker threads:**
   - **BTN reader:** one dedicated thread that reads the PiSugar's tap register every 20 ms and posts each tap to the loop (§6.6).
   - **Display worker:** one dedicated thread, one job at a time; any job can be aborted (§6.3).
@@ -611,6 +614,7 @@ inkstant-camera/
 /var/lib/inkstant/            root:root 0755
 ├── photos/   <id>.jpg        root:inkstant-web, dir 0750, files 0640  (full size)
 ├── thumbs/   <id>.jpg        root:inkstant-web, dir 0750, files 0640  (480 × 270)
+│             <id>.png        root:inkstant-web, files 0640             (the print, 600 × 400)
 ├── epd/      <id>.epd        root:root, dir 0700, files 0600          (screen image)
 ├── tmp/                      root:root 0700 (same filesystem, for atomic renames)
 ├── settings.json             root 0600
@@ -622,8 +626,8 @@ inkstant-camera/
   - IDs sort by sequence number, so the order stays right even if the clock was wrong.
   - The gallery groups by the date in the ID; photos without one go under "Unknown date".
   - Validated everywhere with `^\d{6}(_\d{8}-\d{6})?$`, which also blocks path tricks.
-- **Download file name:** `inkstant_<id>.jpg`.
-- **Sequence number:** `state.next_seq`, saved before the photo is committed. At start the app also scans `photos/` and uses `max(existing) + 1` if that's higher, so a lost state file never reuses a number.
+- **Download file names:** `inkstant_<id>.jpg`, and `inkstant_<id>_print.png` for a print.
+- **Sequence number:** `state.next_seq`, saved once the photo is committed, so a failed save uses no number (§8.4). At start the app also scans `photos/` and uses `max(existing) + 1` if that's higher, so a lost state file never reuses a number.
 - **Free space:** `os.statvfs("/var/lib/inkstant")`, `f_bavail × f_frsize`. "Storage low" below 1 GiB, "storage full" below 500 MiB (§1.9, §8.15).
 - **One folder per file type:** the gallery lists one folder, and it can't read the screen images it doesn't need. 📐
 
@@ -637,13 +641,13 @@ inkstant-camera/
 4. `os.rename` to the final path (same filesystem, so it's atomic).
 5. `os.fsync` on the final folder.
 
-**Committing a photo:** `epd/<id>.epd`, then `thumbs/<id>.jpg`, then `photos/<id>.jpg`. The JPEG goes last: a photo exists only once its full-size file is in place.
+**Committing a photo:** `epd/<id>.epd`, then `thumbs/<id>.jpg`, then `thumbs/<id>.png`, then `photos/<id>.jpg`. The JPEG goes last: a photo exists only once its full-size file is in place.
 
 **At start (recovery):**
 
 - Delete everything in `tmp/`.
 - Delete any `epd/` or `thumbs/` file with no matching JPEG (left over from a power cut).
-- For any JPEG missing its thumbnail or screen image, queue a rebuild. The rebuild runs in the background when the camera is idle and uses Pillow's JPEG draft mode for a fast reduced decode.
+- For any JPEG missing its thumbnail, print or screen image, or with a screen image from an older palette (§7.7), queue a rebuild. The rebuild runs in the background when the camera is idle and uses Pillow's JPEG draft mode for a fast reduced decode.
 
 **Settings and state** are written with the same `atomic_write`, with a schema version, and with a `.bak` copy of the previous version. A file that fails to parse falls back to `.bak`, then to defaults, and the error is logged.
 
@@ -705,7 +709,7 @@ Home Wi-Fi passwords are not kept here. NetworkManager's root-only keyfiles hold
 
 ## 6. Hardware layer
 
-Every module in `hw/` has a real version and a fake with the same interface. The app picks the fakes with `--sim` (§19.2).
+Every module in `hw/` has a real version and a fake with the same interface. The tests and the simulator (`tools/sim.py`, §19.2) build the app with the fakes.
 
 ### 6.1 GPIO
 
@@ -729,7 +733,7 @@ gpiozero 2.0.1 with the lgpio pin factory (`GPIOZERO_PIN_FACTORY=lgpio` in the u
 
 ### 6.2 Status light
 
-The light is the Pi's own green ACT LED, `/sys/class/leds/ACT`, seen through a light pipe in the case (decided 2026-10-17, replacing an LED ring on the header; §3 finding 25). The patterns and their meanings are in §1.3; which one shows is decided in §8.6.
+The light is the Pi's own green ACT LED, `/sys/class/leds/ACT`, seen through a small opening in the case (decided 2026-10-17, replacing an LED ring on the header; §3 finding 25). The patterns and their meanings are in §1.3; which one shows is decided in §8.6.
 
 **From power-on:**
 
@@ -741,7 +745,7 @@ Before the software is installed, the ACT LED keeps Pi OS's default trigger (`mm
 
 - **Why not `heartbeat`:** the kernel's heartbeat is a double pulse every 0.7 to 1.3 s, depending on load, which doesn't read as "wait". ✅ [ledtrig-heartbeat.c](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/drivers/leds/trigger/ledtrig-heartbeat.c)
 - **On or off only:** the ACT LED is a plain GPIO LED (on the Pi 3B, through the firmware's virtual GPIO), so there's no dimming or fading. ✅ device trees (§3 finding 25)
-- **Boards:** every supported board has the `ACT` LED and the `act_led_trigger` parameter (§3 finding 25). 🧪 Only the Pi 4's triggers are tested: check the early blink on every board, the Pi 4 included; the pattern trigger and the light pipe on the 3A+, 3B and Pi 5; and the virtual GPIO's timing on the 3B. On the Pi 5, the green LED shares one bicolour package with the red power LED.
+- **Boards:** every supported board has the `ACT` LED and the `act_led_trigger` parameter (§3 finding 25). 🧪 Only the Pi 4's triggers are tested: check the early blink on every board, the Pi 4 included; the pattern trigger and the light through the case on the 3A+, 3B and Pi 5; and the virtual GPIO's timing on the 3B. On the Pi 5, the green LED shares one bicolour package with the red power LED.
 
 | Pattern (§1.3) | How it's set |
 |---|---|
@@ -786,7 +790,7 @@ Our port of Waveshare's `epd3in6e.py`. It keeps Waveshare's commands, data and d
 
 - **Waiting for BUSY:** a `threading.Event` that the BUSY input's `when_activated` callback sets, and that the abort also sets. The wait checks the line's level first, so an edge that already happened isn't missed. No polling.
 - **Abort** (module pulled out, or shutdown can't wait any longer): checked at every wait and between steps. It skips straight to step 11 and raises `Aborted`. Sending no sleep command is fine: the module is losing power anyway.
-- **A timeout with the module still detected** raises `DisplayTimeout`. The app reports a display error (light and gallery) until the next screen update succeeds or the module is reinserted.
+- **A timeout with the module still detected** raises `DisplayTimeout`. The app reports a display error (in the gallery; errors don't show on the light, §8.14) until the next screen update succeeds or the module is reinserted.
 - **"Image shown"** is the end of step 8: the driver calls back then, and the app unlocks the buttons. Steps 9 to 11 (about 2.4 s) run as a tail with the buttons free; a new screen update simply waits for the tail to finish. 📐
 - **Timing:** about 20 to 22 s per screen update, the image appearing at about 17 to 19 s. 🧪 Measure.
 - **No module, or an unpowered one:** BUSY reads low through the pull-down, so step 2 times out after 2 s → `ModuleMissing`. ✅ That backs up the detect pin (§6.1).
@@ -878,7 +882,7 @@ picam2.start()
 - **Failure ladder:**
   1. `start()` fails (CMA allocation error) → retry with `buffer_count=1`.
   2. Fails again → fallback mode: a 1152 × 648 preview configuration, with `switch_mode_and_capture_request(full_config)` at each shutter press. Slower, but it works.
-  3. Fails again → camera error (light, gallery), no shooting; retry the full ladder every 60 s.
+  3. Fails again → camera error (in the gallery, §8.14), no shooting; retry the full ladder every 60 s.
 - **Pi 5:** the same code. Picamera2 chooses the PiSP pipeline itself, and camera buffers don't come from CMA there. ✅ Picamera2 manual
 
 ### 6.5 PiSugar client
@@ -886,7 +890,7 @@ picam2.start()
 Talks to `pisugar-server` over `/tmp/pisugar-server.sock`. The camera app's unit doesn't use `PrivateTmp=`, so it can see that path.
 
 - **Two connections:**
-  - **Events:** opened at start and never sent anything. Each line that is exactly `single`, `double` or `long` becomes a `BtnTap` event; any other line is ignored. Since 2026-10-17 this is the slower of two BTN readers: most taps reach the app through its own (§6.6).
+  - **Events:** opened at start and never sent anything. Each line that is exactly `single`, `double` or `long` is handed to the app as a tap; any other line is ignored. Since 2026-10-17 this is the slower of two BTN readers: most taps reach the app through its own (§6.6).
   - **Commands:** one request at a time (an `asyncio.Lock`). Reply lines that are tap words are skipped, not acted on: pisugar-server sends every tap on every connection, so the events connection already has it. (Fixed 2026-10-17: a tap that arrived while a command waited for its reply was acted on twice.) The reply must start with `<command>:`. 2 s timeout; reconnect and retry once.
 - **Reply format:** `<command>: <value>`. Setters answer `done`; anything else from a setter is an error message. Booleans are `true`/`false`. ✅ [cmds.rs](https://github.com/PiSugar/pisugar-power-manager-rs/blob/v2.3.5/pisugar-server/src/cmds.rs)
 - **I2C errors come back as the value:** `rtc_alarm_time: I/O error: Remote I/O error (os error 121)`. The PiSugar 3 gives one now and then: 1 read in 20 straight after an alarm write, on the Pi 4 (2026-10-16). Taken as a value, a boolean like `battery_power_plugged` read as false. Any reply starting with `I/O error` is retried after 0.1 s, up to 3 tries, then raised as an error. The setup checks' blocking reader does the same. ✅ 0 bad reads in 60 after the change.
@@ -946,7 +950,7 @@ Talks to `pisugar-server` over `/tmp/pisugar-server.sock`. The camera app's unit
 
 - **Pi 3 and 4:** `dtoverlay=i2c-rtc,ds3231` makes the PiSugar's RTC `/dev/rtc0`, and the kernel sets the system time when the driver loads, before the app starts. ✅ (§3, finding 7)
 - **Pi 5:** its own RTC is `rtc0`, and it loses time whenever the PiSugar cuts power. So no overlay there; the app uses `rtc_rtc2pi`.
-- **At start**, `clock.py`:
+- **At start**, the app (`CameraApp.check_clock`):
   1. Reads the RTC: `/sys/class/rtc/rtc0/since_epoch` if `/sys/class/rtc/rtc0/name` names the DS3231 driver, otherwise `get rtc_time`.
   2. **Valid** if the RTC reads at or after `BUILD_EPOCH` (the release's build time). Otherwise the clock counts as unset (§1.5).
   3. If valid and the system clock is more than 2 s away from it, sets the system clock (`time.clock_settime(CLOCK_REALTIME, …)`, or `rtc_rtc2pi`).
@@ -1015,12 +1019,12 @@ From the lores frame (1152 × 648 YUV420; same view as the full frame):
 2. **Crop to 3:2 in YUV:** Y columns 90 to 1061 (972 wide), U and V columns 45 to 530. That drops 90 px from each side (§1.9): the same view as 3888 × 2592 of the full frame.
 3. **To RGB:** Y as an `L` image; U and V as `L` images scaled up to 972 × 648 (bilinear); `Image.merge("YCbCr", …).convert("RGB")`. Pillow's YCbCr is full-range BT.601, the same as the camera's `Sycc` stills colour space. ✅
 4. **Resize** to 600 × 400 (`Image.Resampling.LANCZOS`).
-5. **Tone for e-paper:** a mild saturation and contrast lift (`ImageEnhance`, starting at 1.2 and 1.1), tuned together with the palette. 📐 🧪
+5. **Tone for e-paper:** a mild saturation and contrast lift (`ImageEnhance`, 1.2 and 1.1), tuned together with the palette 📐. Then map 0 to 255 onto the palette's own black to white, channel by channel: the panel's white is a light grey, so without this everything brighter dithers to solid white and the highlights blow out (added 2026-10-17).
 6. **To native orientation:** `transpose(Image.Transpose.ROTATE_90)`, giving 400 × 600, as Waveshare's `getbuffer` does. The display rotation setting (0° or 180°) is applied when sending (§7.2), so the files never depend on it.
 7. **Dither:** `img.quantize(palette=PANEL, dither=Image.Dither.FLOYDSTEINBERG)`. ✅
    - `PANEL` is a `P` image holding the panel's six real, muted colours at indices 0 to 5, in order black, white, yellow, red, blue, green. Dithering against them, instead of pure RGB, matches how the panel really looks. Waveshare recommends Floyd–Steinberg for its colour panels, and its driver uses this same Pillow call with pure colours. ✅ [driver source](https://github.com/waveshareteam/e-Paper/blob/master/E-paper_Separate_Program/3.6inch_e-Paper_E/RaspberryPi_JetsonNano/python/lib/waveshare_epd/epd3in6e.py), [Pillow docs](https://pillow.readthedocs.io/en/stable/reference/Image.html#PIL.Image.Image.quantize)
-   - **Starting values:** Pimoroni's measured colours, which it uses for both its 600 × 400 Inky Impression 4.0" (Spectra 6) and its 7.3": black 0,0,0 · white 161,164,165 · yellow 208,190,71 · red 156,72,75 · blue 61,59,94 · green 58,91,70. ✅ [inky_e640.py](https://github.com/pimoroni/inky/blob/main/inky/inky_e640.py) 🧪 Tuned on our panel (§7.7).
-   - The other 250 palette entries repeat black, as Waveshare pads its palette.
+   - **Values (palette version 4, 2026-10-17):** measured on our panel, the median of each swatch in a phone photo of the palette tuner's chart: black 24,21,38 · white 212,223,225 · yellow 229,214,67 · red 114,33,29 · blue 48,92,170 · green 85,112,103. Black, red, yellow and blue fall within published Spectra 6 measurements; our green is lighter. Before version 3 they were Pimoroni's measured colours for its Spectra 6 panels (black 0,0,0 · white 161,164,165 · yellow 208,190,71 · red 156,72,75 · blue 61,59,94 · green 58,91,70 ✅ [inky_e640.py](https://github.com/pimoroni/inky/blob/main/inky/inky_e640.py)).
+   - The other 250 palette entries repeat the palette's own black, as Waveshare pads its palette. A plain 0,0,0 would sit nearer to dark pixels than the measured black, and Pillow would dither towards a colour the panel doesn't have.
 8. **Map and pack (numpy):**
    - `codes = LUT[indices]`, where `LUT` is 256 entries: `[0, 1, 2, 3, 5, 6]`, then black (0) for the rest. Any padding index maps to black, so it can never send the panel an undefined code. A unit test asserts the indices stay at 0 to 5.
    - Then `(codes[0::2] << 4) | codes[1::2]` over the flattened rows → 120,000 bytes. This replaces the driver's per-pixel Python loop over 240,000 pixels.
@@ -1047,6 +1051,8 @@ From the lores frame (1152 × 648 YUV420; same view as the full frame):
 ### 7.3 Thumbnail
 
 The full lores frame (16:9), converted as in step 3 but without the crop, resized to 480 × 270 and saved as JPEG at quality 80 with Pillow.
+
+**The print** (`thumbs/<id>.png`, added 2026-10-17): the screen image's codes drawn as a 600 × 400 PNG, in the measured colours scaled so the panel's white shows as paper white (`palette.DISPLAY_RGB`). It's made from the `.epd`, so it's rebuilt with it.
 
 ### 7.4 Full photo and EXIF
 
@@ -1086,11 +1092,11 @@ The screen image and thumbnail run at the same time as the JPEG encode, on a sec
 ### 7.7 Palette tuning and rebuilding
 
 - `tools/palette_tuner.py` shows calibration screens on the real panel: the six pure colours, ramps, and a few reference photos dithered with candidate palettes. The winner goes into `imaging/palette.py`, and `PALETTE_VERSION` goes up by one.
-- **Rebuilding** (`inkstant-ctl regen-epd`, and automatically after a palette change, in the background while idle): decode each JPEG with `Image.draft("RGB", (1152, 648))`, which is libjpeg's exact quarter-size decode of 4608 × 2592, then run steps 2 to 8.
+- **Rebuilding** (`inkstant-ctl regen-epd`, and automatically after a palette change, in the background while idle): decode each JPEG with `Image.draft("RGB", (1152, 648))`, which is libjpeg's exact quarter-size decode of 4608 × 2592, then run steps 2 to 8, and remake the print from the new screen image (§7.3).
 
 ## 8. Camera app behaviour
 
-This section carries out the product rules in §1. `machine.py` is pure logic: it takes `(state, event)` and returns the new state plus a list of actions. The rest of `camera_app/` carries the actions out. That makes every rule unit-testable with no hardware.
+This section carries out the product rules in §1. `machine.py` holds the rules as pure functions (what the light shows, whether a tap is accepted, the timers, the battery levels and the saver), and `CameraApp` in `app.py` holds the state and makes the transitions, asking those functions at each step. That makes every rule unit-testable with no hardware.
 
 ### 8.1 States
 
@@ -1204,8 +1210,9 @@ One job runs at a time, with one pending slot; a newer job replaces the pending 
    - Copy the lores array, and start screen image + thumbnail (§7.1, §7.3) on a second thread.
    - Encode the full JPEG with our EXIF (§7.4), then `request.release()`.
 5. **Commit:**
-   - The ID is taken from `next_seq` and the press time, and the incremented `next_seq` is saved in state.
-   - Write `.epd` → thumbnail → JPEG with `atomic_write` (§5.2).
+   - The ID is taken from `next_seq` (or one past the highest number on the card, if that's higher) and the press time.
+   - Write `.epd` → thumbnail → print → JPEG with `atomic_write` (§5.2).
+   - Then the incremented `next_seq` is saved in state.
 6. **Report:** the photo-committed event; the gallery sees it straight away.
 7. **Develop:** the state machine makes it the undeveloped photo and queues `DEVELOP` (§8.2), then `capture_busy = false`.
 8. **Failures:**
@@ -1244,9 +1251,9 @@ The table in §1.4 is carried out by the module events in §8.2 and the jobs in 
 |---|---|---|
 | Watchdog feed | 10 s | PiSugar watchdog feed + systemd `WATCHDOG=1`, from the loop |
 | Battery poll | 60 s, plus at start and when the plug state changes | `get battery`, `get battery_power_plugged`; then §8.9 and §8.10 |
-| Sleep | Checked every 10 s | No camera use for the effective sleep time → sleep (§8.8) |
-| Auto-off | Checked every 10 s | No use for the effective turn-off time → shut down (§8.2) |
-| Share timeout | Checked every 10 s | No gallery use for the effective share timeout while on battery → share mode off |
+| Sleep | Checked every second | No camera use for the effective sleep time → sleep (§8.8) |
+| Auto-off | Checked every second | No use for the effective turn-off time → shut down (§8.2) |
+| Share timeout | Checked every second | No gallery use for the effective share timeout while on battery → share mode off |
 | Wake timeout | 120 s after `WAKE` starts | Shut down |
 | Camera retry | 60 s | After a camera failure |
 | Shutdown wait | 30 s | Longest wait for a running screen update before aborting it |
@@ -1266,11 +1273,10 @@ If the effective sleep time is at or above the effective turn-off time, the came
 **Use** is tracked with two timestamps (monotonic):
 
 - **`last_use`** (turn-off) is updated by:
-  - any BTN tap, double tap or hold, whether it takes a photo or not;
+  - any BTN tap, double tap or hold, whether it takes a photo or not (a tap that wakes the camera from sleep included);
   - inserting or removing a module;
-  - any gallery request except status polls (`share.activity`);
-  - any `inkstant-ctl` command except `status`;
-  - waking from sleep.
+  - any control-socket command, from the gallery or `inkstant-ctl`, except the ones that only read: `status`, `share.activity`, `settings.get`, `wifi.list`, `selftest.get` and `update.report`;
+  - sharing stopping, and a software update failing.
 - **`last_camera_use`** (sleep) is updated by a shutter press, inserting or removing a module, and the camera waking up. The gallery doesn't keep the image sensor running.
 - **Paused:**
   - Turn-off is paused while share mode is on or starting, and while an update runs.
@@ -1357,7 +1363,7 @@ Decided 2026-10-15 (§1.5). 📐
 
 ### 8.12 Scheduling the next wake
 
-`slideshow.next_wake(now, settings, battery, clock_valid, has_photos) → datetime | None`, pure and unit-tested:
+`slideshow.next_wake(now, settings, battery_level, plugged, clock_valid, has_photos) → Unix time | None`, pure and unit-tested:
 
 - **None** if the slideshow is off, the clock is unset, there are no photos, or the battery is at or under the shutdown level + 2% and not plugged in. In those cases, call `rtc_alarm_disable`, and the screen is turned white at power-off (§8.13).
 - **Otherwise:** `t = now + interval`, but at least `now + 120 s`. The 120 s matters: the alarm has to fire after the PiSugar has cut power, or it's missed until the same time the next day. 📐
@@ -1367,7 +1373,7 @@ Decided 2026-10-15 (§1.5). 📐
 
 ### 8.13 Shutdown
 
-`ShutdownCoordinator.run(reason)` runs once; later calls just wait for it. Reasons: `power_button`, `auto_off`, `low_battery`, `slideshow`, `wake_timeout`, `system`, `update`.
+`CameraApp.request_shutdown(reason)` starts the shutdown once; later calls are ignored while it runs. Reasons: `power_button`, `auto_off`, `low_battery`, `slideshow`, `wake_timeout`, `system`, `update`.
 
 1. Lifecycle → `SHUTTING_DOWN`. BTN is ignored. The light shows wait while steps 2 and 3 run a screen update, otherwise off (§8.6).
 2. If a screen update is running, wait for it (up to 30 s from step 1), then abort it if needed. Drop the pending job.
@@ -1395,9 +1401,9 @@ If shutdown started from outside (SIGTERM from `sudo poweroff`, say), the same s
 | `display` | BUSY timeout with a module detected | "Display module not responding" | Cleared by the next good screen update, or by putting the module back on |
 | `storage` | Write failed (not out of space) | "Couldn't save the photo" | Next good save |
 | `storage_full` | Below 500 MB free (§8.15) | "Storage full" banner | Deleting photos |
-| `pisugar` | No socket, or watchdog setup failed | "Battery board not responding" | Reconnect every 30 s |
+| `pisugar` | No socket, or watchdog setup failed | "Battery board not responding" | The battery poll (every 60 s) tries again; once pisugar-server answers, the PiSugar's settings, charge limit and watchdog are set up again (fixed 2026-10-17: before, a late pisugar-server left the watchdog off) |
 | `wifi` | Share mode couldn't start any network | Logged | Share mode off |
-| `setup` | A critical setup-check item failed (§15.8) | "Setup check found a problem" banner | Fix and run the check again |
+| (setup check) | A critical setup-check item failed (§15.8) | "Setup check found a problem" banner, from `setup_check` in the status rather than an error code | Fix and run the check again |
 | `clock` | RTC unset | "Set the time from your phone" | Time set |
 
 Every error is also logged with its detail and kept in memory for `/api/status`. **None shows on the light** (decided 2026-10-17, replacing the problem pattern): a tap the error stops gets no wink, and the gallery says why.
@@ -1417,10 +1423,10 @@ Every error is also logged with its detail and kept in memory for `/api/status`.
 ### 9.1 Starting
 
 1. `share = starting`; light → wait (slow blink). From here until sharing has stopped, taps take no photos (§1.2).
-2. `nmcli radio wifi on`; wait for wlan0 (§6.8).
-3. **Home** (skipped when a double tap while sharing switches to the camera's Wi-Fi, §9.3, or for `inkstant-ctl share on --hotspot`): scan; if any `inkstant-home-*` network is visible, join the strongest, after matching its saved security to the scan (§9.5). On success, get the IP; `url = http://<IP>/`; mode `home`; send `rtc_web` (§6.7).
-4. **Away:** if no home network is visible or joining fails, bring up `inkstant-hotspot`; `url = http://10.42.0.1/`; mode `hotspot`.
-5. Start the gallery (`systemctl start inkstant-gallery`), then poll `http://127.0.0.1/healthz` (every 200 ms, up to 10 s).
+2. Start the gallery (`systemctl start inkstant-gallery`) alongside the Wi-Fi, since it listens on every address; it's ready once `http://127.0.0.1/healthz` answers (polled every 200 ms, up to 10 s).
+3. `nmcli radio wifi on`; wait for wlan0 (§6.8).
+4. **Home** (skipped when a double tap while sharing switches to the camera's Wi-Fi, §9.3, or for `inkstant-ctl share on --hotspot`): if wlan0 is already on an `inkstant-home-*` network (developer mode keeps it for SSH), use it, with no scan. Otherwise scan, and try each visible `inkstant-home-*` network, strongest first, after matching its saved security to the scan (§9.5). On success, get the IP; `url = http://<IP>/`; mode `home`; send `rtc_web` (§6.7).
+5. **Away:** if no home network is visible or joining fails, bring up `inkstant-hotspot`; `url = http://10.42.0.1/`; mode `hotspot`. Then wait for the gallery from step 2.
 6. `share = on(mode, url)`; with a module in, queue `SHARE_SCREEN`.
 7. **If no network came up, or the gallery didn't start:** `wifi` error, then share mode off. The module goes back to its photo, developing one saved just before sharing started (fixed 2026-10-17).
 
@@ -1536,10 +1542,11 @@ The server side of the phone web app. What the phone shows and does is §11.
 | `GET /` | Gallery page | HTML |
 | `GET /p/<id>` | Photo page: the full-size image as a plain `<img>` (long-press saves it), previous/next, download, delete, show on camera | HTML |
 | `GET /settings` | Settings page | HTML |
-| `GET /static/<file>` | CSS, JS, icons; versioned file names, cached 1 year | |
+| `GET /static/<file>` | CSS, JS, icons; linked with `?v=<version>` and sent with `no-cache`, so after an update they revalidate (a cheap 304) | |
 | `GET /photos/<id>.jpg` | Full photo; `?dl=1` adds `Content-Disposition: attachment; filename="inkstant_<id>.jpg"` | JPEG |
 | `GET /thumbs/<id>.jpg` | Thumbnail | JPEG |
-| `GET /api/photos?before=<seq>&limit=60`, or `?after=<seq>` for photos newer than the newest shown, and `&month=YYYY-MM` (or `none` for clock-unset photos) to jump the grid | Page of photos, newest first | `{"photos":[{"id","seq","day","time","size"}],"next_before":seq or null,"total":n}`; `day` and `time` are null for photos taken with the clock unset |
+| `GET /prints/<id>.png` | The print as the module shows it; `?dl=1` names it `inkstant_<id>_print.png`. Sent with `no-cache`, since a palette change remakes it | PNG |
+| `GET /api/photos?before=<seq>&limit=60`, or `?after=<seq>` for photos newer than the newest shown, and `&month=YYYY-MM` (or `none` for clock-unset photos) to jump the grid | Page of photos, newest first | `{"photos":[{"id","seq","day","time","size"}],"next_before":seq or null,"total":n,"offset":n}`; `offset` counts the photos before the page's first, so the viewer can say "Photo n of N" after a jump; `day` and `time` are null for photos taken with the clock unset |
 | `GET /api/photos/<id>` | One photo's details for the info sheet (EXIF read with piexif) | `{"id","day","time","size","width","height","exposure_s","iso","current","undeveloped"}` |
 | `GET /api/months` | Months with photo counts, for "Jump to month" | `[{"month":"2026-10","count","first_seq"}, …]`, plus one entry with `"month": null` for undated photos |
 | `GET /api/status` | Banners and state, polled every 10 s by every page | §10.3 |
@@ -1551,7 +1558,7 @@ The server side of the phone web app. What the phone shows and does is §11.
 | `GET`, `POST /api/settings` | Read, or change some settings (§5.4) | Settings, or 400 with a per-field message |
 | `POST /api/time` | `{"epoch_ms":…, "tz":"Europe/Madrid"}` | 204 |
 | `GET /api/wifi` | Home network names and the hotspot name | JSON, no home passwords |
-| `POST /api/wifi/home` | `{"ssid","password"}`: add, or replace one with the same name | 204, or 400 |
+| `POST /api/wifi/home` | `{"ssid","password"}`: add, or replace one with the same name | `{"n":…}`, the slot it's in, or 400 |
 | `DELETE /api/wifi/home/<n>` | Forget a home network | 204 |
 | `POST /api/share/stop` | Stop sharing | 204 |
 | `GET`, `POST /api/update` | Check for a newer release; start the update (§16.1) | JSON |
@@ -1565,22 +1572,25 @@ The server side of the phone web app. What the phone shows and does is §11.
 ```json
 {"battery":{"level":72,"plugged":false,"low":false},
  "battery_saver":{"on":false,"why":null},
- "storage":{"free_bytes":0,"total_bytes":0,"state":"ok","photos_left":0},
+ "storage":{"free_bytes":0,"total_bytes":0,"state":"ok","photos_left":0,"used_bytes":0},
  "clock_valid":true,"module_present":true,"camera":"ready",
- "share":{"mode":"hotspot","url":"http://10.42.0.1/","ssid":"Inkstant-4F2A",
+ "share":{"mode":"hotspot","url":"http://10.42.0.1/","ssid":"Inkstant-4F2A","state":"on",
           "timeout_min":10,"on_battery":true},
  "errors":[{"code":"display","message":"…","since":"…"}],
  "undeveloped":"000123_20261015-143022","current":"000122_20261015-142901",
  "version":"1.0.0","update":{"state":"idle","step":null,"message":null},
  "newest_seq":124,"photo_count":124,"today":"2026-10-15","time":"2026-10-15T14:32:05+02:00",
  "tz":"Europe/Madrid","display":{"state":"idle","id":null},
- "wifi_5ghz":true,"setup_check":{"passed":true,"failed":[]}}
+ "wifi_5ghz":true,"setup_check":{"passed":true,"failed":[]},
+ "lifecycle":"ACTIVE","turn_off_min":10,"dev_mode":false,"model":"Raspberry Pi 3 Model A Plus Rev 1.1"}
 ```
 
 - **`camera`:** `off`, `starting`, `ready`, `fallback`, `asleep`, `waking` or `failed` (§8.1).
 - **`storage.state`:** `ok`, `low` or `full` (§8.15).
 - **`share.timeout_min`:** the effective timeout (§8.7). `on_battery` tells the page whether it applies.
-- **`update.state`:** `idle`, `running` (with `step`: `downloading`, `installing` or `restarting`) or `failed` (with `message`).
+- **`update.state`:** `idle`, `running` (with `step`: `downloading`, `installing` or `restarting`), `done` or `failed` (with `message`).
+- **`share`** is null when sharing is off; its `state` is `starting`, `on` or `stopping`.
+- **`lifecycle`**, **`turn_off_min`** (the effective turn-off time), **`dev_mode`** and **`model`** (the board) are for the settings page.
 - **`display.state`:** `idle` or `developing`; `id` is the photo being developed.
 - **`newest_seq` and `photo_count`** drive the "new photo" pill. `today`, `time` and `tz` are the camera's date, clock and time zone (§11.5.3).
 - **`wifi_5ghz`** is false on the Pi 3B (§15.1.2).
@@ -1697,7 +1707,7 @@ Every colour is a token. The app follows the phone's light or dark setting (`pre
 | `--err-bg` / `--err-ink` | Error banners (the panel's red) | `#F6DEDF` / `#7A1E23` | `#3D1C1F` / `#F7B9BC` |
 | `--info-bg` / `--info-ink` | Info banners | `#E2E3F5` / `#272B6E` | `#22244A` / `#C9CCFA` |
 | `--viewer-bg` / `--viewer-ink` | Photo viewer | `#000000` / `#F2F2F2` | same |
-| `--ink-black` … `--ink-green` | The panel's six measured inks (Pimoroni's values, §7.1), for the logo strip only | `#000000`, `#A1A4A5`, `#D0BE47`, `#9C484B`, `#3D3B5E`, `#3A5B46` | same |
+| `--ink-k`, `--ink-w`, `--ink-y`, `--ink-r`, `--ink-b`, `--ink-g` | The panel's six inks (Pimoroni's values, the palette before version 3, §7.1), for the logo strip only | `#000000`, `#A1A4A5`, `#D0BE47`, `#9C484B`, `#3D3B5E`, `#3A5B46` | same |
 
 **Contrast, computed (WCAG 2.x ratio):**
 
@@ -1731,7 +1741,7 @@ Every colour is a token. The app follows the phone's light or dark setting (`pre
 
 #### 11.3.5 Icons
 
-- **Style:** an inline SVG sprite (`static/icons.svg`) on a 24 px grid, 1.75 px stroke, round caps.
+- **Style:** an inline SVG sprite (`templates/icons.html`) on a 24 px grid, 1.75 px stroke, round caps.
 - **Set:** back, close, settings, more (⋯), select, check, download, delete, show on camera (a small display module with an arrow), Wi-Fi, battery (with a charging bolt), info, calendar, warning, error, refresh.
 - **Labels:** every icon button has a visible label or an `aria-label`, and a 44 × 44 px tap area.
 
@@ -1949,7 +1959,7 @@ Grouped sections on one scrolling page, at most 640 px wide. Labels sit above ea
 | | *Footnote* | "While the camera is off it wakes to show the next photo. With the slideshow off, the screen turns white when the camera turns off; take the print off first to keep its photo." | |
 | **Power** | Sleep after | Select | 1, 2, 3, 5, 10, 15 min, or Never. Footnote: "Asleep, the camera takes about a second longer to shoot." When it's at or above "Turn off after": "The camera turns off before it would sleep." |
 | | Turn off after | Select | 1, 2, 5, 10, 15, 20, 30, 45, 60 min without use |
-| | Battery saver | Toggle, with a status line: "On" · "On because the battery is low" (the toggle shows on; turning it off clears the automatic saver, §8.9) · "Off" | Footnote: "Sleeps after 1 min, turns off after 5, focuses a little slower, and stops sharing after 5 min." |
+| | Battery saver | Toggle, with a status line: "On" · "On because the battery is low" (the toggle shows on; turning it off clears the automatic saver, §8.9) · "Off" | Footnote: "Sleeps after 1 min, turns off after 5, and stops sharing after 5 min." |
 | | Turn on at 20% | Toggle (the level follows §8.9 when the shutdown level is high) | On by default |
 | | Stop sharing after | Select | 5, 10, 15, 20, 30, 45, 60 min without use, on battery only |
 | | Turn off at | Select | 4, 5, 8, 10, 15, 20% battery |
@@ -2066,7 +2076,7 @@ Every failed action shows the server's reason in plain words (from the `error.me
 | First screen (shell + about 20 visible thumbnails) | about 0.7 MB, under 1 s on the camera's Wi-Fi |
 | Requests per gallery page load | 3 + one per visible thumbnail |
 
-- **Caching:** thumbnails and photos are `immutable` for a year (§10.1), so going back to the gallery doesn't download them again. Static files are `no-cache` with an ETag: the ES modules import each other by plain URL, so after an update each one revalidates with a cheap 304 instead of staying stale for a year.
+- **Caching:** thumbnails and photos are `immutable` for a year (§10.1), so going back to the gallery doesn't download them again. Prints are `no-cache`, since a palette change remakes them. Static files are `no-cache` with an ETag: the ES modules import each other by plain URL, so after an update each one revalidates with a cheap 304 instead of staying stale for a year.
 - **Layout stability:** tiles have a fixed aspect ratio, and images get `width` and `height`, so nothing jumps while they load.
 - **Large libraries:** each day group gets `content-visibility: auto` where supported (Safari 18+, Chrome 85+). 🧪 Scroll 3,000+ photos on an older iPhone.
 - **No compression on the wire:** Waitress doesn't compress, and nothing large is text. JPEGs wouldn't shrink anyway.
@@ -2074,10 +2084,9 @@ Every failed action shows the server's reason in plain words (from the `error.me
 ### 11.8 How it's built
 
 - **No build step, no framework.**
-  - Jinja templates: `base.html`, `gallery.html`, `photo.html` (direct link), `settings.html`.
+  - Jinja templates: `base.html`, `gallery.html`, `photo.html` (direct link), `settings.html` and `error.html`, plus the shared pieces `viewer.html`, `dialogs.html` and `icons.html` (the inline SVG sprite).
   - One stylesheet: `static/app.css`, with the tokens from §11.3.
-  - ES modules: `common.js` (API calls, status poll, banners, toasts, dialogs), `gallery.js` (grid, scrolling, select mode, download sheet), `viewer.js`, `settings.js`, and `strings.js` (every message in one place, ready for translation later).
-  - `static/icons.svg`.
+  - ES modules: `common.js` (API calls, status poll, banners, toasts, dialogs), `gallery.js` (grid, scrolling, select mode, download sheet), `viewer.js` (the photo viewer), `photo.js` (the viewer on its own, for `/p/<id>`), `settings.js`, and `strings.js` (every message in one place, ready for translation later).
 - **Progressive:** the gallery's first page and every photo page work without JavaScript (tiles are links to `/p/<id>`). Selecting, infinite scrolling and settings need it.
 - **Security headers** on every response (§10.5):
   - `Content-Security-Policy: default-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`. So there are no inline scripts or styles anywhere.
@@ -2104,12 +2113,12 @@ Every message lives in `strings.js` (and in the templates for server-rendered te
   - Request: `{"id": 7, "cmd": "photos.delete", "args": {"ids": ["000123_20261015-143022"]}}`
   - Reply: `{"id": 7, "ok": true, "result": {...}}`, or `{"id": 7, "ok": false, "error": {"code": "invalid", "message": "…"}}`
 - **Who's calling:** `SO_PEERCRED` gives the caller's user. uid 0 may use every command; `inkstant-web` only those marked "gallery"; anyone else is refused.
-- **Limits:** 64 KB per message; 5 s per request.
+- **Limits:** 64 KB per message; 5 s per request, except the commands that wait on Wi-Fi or the hardware: `share.start` 75 s, `selftest.run` 30 s, `update.check` 15 s and `update.start` 30 s.
 
 | Command | Args | Result | Gallery | Notes |
 |---|---|---|---|---|
 | `status` | — | `/api/status` payload | ✓ | |
-| `photos.delete` | `ids`, or `all: true` | `deleted`, `missing` | ✓ | Removes the JPEG, thumbnail and `.epd`; clears `undeveloped` and `current` if they match |
+| `photos.delete` | `ids`, or `all: true` | `deleted`, `missing` | ✓ | Removes the JPEG, thumbnail, print and `.epd`; clears `undeveloped` and `current` if they match |
 | `photos.show` | `id` | `queued` | ✓ | Errors: `no_module`, `not_ready` (not `ACTIVE`), `not_found` |
 | `settings.get` | — | settings | ✓ | |
 | `settings.set` | partial settings | settings, `applied` | ✓ | Checked against §5.4; hotspot changes rewrite its profile and apply at the next share. Setting `battery_saver.enabled` to false also turns off an automatic saver (§8.9). Timers, the saver and the frame rate are re-applied at once |
@@ -2199,6 +2208,7 @@ dtoverlay=imx708
 **`/etc/systemd/system/inkstant.service`**
 
 ```ini
+# Inkstant camera app. Installed by install/configure.py.
 [Unit]
 Description=Inkstant camera
 Wants=pisugar-server.service
@@ -2235,7 +2245,7 @@ WantedBy=multi-user.target
 **`/etc/systemd/system/inkstant-gallery.service`** (not enabled; started by the camera app)
 
 ```ini
-# Inkstant gallery (SPEC.md §13.3). Not enabled: the camera app starts it in share mode.
+# Inkstant gallery. Not enabled: the camera app starts it in share mode.
 [Unit]
 Description=Inkstant gallery
 After=inkstant.service
@@ -2284,7 +2294,7 @@ When the Pi shuts down, the PiSugar 3 doesn't cut its 5 V output by itself. PiSu
 
 ```sh
 #!/bin/sh
-# Inkstant (SPEC.md §13.4). Runs after all services have stopped, just before the kernel
+# Inkstant. Runs after all services have stopped, just before the kernel
 # powers off. Arms the PiSugar 3's delayed power cut, so the Pi then draws nothing.
 # Does nothing on reboot, halt or kexec.
 [ "$1" = "poweroff" ] || exit 0
@@ -2309,6 +2319,7 @@ exit 0
 - **Preseeded answers** (`debconf-set-selections`, then `DEBIAN_FRONTEND=noninteractive dpkg -i`):
   ```text
   pisugar-server pisugar-server/model select PiSugar 3
+  pisugar-server pisugar-server/address select 127.0.0.1
   pisugar-server pisugar-server/web boolean false
   pisugar-server pisugar-server/tcp boolean false
   pisugar-server pisugar-server/uds boolean true
@@ -2386,7 +2397,7 @@ Each measure is specified in the section listed; the savings are estimates until
 | The Pi fully unpowered when off (PiSugar delayed power cut, then hibernate) | Everything but the PiSugar's standby | Nothing | ✅ decided | 13.4 |
 | **Sleep** after 5 idle minutes (setting) | Most of the camera's ~250 mA while idle | About 1 s on the first shot after it | Decided 2026-10-15 | 8.8 |
 | Turn off after 10 idle minutes (setting) | All on-time after that | A full start (§1.5) for the next shot | Decided | 8.7 |
-| **Battery saver**, by hand or by itself at 20% | Shorter sleep and turn-off times, the lowest frame rate, sharing stops sooner | About 0.5 s slower refocusing; more first shots wait for a wake | Decided 2026-10-15 | 8.9 |
+| **Battery saver**, by hand or by itself at 20% | Shorter sleep and turn-off times, the lowest frame rate, sharing stops sooner | About 0.5 s slower refocusing (none while the normal rate is also 5 fps); more first shots wait for a wake | Decided 2026-10-15 | 8.9 |
 | Slideshow wakes skip the camera, Wi-Fi and heavy imports, with a 120 s cap | Seconds and current per wake | Nothing | 📐 | 8.11 |
 | Fast start: no missed-timer catch-up, unneeded services off, `quiet`, fewer firmware probes | Seconds per start and wake | Nothing | 📐 🧪 M8 | 13 |
 | HDMI off (`nohdmi`) | ~14 mA (KittenLabs, Zero 2 W) to ~25 mA | Nothing (no screen attached) | ✅ | 13.1 |
@@ -2475,9 +2486,9 @@ All four are on the bench list (§19.6).
 | Where | What changes by model | How |
 |---|---|---|
 | Install: config.txt | RTC overlay on Pi 3 and 4 only; `,cam0` on a Pi 5 whose camera is on CAM0 | `[pi3]`, `[pi4]` and `[pi5]` sections (§13.1) |
-| Install: `device.toml` | `family` (`pi3`, `pi4`, `pi5`), `wifi_5ghz` (false on the 3B), `camera_port` (Pi 5) | From `/proc/device-tree/model`, and the camera check (§15.6, step 7) |
+| Install: `device.toml` | `family` (`pi3`, `pi4`, `pi5`), `wifi_5ghz` (false on the 3B), `camera_port` (Pi 5) | From `/proc/device-tree/model`, and the camera-port question on a Pi 5 (§15.5) |
 | Install: checks | `rpi_apps.yaml` must exist on Pi 3 and 4 (CMA) | §15.6, step 4 |
-| Run time: clock | Kernel RTC on Pi 3 and 4, `rtc_rtc2pi` on Pi 5 | `clock.py` checks what `rtc0` is (§6.7) |
+| Run time: clock | Kernel RTC on Pi 3 and 4, `rtc_rtc2pi` on Pi 5 | The app checks what `rtc0` is (§6.7) |
 | Run time: camera | Logs `CmaFree` on Pi 3 and 4 only | Picamera2's platform check |
 | Run time: GPIO | Chip number | gpiozero chooses |
 | Gallery | On a 3B, "Add network" notes "This camera can only join 2.4 GHz networks" | `wifi_5ghz` in `/api/status` |
@@ -2600,9 +2611,9 @@ Each step lists what it checks, what it does, and what makes it stop. "Stop" mea
 | 2 | **Preflight** | All checks are run and reported together (see the list below) | Any check fails |
 | 3 | **Questions** | §15.5. Skipped with `--update`; `--reconfigure` asks again | Bad answer: asked again |
 | 4 | **Packages** | `apt-get update`; install §4.4's list, with `python3-picamera2` installed `--no-install-recommends`. Then upgrade whichever of `librpicam-app1`, `rpicam-apps-core`, `rpicam-apps-lite` and `rpicam-apps` is installed (`--only-upgrade`). rpicam-apps is built for one exact libcamera build but only asks for "that or newer", so apt keeps the old one when Picamera2 brings a newer libcamera. On the Pi 4 (2026-10-16), rpicam-apps 1.13.0 crashed listing cameras against libcamera `0.7.2+rpt20261009`, and 1.14.0 fixed it. apt waits up to 5 minutes for a lock held by something else (`-o DPkg::Lock::Timeout=300`), and the whole step retries twice on network errors. Then check Python is 3.13 and Picamera2 imports, and on Pi 3 and 4 that `rpi_apps.yaml` exists (§3, finding 10) | apt fails three times, or a check fails |
-| 5 | **Interfaces** | `raspi-config nonint do_i2c 0` and `do_spi 0`. These also turn them on straight away (live `dtparam`, plus `modprobe i2c-dev`) ✅ [raspi-config](https://github.com/RPi-Distro/raspi-config/blob/master/raspi-config). Then check `/dev/i2c-1` and `/dev/spidev0.0` exist | A device node is missing |
+| 5 | **Interfaces** | `raspi-config nonint do_i2c 0` and `do_spi 0`. These also turn them on straight away (live `dtparam`, plus `modprobe i2c-dev`) ✅ [raspi-config](https://github.com/RPi-Distro/raspi-config/blob/master/raspi-config). Then check `/dev/i2c-1` exists. `/dev/spidev0.0` may only appear after the reboot, so its absence is a note, and the setup check tests it later | `/dev/i2c-1` is missing |
 | 6 | **PiSugar** | See if anything answers on I2C at 0x57 (`i2cget -y 1 0x57 0x00`). Install pisugar-server 2.3.5 as in §13.5: download, checksum, preseeded answers, `dpkg -i`, the 0600 socket drop-in, then enable and restart it (its post-install script doesn't enable the service on a fresh install). Wait up to 10 s for the socket. Then require `get model` = `PiSugar 3` and `get firmware_version` ≥ 1.2.4 | No PiSugar on the bus ("Check the PiSugar is attached and switched on"); checksum mismatch; firmware too old ("Contact PiSugar support for a firmware update", §13.4) |
-| 7 | **Camera check** (never stops) | `rpicam-hello --list-cameras` (rpicam-apps-lite is already in Pi OS Lite). The stock config.txt still auto-detects cameras at this point, so this works before our config is applied. Report the sensor it found. On a Pi 5, note which port it's on and use that for `camera_port` | Never; warns "No camera found: check the ribbon cable and its direction" |
+| 7 | **Camera check** (never stops) | `rpicam-hello --list-cameras` (rpicam-apps-lite is already in Pi OS Lite). The stock config.txt still auto-detects cameras at this point, so this works before our config is applied. Report the sensor it found. On a Pi 5, which port it's on is asked instead (§15.5) | Never; warns "No camera found: check the ribbon cable and its direction" |
 | 8 | **App files** | Create the `inkstant-web` user and the `/var/lib/inkstant` folders with their owners and modes (§5.1). Copy the release to `/opt/inkstant/releases/<version>/`, run `python3 -m compileall -q`, switch the `/opt/inkstant/current` symlink atomically, and link `/usr/local/bin/inkstant-ctl`. Keep the previous release; delete older ones | Copy or compile fails |
 | 9 | **Camera settings files** | Write `/etc/inkstant/device.toml` (`model`, `family`, `wifi_5ghz`, `camera_port`, flips, rotation). Write `settings.json` with defaults and the camera Wi-Fi name and password if it doesn't exist; otherwise only update what `--reconfigure` changed | — |
 | 10 | **Wi-Fi** | Import or add the home network as `inkstant-home-1`, and write `inkstant-hotspot`, both as NetworkManager keyfiles (§6.8). Add the dnsmasq drop-in. Move `/etc/netplan/*.yaml` to `/var/lib/inkstant/backup/netplan/`. Create `/etc/cloud/cloud-init.disabled`. Nothing is disconnected: the SSH session keeps running on the current connection until the reboot | `nmcli` fails to load a profile |
@@ -2666,7 +2677,7 @@ The camera checks itself on its first start after an install or update, so a bui
 ### 15.9 Re-running, updating, reconfiguring, uninstalling
 
 - **Re-running:** always safe. Finished steps print `ok`, and photos and settings are never touched. Re-run after a dropped connection, a failed step you've since fixed, or to repair a damaged setup.
-- **Updating:** normally from the gallery (§16.1), which runs the new release's `install.sh --update`. That version keeps every answer, changes nothing while the camera is in use, and restarts through the camera app.
+- **Updating:** normally from the gallery (§16.1), which runs the new release's `install.sh --update`. That version keeps every answer, changes nothing while the camera is in use, and restarts through the camera app. Settings changed in the gallery since the install (the camera Wi-Fi name, developer mode) win over the install's answers, on an update and on a re-run alike (fixed 2026-10-17: an update put them back). If the update stops after switching to the new release, `update.sh` switches back to the old one.
 - **Reconfiguring:** `sudo /opt/inkstant/current/install/install.sh --reconfigure` asks the §15.5 questions again and applies only those answers.
 - **Uninstalling:** `sudo /opt/inkstant/current/install/uninstall.sh`:
   1. Stop and disable the Inkstant services; remove every file in §15.7 except the photos and the log.
@@ -2719,7 +2730,7 @@ From the gallery's settings page, at home only (decided 2026-10-15):
    - Report each step with `inkstant-ctl update-report <state> <step>` (control command `update.report`, §12), shown in the gallery's "Updating" page (§11.4.9).
    - Download `inkstant.tar.gz` and `SHA256SUMS` over HTTPS and verify (step `downloading`).
    - Unpack to `/opt/inkstant/releases/<version>/` and run its `install.sh --update`, which switches the `current` symlink (step `installing`).
-   - Write the result to `/var/lib/inkstant/update.json` (shown in the gallery), then run `inkstant-ctl shutdown --reboot` (step `restarting`). The camera app runs its shutdown sequence (§8.13, reason `update`) before the restart, or powers off if PWR was pressed.
+   - Write the result to `/var/lib/inkstant/update.json`, a record for diagnosing a failed update (the gallery learns the state through `update.report`), then run `inkstant-ctl shutdown --reboot` (step `restarting`). The camera app runs its shutdown sequence (§8.13, reason `update`) before the restart, or powers off if PWR was pressed.
    - **On any failure** (or the 30-minute limit): leave `current` on the old release, write `update.json` with the error, and report `failed`. The camera app clears `update_running`; the gallery shows the error; a deferred PWR press shuts down now.
 5. **Keep two releases** (current and previous). `inkstant-ctl rollback` switches back over SSH.
 6. **Later (not v1):**
@@ -2741,7 +2752,7 @@ From the gallery's settings page, at home only (decided 2026-10-15):
 
 | Command | What it does |
 |---|---|
-| `status` | Lifecycle, side state, errors, battery, storage, share, boot timing marks |
+| `status` | Lifecycle, side state, errors, battery, storage, share (boot timing marks are only logged, below) |
 | `selftest [--install]` | The checks below; non-zero exit on failure |
 | `share on [--hotspot]` / `share off` | Share mode from the command line |
 | `shutdown [--reboot]` | Clean shutdown or restart through the camera app (§8.13) |
@@ -2754,14 +2765,14 @@ From the gallery's settings page, at home only (decided 2026-10-15):
 
 **Self-test checks** (also run automatically on the first start after an install or update; results go to `/var/lib/inkstant/selftest.json` and the gallery's Setup check; a critical failure shows a gallery banner, §15.8):
 
-- **PiSugar:** socket answers; model PiSugar 3; firmware ≥ 1.2.4; soft power-off, its command, auto power-on and anti-mistouch set; I2C 0x57 answers.
+- **PiSugar:** socket answers; model PiSugar 3; firmware ≥ 1.2.4; soft power-off, its command, auto power-on and anti-mistouch set; I2C 0x57 answers. The PiSugar's own backup shutdown (3%, after 10 s) is a warning only.
 - **Clock:** `/dev/rtc0` is the DS3231 driver (Pi 3 and 4); the RTC is valid.
 - **Buses:** `/dev/spidev0.0` and `/dev/i2c-1` exist.
 - **Camera:** listed by `Picamera2.global_camera_info()`; `rpi_apps.yaml` present on Pi 3 and 4.
-- **Display:** module-detect level; with a module on, the reset/BUSY check from §6.3 (no refresh). The hint for a module that doesn't answer: take the print off and press it back on, straight, with every pin in its socket.
+- **Display:** the module-detect level only: "module in, not tested while idle" or "no module in", never a failure. The camera app owns the e-paper driver, so the check doesn't power the panel; `tools/bench/epd_show.py --probe` runs the reset/BUSY check from §6.3. A module that stops answering shows as the gallery's display error instead (§8.14).
 - **Status light:** `/sys/class/leds/ACT` exists (if not, the hint is to update Raspberry Pi OS) and lists the `pattern` trigger (if not, a warning only: the light still blinks from software).
-- **System:** the config.txt block is present and, on Pi 3 and 4, `CmaTotal` in `/proc/meminfo` is at least 120 MB (the `cma-128` option sets it through the device tree, so it never shows in `/proc/cmdline`); NetworkManager has the `inkstant-*` profiles; pisugar-server listens on no TCP port (`ss -ltn`).
-- **Storage:** free space; the folders have the right owners and modes.
+- **System:** the config.txt block is present and, on Pi 3 and 4, `CmaTotal` in `/proc/meminfo` is at least 120 MB (the `cma-128` option sets it through the device tree, so it never shows in `/proc/cmdline`); NetworkManager has the `inkstant-hotspot` profile; pisugar-server listens on no TCP port (`ss -ltn`).
+- **Storage:** free space; the folders have the right modes.
 
 **Logs:**
 
@@ -2904,8 +2915,8 @@ The software's checks on real hardware, in M1 and M8 (§20), and the parts and c
 - [x] The ACT LED has the `timer` and `pattern` triggers, and the red PWR LED is off (trigger `none`, brightness 0), on the Pi 4 with kernel 6.18 (2026-10-17)
 - [ ] `act_led_trigger=timer` blinks the ACT LED from early kernel boot (needs a reinstall with the new config.txt), and what the LED shows before the kernel starts: the Pi 4, then the 3A+, 3B and Pi 5
 - [ ] The pattern trigger and the red PWR LED staying dark on the 3A+, 3B and Pi 5
-- [ ] The ACT LED through the case's light pipe: easy to see indoors and in daylight
-- [ ] The four looks in §1.3 are easy to tell apart through the light pipe, in daylight and in the dark, by someone who hasn't read the table
+- [ ] The ACT LED through the case's opening: easy to see indoors and in daylight
+- [ ] The four looks in §1.3 are easy to tell apart through the case's opening, in daylight and in the dark, by someone who hasn't read the table
 - [ ] The LED stays dark from the app's "off" to the power cut
 
 **Power and PiSugar:**
@@ -3006,7 +3017,7 @@ Nothing here blocks writing the software. Each one has a default in this spec an
 | Does the slideshow alarm fire while charging ([#88](https://github.com/PiSugar/pisugar-power-manager-rs/issues/88))? | If not, the slideshow skips while charging; accepted | M1 |
 | Shortest safe power-cut delay | 10 s | M8 |
 | Wake-to-shoot time from sleep | Target 1 s | M3 (A13) |
-| Are the light's four looks easy to see and tell apart through the light pipe? | §1.3 | M3, with someone who hasn't read the table (§19.6) |
+| Are the light's four looks easy to see and tell apart through the case's opening? | §1.3 | M3, with someone who hasn't read the table (§19.6) |
 | How long the PiSugar waits before reporting a single tap | Accepted on the bench (2026-10-17) | Measure it (§6.6) |
 | Is putting a module on or taking it off safe while the camera is on? | Allowed, as before | A bench test (§19.6) |
 | Full-resolution camera memory on the 3A+ | 69 MB of a 128 MB CMA; the §6.4 failure ladder | M1 |

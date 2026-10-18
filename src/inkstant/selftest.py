@@ -1,8 +1,9 @@
 """The self-test / setup check. Standard library only.
 
-Run by the camera app on its first start after an install or update (with the display
-probe), by `inkstant-ctl selftest`, and by the install script before its reboot
-(`install=True`: only what can be true before the reboot).
+Run by the camera app on its first start after an install or update, by `inkstant-ctl
+selftest`, and by the install script before its reboot (`install=True`: only what can be true
+before the reboot). The camera app owns the e-paper driver, so the display check only reports
+whether a module is in; `tools/bench/epd_show.py --probe` tests one.
 """
 
 from __future__ import annotations
@@ -104,6 +105,18 @@ def check_pisugar(get: Callable[[str], str]) -> list[Check]:
             out.append(Check(f"PiSugar {name}", got == want, True, got, hint + " The camera app fixes this at start."))
         except Exception as e:
             out.append(Check(f"PiSugar {name}", False, True, str(e), hint))
+    # The PiSugar's own backup shutdown, below the app's low-battery one: a warning only.
+    for name, want in (("safe_shutdown_level", 3.0), ("safe_shutdown_delay", 10.0)):
+        try:
+            got = get(name)
+            try:
+                same = float(got) == want
+            except ValueError:
+                same = False
+            out.append(Check(f"PiSugar {name}", same, False, got,
+                             "The PiSugar's backup shutdown at 3% is off. The camera app fixes this at start."))
+        except Exception as e:
+            out.append(Check(f"PiSugar {name}", False, False, str(e), ""))
     return out
 
 
@@ -179,7 +192,7 @@ def check_rpi_apps_yaml(root: Path, family: str) -> Check:
         return Check("Camera pipeline config", True, False, "Pi 5")
     path = root / "usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml"
     return Check("Camera pipeline config", path.exists(), True, str(path),
-                 "Reinstall python3-picamera2; without this file the camera needs too much memory.")
+                 "Run: sudo apt-get install --reinstall libcamera-ipa. Without this file the camera needs too much memory.")
 
 
 def check_config_txt(root: Path) -> Check:

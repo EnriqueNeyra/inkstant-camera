@@ -38,12 +38,6 @@ from inkstant import settings as setmod  # noqa: E402
 from inkstant.atomic import atomic_write, write_json  # noqa: E402
 
 ROOT = Path("/")
-APT_PACKAGES = [
-    "python3-picamera2", "python3-pil", "python3-numpy", "python3-gpiozero", "python3-lgpio",
-    "python3-spidev", "python3-smbus2", "python3-flask", "python3-waitress", "python3-qrcode",
-    "python3-piexif", "fonts-dejavu-core", "i2c-tools", "util-linux-extra",
-]
-SUPPORTED = {"pi3", "pi4", "pi5"}
 WEB_USER = "inkstant-web"
 CTL = "/usr/local/bin/inkstant-ctl"
 BEGIN, END = "# BEGIN inkstant", "# END inkstant"
@@ -284,7 +278,14 @@ def cmd_questions(a) -> int:
     st = load_state()
     ans = st.setdefault("answers", {})
     first = not ans
+    old = setmod.load(P("/var/lib/inkstant/settings.json"))
+    has_settings = P("/var/lib/inkstant/settings.json").exists()
+    if has_settings and not first:
+        # Settings changed in the gallery since the last run win over the earlier answers.
+        ans["hotspot_ssid"] = old["hotspot"]["ssid"]
+        ans["dev_mode"] = old["dev_mode"]
     if a.update and not first:
+        save_state(st)
         ok("questions (keeping earlier answers)")
         return 0
     yes = a.yes or (a.update and first)
@@ -293,8 +294,6 @@ def cmd_questions(a) -> int:
     serial = board_serial()
     # Camera Wi-Fi
     default_ssid = ans.get("hotspot_ssid") or f"Inkstant-{serial[-4:].upper()}"
-    old = setmod.load(P("/var/lib/inkstant/settings.json"))
-    has_settings = P("/var/lib/inkstant/settings.json").exists()
     default_pw = (old["hotspot"]["password"] if has_settings else
                   "".join(secrets.choice(NO_LOOKALIKES) for _ in range(10)))
     if has_settings:
@@ -351,7 +350,7 @@ def cmd_questions(a) -> int:
         ans["dev_mode"] = True
     elif "dev_mode" not in ans or a.reconfigure:
         ans["dev_mode"] = ask_yes("Developer mode: join home Wi-Fi at every start so SSH keeps working"
-                                  " (uses more battery; change later in Settings)?", False, yes)
+                                  " (uses more battery; change later in Settings)?", bool(ans.get("dev_mode")), yes)
     ans["model"] = model
     ans["family"] = fam
     save_state(st)
@@ -789,11 +788,14 @@ def cmd_summary(a) -> int:
     s = setmod.load(P("/var/lib/inkstant/settings.json"))
     st = load_state()
     dev = st.get("answers", {}).get("dev_mode")
-    # Straight to the terminal: the install log never gets the password.
+    # Straight to the terminal: the install log never gets the password. With no terminal (an
+    # update runs under systemd-run, and its output goes to the log and the journal), leave it out.
     try:
         tty = open("/dev/tty", "w")  # noqa: SIM115
+        password = s["hotspot"]["password"]
     except OSError:
         tty = sys.stdout
+        password = "(in the gallery: Settings → Wi-Fi → Camera Wi-Fi)"
 
     def say(msg: str) -> None:  # noqa: F811
         print(msg, file=tty, flush=True)
@@ -801,7 +803,7 @@ def cmd_summary(a) -> int:
     say("")
     say("Inkstant is installed.")
     say(f"  Camera Wi-Fi:  {s['hotspot']['ssid']}")
-    say(f"  Password:      {s['hotspot']['password']}")
+    say(f"  Password:      {password}")
     say("  To take a photo: tap the PiSugar's BTN. To share: hold it for 2 seconds; the print shows a QR code.")
     say("  The light: a blink while starting, then solid when ready (README: the status light).")
     if dev:

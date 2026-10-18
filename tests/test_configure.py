@@ -172,6 +172,32 @@ def test_update_keeps_answers(installed):
     assert s["hotspot"]["password"] == "secretpass1"
 
 
+def test_summary_never_prints_the_password_to_the_log(installed):
+    # The install log and an update's journal both capture stdout.
+    out = cfg(installed, "summary")
+    assert out.returncode == 0 and "secretpass1" not in out.stdout + out.stderr
+
+
+@pytest.mark.parametrize("flags", [("--update",), ("--yes",)])
+def test_update_and_rerun_keep_settings_changed_in_the_gallery(tmp_path, flags):
+    r = fake_root(tmp_path)
+    assert cfg(r, "questions", "--yes", "--dev", "--home-ssid", "Home", "--home-password", "homepass1").returncode == 0
+    assert cfg(r, "apply", "--release", str(REPO)).returncode == 0
+    path = r / "var/lib/inkstant/settings.json"
+    s = json.loads(path.read_text())
+    s["hotspot"]["ssid"] = "Renamed"
+    s["dev_mode"] = False
+    path.write_text(json.dumps(s))
+    assert cfg(r, "questions", *flags).returncode == 0
+    a = cfg(r, "apply", "--release", str(REPO), *(f for f in flags if f == "--update"))
+    assert a.returncode == 0, a.stdout + a.stderr
+    s = json.loads(path.read_text())
+    assert s["hotspot"]["ssid"] == "Renamed" and s["dev_mode"] is False
+    assert "inkstant-home-1 joins at every start: no" in a.stdout
+    hs = (r / "etc/NetworkManager/system-connections/inkstant-hotspot.nmconnection").read_text()
+    assert "ssid=Renamed" in hs
+
+
 def test_rerun_with_dev_makes_the_home_network_join_at_start(tmp_path):
     r = fake_root(tmp_path)
     assert cfg(r, "questions", "--yes", "--home-ssid", "Home", "--home-password", "homepass1").returncode == 0

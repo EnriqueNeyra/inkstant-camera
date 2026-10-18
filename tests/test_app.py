@@ -54,7 +54,7 @@ class Harness:
     async def start(self, module=True, battery="80.0", plugged="false", cfg=None, epd_speed=0.002,
                     camera_fail=False, wait_ready=True, direct_taps=False):
         p = self.paths
-        # The first-start setup check would light the problem pattern on a laptop; skip it here.
+        # The first-start setup check would fail on a laptop; mark it passed.
         p.selftest.write_text(json.dumps({"version": __import__("inkstant.version").version.VERSION,
                                           "passed": True, "failed": [], "checks": []}))
         if cfg:
@@ -153,6 +153,36 @@ def test_power_on_shoot_develop(paths, health_url):
             assert ("notify", "READY=1") in h.sys.calls
             assert h.bus.regs[0x06] & 0x80  # watchdog on
             assert h.server.values["soft_poweroff_shell"].endswith("inkstant-ctl power-button")
+        finally:
+            await h.stop()
+
+    run(main())
+
+
+def test_pisugar_set_up_again_once_it_answers(paths, health_url):
+    async def main():
+        h = Harness(paths, health_url)
+        await h.start()
+        try:
+            watchdog = h.app.hw.watchdog
+            real_enable = watchdog.enable
+
+            def broken():
+                raise OSError("no answer")
+
+            # The watchdog didn't turn on at start: the gallery shows it until a later poll fixes it.
+            h.bus.regs[0x06] &= ~0x80
+            h.app.pisugar_ready = False
+            watchdog.enable = broken
+            await h.app.setup_pisugar()
+            assert "pisugar" in h.app.errors.codes()
+            await h.app.read_battery()
+            await h.until(lambda: not h.app._pisugar_setting_up)
+            assert "pisugar" in h.app.errors.codes() and not h.app.pisugar_ready
+            watchdog.enable = real_enable
+            await h.app.read_battery()
+            await h.until(lambda: h.app.pisugar_ready)
+            assert h.bus.regs[0x06] & 0x80 and "pisugar" not in h.app.errors.codes()
         finally:
             await h.stop()
 
@@ -336,7 +366,7 @@ def test_timed_wake_shows_next_photo_and_rearms(paths, health_url):
             assert h2.cam.history == []  # the camera never started
             assert h2.server.values["rtc_alarm_enabled"] == "true"
             assert state.load_state(paths.state).last_shutdown["reason"] == "slideshow"
-            assert set(ids)
+            assert state.load_state(paths.state).current in ids  # the slideshow showed one of them
         finally:
             await h2.stop()
 
