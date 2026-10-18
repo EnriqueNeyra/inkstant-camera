@@ -10,7 +10,6 @@ export const S = {
   selected: (n) => `${fmtInt(n)} selected`,
   select: "Select",
   deselect: "Deselect",
-  thatsEverything: "That's everything",
   newPhotos: (n) => `${fmtInt(n)} new photo${n === 1 ? "" : "s"}`,
   // Banners
   storageFull: "Storage full. The camera can't take photos until you delete some.",
@@ -26,7 +25,6 @@ export const S = {
   selectPhotosAction: "Select photos",
   usePhoneTime: "Use this phone's time",
   seeDetails: "See details",
-  tryAgain: "Try again",
   // Toasts
   photoDeleted: "Photo deleted",
   printNotReady: "This photo's print isn't ready yet. Try again in a minute.",
@@ -50,7 +48,6 @@ export const S = {
   photoOf: (i, n) => `Photo ${fmtInt(i)} of ${fmtInt(n)}`,
   noModule: "No display module in the camera",
   cameraBusy: "The camera is busy",
-  deletedElsewhere: "This photo was deleted.",
   deleteN: (n) => (n === 1 ? "Delete this photo?" : `Delete ${fmtInt(n)} photos?`),
   // Settings
   ready: "Ready",
@@ -84,7 +81,6 @@ export const S = {
   pass: "Passed",
   fail: "Failed",
   notRun: "The setup check hasn't run yet.",
-  wifi24: "This camera can only join 2.4 GHz networks.",
   needName: "Enter a network name.",
   needPassword: "Passwords are 8 to 63 characters.",
 };

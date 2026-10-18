@@ -1625,7 +1625,7 @@ The server side of the phone web app. What the phone shows and does is §11.
 
 ## 11. Gallery web app
 
-The app the camera serves in share mode: what it's for, every screen, how it looks and behaves, and the words it uses. The server side (routes, status, ZIP streaming, security) is §10. **Mockup:** [`mockups/gallery.html`](mockups/gallery.html), also published as a private page: [Inkstant Gallery Screens](https://claude.ai/artifact/PjVPnzEf1exNV4VfgkknP1). It shows the main screens; a switch flips the phones between light and dark.
+The app the camera serves in share mode: what it's for, every screen, how it looks and behaves, and the words it uses. The server side (routes, status, ZIP streaming, security) is §10. **Mockup:** [`mockups/gallery.html`](mockups/gallery.html). It shows the main screens; a switch flips the phones between light and dark.
 
 ### 11.1 What it's for
 
