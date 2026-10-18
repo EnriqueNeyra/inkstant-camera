@@ -432,6 +432,8 @@ From a copy of this repository on the Pi, `sudo ./setup.sh` installs that copy.
 
 ## For developers
 
+The design notes: [SPEC.md](SPEC.md) is the full design record, with how the software behaves, every decision and the sources behind it. [HARDWARE.md](HARDWARE.md) has every part's measurements, for designing the case.
+
 <details>
 <summary><b>How the software is organised</b></summary>
 
