@@ -18,7 +18,7 @@ export const S = {
   batteryLow: (pct) => `Battery low (${pct}%). Charge the camera soon.`,
   clockUnset: "The camera's clock isn't set.",
   cameraError: (d) => `${d}. Try turning the camera off and on again.`,
-  displayError: "The display module isn't responding. Slide it out and back in.",
+  displayError: "The display module isn't responding. Take the print off and put it back on.",
   setupFailed: (item) => `Setup check found a problem: ${item}.`,
   updating: "Updating the camera…",
   updateFailed: (why, v) => `The update didn't finish: ${why}. The camera is still on version ${v}.`,
@@ -55,7 +55,7 @@ export const S = {
   // Settings
   ready: "Ready",
   asleep: "Asleep",
-  asleepSub: "Press the shutter to wake it",
+  asleepSub: "Tap the shutter button to wake it",
   starting: "Starting",
   problem: "Problem",
   moduleIn: "Module in",

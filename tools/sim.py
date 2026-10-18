@@ -4,10 +4,10 @@
     python3 tools/sim.py [--root sim] [--port 8080] [--no-module]
 
 Commands (type then Enter, or write lines to <root>/ctl, a FIFO):
-    s  shutter          h  BTN hold (sharing on / off)
-    b  BTN single tap   d  BTN double tap (while sharing: home Wi-Fi <-> the camera's own)
+    b  BTN tap (photo)  h  BTN hold (sharing on / off)
+    d  BTN double tap (a photo; while sharing: home Wi-Fi <-> the camera's own)
     p  PWR (on / off)   w  power on as a slideshow (timed) wake
-    m  module in/out    c  plug the charger in/out
+    m  print on / off   c  plug the charger in/out
     l  battery level, e.g. "l 15"      q  quit
 The display is written to <root>/display.png; the light's pattern is printed.
 """
@@ -64,7 +64,7 @@ class Sim:
         self.factory = gpio.mock_factory()
         self.pins = gpio.Pins(self.factory)
         if module:
-            self.factory.pin(gpio.DETECT).drive_low()
+            self.factory.pin(gpio.DETECT).drive_high()
         self.app: CameraApp | None = None
         self.app_task: asyncio.Task | None = None
         self.server = pisugar.FakePiSugarServer(self.paths.pisugar_sock)
@@ -117,12 +117,6 @@ class Sim:
         threading.Thread(target=srv.run, daemon=True).start()
         print(f"gallery: http://127.0.0.1:{self.port}/   display: {self.paths.root / 'display.png'}", flush=True)
 
-    async def press(self, pin_no: int) -> None:
-        pin = self.factory.pin(pin_no)
-        pin.drive_low()
-        await asyncio.sleep(0.08)
-        pin.drive_high()
-
     async def command(self, line: str) -> bool:
         parts = line.strip().split()
         if not parts:
@@ -130,9 +124,7 @@ class Sim:
         c = parts[0]
         if c == "q":
             return False
-        if c == "s":
-            await self.press(gpio.SHUTTER)
-        elif c in ("h", "b", "d"):
+        if c in ("h", "b", "d"):
             await self.server.tap({"h": "long", "b": "single", "d": "double"}[c])
         elif c == "p":
             if self.app_task and not self.app_task.done():
@@ -146,10 +138,10 @@ class Sim:
             pin = self.factory.pin(gpio.DETECT)
             if pin.state:
                 pin.drive_low()
-                print("  module in", flush=True)
+                print("  module out", flush=True)
             else:
                 pin.drive_high()
-                print("  module out", flush=True)
+                print("  module in", flush=True)
         elif c == "c":
             v = self.server.values
             v["battery_power_plugged"] = "false" if v["battery_power_plugged"] == "true" else "true"

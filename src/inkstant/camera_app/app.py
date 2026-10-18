@@ -14,6 +14,7 @@ import errno
 import json
 import os
 import signal
+import threading
 import time
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -40,6 +41,7 @@ INSERT_SETTLE = 0.3
 WAKE_TIMEOUT = 120.0
 SHUTDOWN_DISPLAY_WAIT = 30.0
 SHARE_START_WAIT = 90.0
+TAP_ECHO = 0.5  # s: the same BTN tap read by both the camera and pisugar-server
 ERROR_TEXT = {
     "camera": "Camera problem",
     "display": "Display module not responding",
@@ -62,6 +64,7 @@ class Hardware:
     network: Any
     system: Any
     watchdog: Any
+    taps: Any = None  # BTN taps read straight from the PiSugar; None: only pisugar-server's
     gallery_health_url: str = "http://127.0.0.1/healthz"
     start_gallery: Any = None  # None: systemctl start the gallery unit
     stop_gallery: Any = None
@@ -178,6 +181,8 @@ class CameraApp:
         self.external_stop = False
         self._watchdog_off = False
         self._camera_opening = False
+        self._taps_stop = threading.Event()
+        self._last_tap: tuple[str, str, float] | None = None
 
     # Plumbing ---------------------------------------------------------------------
     def spawn(self, coro) -> asyncio.Task:
@@ -244,7 +249,8 @@ class CameraApp:
             with contextlib.suppress(NotImplementedError, RuntimeError):
                 self.loop.add_signal_handler(sig, self._on_sigterm)
 
-        self.pisugar = PiSugarClient(self.paths.pisugar_sock, on_tap=self.on_btn, log=self.log)
+        self.pisugar = PiSugarClient(self.paths.pisugar_sock, on_tap=lambda tap: self.on_tap("pisugar-server", tap),
+                                     log=self.log)
         if await self.pisugar.connect():
             problems = await ensure_settings(self.pisugar, CTL_COMMAND, self.log)
             for p in problems:
@@ -268,6 +274,7 @@ class CameraApp:
         self.uptime_mark(f"wake decision ({'timed wake' if timed else 'normal start'})")
 
         self._attach_gpio()
+        self._attach_taps()
         self.module_present = self.hw.pins.module_present()
         self.display_worker.start()
         self.hw.system.notify("READY=1")
@@ -287,16 +294,22 @@ class CameraApp:
 
     def _attach_gpio(self) -> None:
         pins, loop = self.hw.pins, self.loop
-
-        def shutter():
-            press_ns, wall = time.monotonic_ns(), time.time()
-            loop.call_soon_threadsafe(self.on_shutter, press_ns, wall)
-
-        pins.shutter.when_pressed = shutter
         pins.detect.when_activated = lambda: loop.call_soon_threadsafe(self.on_detect, True)
         pins.detect.when_deactivated = lambda: loop.call_soon_threadsafe(self.on_detect, False)
 
+    def _attach_taps(self) -> None:
+        if self.hw.taps is None:
+            return
+        loop = self.loop
+
+        def on_tap(tap: str) -> None:
+            with contextlib.suppress(RuntimeError):  # the loop has closed: the app is stopping
+                loop.call_soon_threadsafe(self.on_tap, "camera", tap)
+
+        threading.Thread(target=self.hw.taps.run, args=(on_tap, self._taps_stop), name="btn", daemon=True).start()
+
     async def _teardown(self) -> None:
+        self._taps_stop.set()
         with contextlib.suppress(Exception):
             await self.control.close()
         if self.pisugar:
@@ -366,7 +379,7 @@ class CameraApp:
 
     # The status light: its steady pattern through update_led(), the shutter's wink through self.led.
 
-    # Events: shutter -------------------------------------------------------------------------
+    # Events: shutter (a BTN tap, through on_btn) -------------------------------------------------
     def on_shutter(self, press_ns: int, wall: float) -> None:
         now = self.clock()
         self.last_use = now
@@ -491,11 +504,30 @@ class CameraApp:
         self.update_led()
 
     # Events: buttons ----------------------------------------------------------------------------
+    def on_tap(self, reader: str, tap: str) -> None:
+        """A BTN tap, read by the camera itself (quick) or by pisugar-server (every 500 ms).
+        Whichever reads it first clears it, but both can read it before either clears it: the
+        second copy, from the other reader moments later, is dropped."""
+        now = self.clock()
+        last = self._last_tap
+        if last and last[0] != reader and last[1] == tap and now - last[2] < TAP_ECHO:
+            self._last_tap = None
+            self.log(f"button: BTN {tap} again from {reader}; dropped")
+            return
+        self._last_tap = (reader, tap, now)
+        if reader == "pisugar-server" and self.hw.taps is not None:
+            self.log(f"button: BTN {tap} reached pisugar-server first")
+        self.on_btn(tap)
+
     def on_btn(self, tap: str) -> None:
-        """A hold starts or stops sharing, so brushing BTN does nothing. A double tap while sharing
-        switches between home Wi-Fi and the camera's own, as the share screen says."""
+        """BTN is the shutter: a tap takes a photo, and so does a double tap unless sharing. A hold
+        starts or stops sharing. A double tap while sharing switches between home Wi-Fi and the
+        camera's own, as the share screen says."""
         self.last_use = self.clock()
         self.log(f"button: BTN {tap}")
+        if tap == "single" or (tap == "double" and self.share == "off"):
+            self.on_shutter(time.monotonic_ns(), time.time())
+            return
         if self.lifecycle in (STARTING, SHUTTING_DOWN):
             return
         if self.lifecycle == WAKE:

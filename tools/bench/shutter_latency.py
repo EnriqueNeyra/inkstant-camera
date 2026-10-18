@@ -5,9 +5,12 @@ For each press: the time from the press to the start of the captured frame's exp
 (SensorTimestamp − ExposureTime, "moment captured"), and to the frame arriving ("frame in hand").
 Picks the lowest frame rate that keeps the frame in hand within 0.5 s.
 
+A BTN tap counts from the moment the camera reads it, as in the app: the PiSugar's own wait
+to rule out a double tap comes before that, and isn't measured here.
+
     sudo systemctl stop inkstant
-    sudo python3 tools/bench/shutter_latency.py                 # press the real shutter button
-    sudo python3 tools/bench/shutter_latency.py --auto          # no button: timed software presses
+    sudo python3 tools/bench/shutter_latency.py                 # tap BTN, the shutter
+    sudo python3 tools/bench/shutter_latency.py --auto          # no tapping: timed software presses
     sudo python3 tools/bench/shutter_latency.py --fps 5 10 14 --presses 50
 """
 
@@ -17,6 +20,7 @@ import argparse
 import queue
 import random
 import sys
+import threading
 import time
 
 import _common as c
@@ -34,15 +38,13 @@ def main() -> int:
     c.require_app_stopped()
 
     from inkstant.hw import camera as cam_mod
-    from inkstant.hw import gpio
+    from inkstant.hw.pisugar_i2c import TapReader
 
     presses: queue.Queue[int] = queue.Queue()
-    button = None
+    stop_taps = threading.Event()
     if not a.auto:
-        from gpiozero import Button
-
-        button = Button(gpio.SHUTTER, pull_up=True, bounce_time=0.03)
-        button.when_pressed = lambda: presses.put(time.monotonic_ns())
+        threading.Thread(target=TapReader(log=print).run, daemon=True,
+                         args=(lambda tap: presses.put(time.monotonic_ns()), stop_taps)).start()
 
     cam = cam_mod.Camera(c.device(), log=print)
     cam.open()
@@ -53,8 +55,8 @@ def main() -> int:
             cam.picam2.capture_metadata(wait=2)
         while not presses.empty():
             presses.get_nowait()
-        print(f"\n{fps} fps: " + ("taking" if a.auto else "press the shutter") + f" {a.presses} times"
-              + ("" if a.auto else " (about one press a second)"))
+        print(f"\n{fps} fps: " + ("taking" if a.auto else "tap BTN") + f" {a.presses} times"
+              + ("" if a.auto else " (about one tap a second)"))
         captured, in_hand = [], []
         for i in range(a.presses):
             if a.auto:
@@ -64,7 +66,7 @@ def main() -> int:
                 try:
                     press = presses.get(timeout=120)
                 except queue.Empty:
-                    print("  no press for 2 minutes; moving on")
+                    print("  no tap for 2 minutes; moving on")
                     break
             req = cam.picam2.capture_request(flush=press, wait=5)
             arrived = time.monotonic_ns()
@@ -81,8 +83,7 @@ def main() -> int:
                                 "raw_captured_ms": captured, "raw_in_hand_ms": in_hand,
                                 "cma_free_kb": cma, "current_ma": meter or None}
     cam.close()
-    if button:
-        button.close()
+    stop_taps.set()
 
     print("\nSummary (target: frame in hand ≤ 500 ms at p90)")
     best = None

@@ -94,7 +94,7 @@ class Paths:
 
     @property
     def leds(self) -> Path:
-        return self.root / "sys/class/leds/status"
+        return self.root / "sys/class/leds/ACT"  # the Pi's own green light, seen through a light pipe
 
     def ensure_dirs(self) -> None:
         for d in (self.var, self.photos, self.thumbs, self.epd, self.tmp, self.run_dir):

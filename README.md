@@ -1,17 +1,17 @@
 # Inkstant Camera
 
-An instant camera that never runs out of film. Every photo "develops" on a small colour e-paper print that slides out of the back of the camera for you to keep. Each photo is also saved at full size, so you can open them on your phone, with no app and no internet needed.
+An instant camera that never runs out of film. Every photo "develops" on a small colour e-paper print that pops off the back of the camera for you to keep. Each photo is also saved at full size, so you can open them on your phone, with no app and no internet needed.
 
-It's a Raspberry Pi, a camera module, a battery board and a 3.6" six-colour e-paper display, plus one button and one light on the outside.
+It's a Raspberry Pi, a camera module, a battery board and a 3.6" six-colour e-paper display. It goes together with no soldering and no wiring: the boards plug into each other, and the camera plugs in with its ribbon cable.
 
 <!-- Add a photo of the finished camera here. -->
 
 **How it works:**
 
-- **Shoot:** press the shutter. The photo is saved, then develops on the e-paper print in about 15 seconds.
-- **Keep:** slide the print out to keep it. E-paper holds its picture with no power, and a magnet on the back lets it go on the fridge. Slide in the same print or a fresh one to keep shooting.
-- **No print in?** Photos are still saved. The newest one develops on the next print you slide in.
-- **Share:** press a button and the print shows a QR code. Scan it with your phone to see every photo in your phone's browser, and save the ones you want.
+- **Shoot:** tap the shutter button. The photo is saved, then develops on the e-paper print in about 15 seconds.
+- **Keep:** pull the print off to keep it. E-paper holds its picture with no power. Put the same print or a fresh one back on to keep shooting.
+- **No print on?** Photos are still saved. The newest one develops on the next print you put on.
+- **Share:** hold the shutter button for 2 seconds and the print shows a QR code. Scan it with your phone to see every photo in your phone's browser, and save the ones you want.
 - **Slideshow:** while the camera is off, it wakes up every hour to show a different photo on the print in the camera.
 
 ## Contents
@@ -41,16 +41,13 @@ It's a Raspberry Pi, a camera module, a battery board and a 3.6" six-colour e-pa
 | Computer | Raspberry Pi 3A+ | The smallest option. The Pi 3B, 3B+, 4B and 5 work too. The Pi Zero 2 W isn't supported |
 | Camera | [Arducam 12MP IMX708 autofocus camera module](https://www.arducam.com/arducam-12mp-imx708-autofocus-camera-module-with-hdr-pdaf-for-raspberry-pi.html) ([Amazon](https://www.amazon.com/dp/B0C9PYCV9S)) | The 75° lens. Raspberry Pi's own Camera Module 3 (standard lens) uses the same sensor and should work, but only the Arducam has been tested |
 | Camera cable | A standard **15-pin to 15-pin** Pi camera cable | Needed for the Pi 3 and 4. The Arducam box may only include a 15-to-22-pin cable, which fits only the Pi 5 |
-| Display, one per print | [Waveshare 3.6" e-Paper HAT+ (E)](https://www.amazon.com/dp/B0G656R3M9) | The **HAT+ (E)** with its driver board and 9-pin cable, not the bare panel. Six colours, 600 × 400 |
-| Display connector, one pair per print | [JHYOSSTHI magnetic pogo pin connector, 10Pin/E](https://www.amazon.com/dp/B0FF1VJGYS) | Lets the print snap on and slide out. The first pair also gives you the camera's half |
-| Battery | [PiSugar 3 Plus](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series) | 5000 mAh battery with a clock, a power button (PWR) and a second button (BTN). It needs firmware 1.2.4 or newer; the setup script checks this for you |
-| Shutter button | [uxcell 12 mm momentary push button with an LED ring](https://www.amazon.com/dp/B08HHZCPGN), 3–6 V | Get the **momentary** one, not "latching". The flat-topped version ([B07Z2TDDTZ](https://www.amazon.com/dp/B07Z2TDDTZ)) wires the same. The ring is the camera's only light; a blue ring may look dim ([brighter light](#a-brighter-light)) |
+| Display, one per print | [Waveshare 3.6" e-Paper HAT+ (E)](https://www.amazon.com/dp/B0G656R3M9) | The **HAT+ (E)**: the display on a driver board, with a 40-pin socket on the back that pushes straight onto the Pi. Not the bare panel. Six colours, 600 × 400 |
+| Battery | [PiSugar 3 Plus](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series) | 5000 mAh battery with a clock and two buttons: **BTN is the shutter**, and PWR turns the camera on and off. It needs firmware 1.2.4 or newer; the setup script checks this for you |
+| Light pipe | A short clear light pipe, or a piece of 3 mm clear acrylic rod | Carries the Pi's own green light to the outside of the case. That light is the camera's status light |
 | microSD card | 32 GB or larger, A1-rated, from a known brand | Holds several thousand photos |
-| Jumper wires | 14 female-to-female jumper wires | 10 for the display connector, 4 for the button |
-| Joining wires | [Solder-seal heat-shrink connectors](https://www.amazon.com/s?k=solder+seal+wire+connectors), or solder and heat-shrink | For joining wires to wires. Nothing is soldered to the Pi or the boards |
-| Small parts | Small screws for the connector halves; small neodymium magnets for the back of each print | |
 | Charging | A USB-C cable and any 5 V USB charger | |
 | Case | 3D-printed | The case design isn't published yet. See [what the case needs](#what-the-case-needs) |
+| Magnets (optional) | Small neodymium magnets | On the back of each print's frame, so a print you keep can go on the fridge |
 
 ### Which Raspberry Pi?
 
@@ -65,52 +62,44 @@ The Pi Zero 2 W isn't supported: it needs a different PiSugar and camera cable.
 
 ### Tools
 
-- A multimeter with continuity (beep) and diode test
-- Wire strippers and flush cutters
-- A heat gun for solder-seal connectors, or a soldering iron
-- Small screwdrivers
-- Masking tape and a pen, for labelling wires
-- Optional: a Dupont crimp kit, for the no-solder route
+- A small screwdriver, for the PiSugar's screws
 - A computer (Mac, Windows or Linux) on the same Wi-Fi as the camera, to install the software
+
+There's no soldering, crimping or wiring.
 
 ## How it fits together
 
 ```text
-                 ┌──────────── CAMERA BODY ─────────────┐
- shutter button ─┤ 4 jumper wires ─┐                     │
- (LED ring)      │                 ▼                     │
-                 │   Raspberry Pi (40-pin header)        │
- camera module ──┤──── ribbon cable ──┘  ▲    ▲          │
-                 │       10 jumper wires ┘    │ pins underneath
-                 │   camera half of the       │ (power and battery data)
-                 │   magnetic connector       │
-                 │   PiSugar 3 Plus (battery, clock, PWR and BTN buttons, USB-C)
-                 └──────────────┬───────────────────────┘
-                                │ magnets snap the two halves together
-                 ┌──────────────┴───────────────────────┐
-                 │ PRINT (slides out to keep)           │
-                 │   print half of the connector        │
-                 │   ── Waveshare's 9-pin cable ──      │
-                 │   Waveshare 3.6" e-Paper HAT+ (E)    │
-                 └──────────────────────────────────────┘
+ ┌────────────────────────────────────────────┐
+ │ PRINT: Waveshare 3.6" e-Paper HAT+ (E)     │ ◄── pops off to keep
+ └──────────────────────┬─────────────────────┘
+                        │ its 40-pin socket pushes onto the Pi's header
+ ┌──────────────────────┴─────────────────────┐
+ │ Raspberry Pi                               │ ◄── ribbon ── camera module
+ │   green light ──► light pipe in the case   │
+ └──────────────────────┬─────────────────────┘
+                        │ spring pins touch the header from underneath
+ ┌──────────────────────┴─────────────────────┐
+ │ PiSugar 3 Plus: battery, clock, USB-C,     │
+ │ PWR (on and off) and BTN (the shutter)     │
+ └────────────────────────────────────────────┘
 ```
 
-- The **PiSugar** sits under the Pi. It powers the Pi through spring pins, so there's no cable between them.
+- The **PiSugar** sits under the Pi. It powers the Pi through spring pins, so there's no cable between them. Its **BTN** button is the shutter, and **PWR** turns the camera on and off.
 - The **camera** plugs into the Pi's camera connector with a ribbon cable.
-- The **shutter button** has four wires: two for the switch and two for its light.
-- Each **print** is a complete Waveshare display with half of a magnetic connector on its edge. The other half sits in the camera, wired to the Pi. Slide a print in, and the magnets snap the two halves together.
-- The display's own plug is a tiny latching connector that isn't made to be unplugged again and again, so it stays plugged in, and the magnetic connector does the sliding in and out.
+- Each **print** is a complete Waveshare display. Its socket pushes straight onto the Pi's 40-pin header, and pulls off again when you want to keep the print. The camera tells that a print is on from the print's own ID chip, so there's nothing to wire.
+- The **light** is the Pi's own green light. A light pipe in the case carries it to the outside.
 
 ## Step 1: Build the hardware
 
 Work with everything switched off: the Pi unplugged and the PiSugar off. Touch something metal and grounded, like a radiator or a tap, before you handle the camera board, since static can damage it.
 
 > [!WARNING]
-> The display's power wire (VCC) must go to a **3.3 V** pin (pin 1), never a 5 V pin (pins 2 and 4). 5 V can damage the Pi.
+> A print must go on **straight, with each of the Pi's 40 pins in its own hole** in the print's socket. A print that's one pin along, one row over or turned round joins the Pi's 5 V pins to the wrong pins, and can damage the Pi. The case should guide the print so it can only go on the right way.
 
 ### Check the parts
 
-1. The display is the **HAT+ (E)**: a display with a small driver board and a 9-pin cable.
+1. The display is the **HAT+ (E)**: a display on a driver board, with a black 40-hole socket on the back.
 2. You have a **15-to-15-pin camera cable** if you're using a Pi 3 or 4.
 3. Charge the PiSugar fully over USB-C, then make sure it's off. If its four little lights are on, hold PWR until they go out.
 
@@ -128,129 +117,33 @@ Work with everything switched off: the Pi unplugged and the PiSugar off. Touch s
 3. Push the 15-to-15 cable in straight and all the way, with its **metal contacts facing away from the flap**. Push the flap back down.
 4. Do the same at the camera board: metal contacts facing away from the flap, towards the board.
 5. **Pi 5:** use the 15-to-22-pin cable on either camera connector. The setup script asks which one.
+6. The print sits over the Pi, so lay the cable flat against the board and lead it out past the board's edge.
 
-### Wire the shutter button
+### Put a print on
 
-The button has four metal tabs on the back: two for the switch and two for the light ring.
-
-1. **Find the switch tabs:** set the multimeter to continuity (beep). Two tabs beep only while you hold the button down. Those are the switch.
-2. **Find the light's + tab:** set the multimeter to diode test and touch the other two tabs, then swap the probes. The way round that shows a reading (about 2.5 to 3 V for a blue ring) has the **red** probe on LED+. If neither way shows anything, you'll find it at first power-on instead ([Check the light](#check-the-light)).
-3. Label the tabs with tape: SW, SW, LED+, LED−.
-4. Join a female jumper wire to each tab (solder, then heat-shrink), and keep the wires short.
-
-> [!TIP]
-> **No-solder option:** many 12 mm buttons are sold with a plug-in harness that pushes onto the four tabs. It isn't a formal standard, so check it fits your button. Its wire colours vary by seller: find the switch and LED+ wires with the multimeter as above, then join them to jumper wires with solder-seal connectors.
-
-#### A brighter light
-
-A blue ring is dim on the Pi's 3.3 V, and may be hard to see in daylight. Check it before you close the case. If it's too dim, either:
-
-- **Fit the red version of the button** ([flat-topped red: B07Z2THFCL](https://www.amazon.com/dp/B07Z2THFCL)). It's wired the same way.
-- **Or power the ring from 5 V through a transistor:** an NPN transistor (2N2222, BC337 or similar) and a 1 kΩ resistor. LED+ goes to 5 V (pin 2 or 4), LED− to the transistor's collector, its emitter to GND (pin 39), and pin 37 through the 1 kΩ resistor to its base. This is the only thing that ever goes on a 5 V pin.
-
-The software works the same either way.
-
-### Build the camera half of the display connector
-
-The connector comes as a pair: a **spring-pin half** (for the camera) and a **flat-pad half** (for a print). Each half has 10 contacts in a row and 10 short coloured wires already attached. The wire colours aren't documented, so you'll map them yourself.
-
-1. **Map the spring half:** with the multimeter on continuity, touch each contact and find which wire it connects to. Number the contacts 1 to 10 from one end, mark contact 1 with a dot of paint or tape, and write down which colour goes to which number.
-2. **Join each of the 10 wires to a female jumper wire** (solder-seal connectors and a heat gun make this one step), and label each jumper with its contact number.
-3. Screw the spring half in at the end of the case's slot, facing where the print comes in. On the bench, a clamp will do.
-
-### Build a print (display module)
-
-Do this once for each print you want.
-
-1. **Map the flat-pad half** the same way, and mark its contact 1. Snap the two halves together and check with the multimeter that contact 1 meets contact 1. One face is the mirror of the other, so map each half on its own.
-2. **Map the display's cable:** the cable has a white plug on one end and nine wires on the other. With the white plug out of the board, check each wire against the plug's contacts. The plug's pin order is: 1 VCC, 2 GND, 3 DIN, 4 CLK, 5 CS, 6 DC, 7 RST, 8 BUSY, 9 PWR.
-3. **Cut** the display cable and the pad half's wires short enough to fit the print's case. The whole run from the Pi to the display should stay under about 20 cm.
-4. **Join each display wire to a pad-half wire** following the [connector pinout](#display-connector-pinout): VCC to 1, PWR to 2, RST to 3, BUSY to 4, DC to 5, CS to 6, CLK to 7, DIN to 8.
-5. **Join three wires together:** the display's GND, pad wire 9 and pad wire 10. Joining 9 to GND is how the camera knows a print is in.
-6. Insulate every join.
-7. Plug the white plug into the display board's 9-pin socket. It stays there for good.
-8. Screw the flat-pad half to the print's leading edge, facing out, and fit the magnets on the back.
-
-> [!TIP]
-> **No-solder option:** crimp male Dupont pins onto the pad half's wires and plug them straight into the display cable's female plugs, so the cable isn't even cut. Crimp wires 9 and 10 into the same pin for GND. Tape over the plugged joints so they can't wiggle apart.
-
-### Plug the wires onto the Pi
-
-All 14 wires go on top of the Pi's 40-pin header. The PiSugar touches the header from underneath, so they don't get in each other's way.
-
-**Finding pin 1:** it's at the end of the header farthest from the USB ports, and it has a square solder pad on the underside of the board. Odd-numbered pins are on the row nearer the middle of the board; even-numbered pins are on the row along the board's edge.
-
-| Wire | Pi pin |
-|---|---|
-| Connector 1 (VCC) | **1** (3.3 V) |
-| Connector 2 (PWR) | 12 |
-| Connector 3 (RST) | 11 |
-| Connector 4 (BUSY) | 18 |
-| Connector 5 (DC) | 22 |
-| Connector 6 (CS) | 24 |
-| Connector 7 (CLK) | 23 |
-| Connector 8 (DIN) | 19 |
-| Connector 9 (print detect) | 15 |
-| Connector 10 (GND) | 20 |
-| Shutter switch (both SW wires) | 13 and 14, either way round |
-| Shutter LED+ | 37 |
-| Shutter LED− | 39 |
-
-The same thing as a picture. Look down on the Pi and turn it so the header runs down the right-hand side, with the USB ports at the bottom; pin 1 is then at the top:
-
-![Where each wire goes on the Pi's 40-pin header](docs/wiring.svg)
-
-These pins are the same on every supported Pi.
-
-#### Display connector pinout
-
-| Contact | Signal | Camera half goes to Pi pin | Print half goes to display wire |
-|---|---|---|---|
-| 1 | VCC (3.3 V) | 1 | 1 VCC |
-| 2 | PWR | 12 | 9 PWR |
-| 3 | RST | 11 | 7 RST |
-| 4 | BUSY | 18 | 8 BUSY |
-| 5 | DC | 22 | 6 DC |
-| 6 | CS | 24 | 5 CS |
-| 7 | CLK | 23 | 4 CLK |
-| 8 | DIN | 19 | 3 DIN |
-| 9 | Print detect | 15 | joined to GND (with contact 10) |
-| 10 | GND | 20 | 2 GND |
-
-VCC and GND are at opposite ends, so a connector that's off by one contact can never short them.
-
-<details>
-<summary><b>Testing before the magnetic connector is built</b></summary>
-
-You can try the display without the connector by plugging the display cable's nine wires straight onto the Pi: VCC to pin 1, GND to 20, DIN to 19, CLK to 23, CS to 24, DC to 22, RST to 11, BUSY to 18 and PWR to 12.
-
-Then add one more jumper wire from **pin 15 to a ground pin** (pin 9 or 25). That's the job the print's GND join does in the finished camera: without it, the camera thinks no print is in and never updates the screen.
-
-</details>
+1. Hold the print display side up, turned so its board lies over the Pi rather than hanging off the side.
+2. Line the socket up over the Pi's 40-pin header, so every pin sits under a hole with none left over at either end or along either side.
+3. Press it straight down until it sits firmly.
+4. **To take it off,** pull it straight up. Don't rock it from side to side, which bends the pins.
 
 ### Check before powering on
 
-With everything still off:
-
-1. **No short:** on the camera half of the connector, the resistance between contact 1 (VCC) and contact 10 (GND) isn't close to zero, with and without a print snapped on.
-2. **VCC is on pin 1, not pin 2 or 4.** Check it twice.
-3. **Every signal reaches the print:** with a print snapped on, check continuity from each Pi pin in the table to the matching wire in the print.
-4. **Print detect:** with a print snapped on, pin 15 beeps to pin 20. With it off, it doesn't.
-5. **Shutter:** pins 13 and 14 beep only while the button is pressed.
+1. **The print is on straight:** look along the header from both ends and both sides. No pin is showing outside the socket.
+2. **The camera cable** is pushed fully in at both ends, with both flaps down.
 
 ### What the case needs
 
 The case design isn't published yet. If you design your own, it needs:
 
-- A slot at the back for the print, shaped so it only goes in one way round: the magnets may not stop a print going in backwards. The camera's half of the connector screws in at the end of the slot, facing the incoming print.
+- **A guide for the print** that lines it up with the Pi's header, so it can only go on straight and the right way round, never a pin or a row out. The guide also sets how far the print presses on, and it should let you pull the print straight off.
+- **A frame for each print:** the display board is 89.5 × 59 mm. Leave its socket open on the back, give it a grip for pulling it off, and add pockets for magnets if you want them.
 - A shaded or recessed window for the display: long direct sunlight can permanently damage e-paper.
-- A 12 mm hole for the shutter button, with room behind it for the button's 23 mm length and its wires.
-- Openings or printed caps for the PiSugar's PWR and BTN buttons, its USB-C port and its four battery lights, which are all on one edge.
+- **A light pipe** from the Pi's green light to the outside. The Pi's small status lights sit at the edge of the board, a red one and a green one (on the Pi 5, one light that shows either colour). Line the pipe up with the green one.
+- **Printed caps for the PiSugar's PWR and BTN buttons,** and openings for its USB-C port and its four battery lights, which are all on one edge. BTN is the shutter, so its cap should be easy to find by touch and press cleanly. PWR's cap is best a little recessed, so it isn't pressed by accident.
 - Air around the PiSugar's charging chip, which gets hot (50 to 80 °C) while charging.
 - A window for the camera, and a way to hold the camera board square. If the camera or display ends up upside down, the setup script can flip the picture.
 - A way to reach the microSD card.
 - The Pi 3A+ is 65 × 56 mm; the other boards are 85 × 56 mm with ports in different places.
-- For each print: the display board (89.5 × 59 mm), the flat-pad half on its leading edge, and pockets for the magnets.
 
 ## Step 2: Prepare the SD card
 
@@ -271,9 +164,9 @@ You'll use **Raspberry Pi Imager**, a free app from Raspberry Pi, to put the ope
 
 ## Step 3: Install the software
 
-1. Put the microSD card in the Pi, and a print in the camera if you've built one.
+1. Put the microSD card in the Pi, and a print on if you have one ready.
 2. **Turn the camera on:** press PWR briefly, then press and hold it. The PiSugar's lights count up from 1 to 4 and the Pi starts.
-3. **Wait about two minutes.** The first start takes a while because the Pi sets itself up. The shutter's light stays off until the software is installed; that's normal.
+3. **Wait about two minutes.** The first start takes a while because the Pi sets itself up. Until the software is installed, the green light just flickers now and then; that's normal.
 4. **Connect to the Pi from your computer.** Open **Terminal** on a Mac or Linux, or **PowerShell** on Windows, and type (with your username):
 
    ```bash
@@ -312,27 +205,21 @@ You'll use **Raspberry Pi Imager**, a free app from Raspberry Pi, to put the ope
 ## Step 4: First start
 
 1. **Watch the light:** it blinks slowly while the camera starts (up to about half a minute), then stays solid. Solid means ready.
-2. **Take a photo:** with a print in, press the shutter. The light winks, then blinks slowly while the photo develops on the print, which takes about 15 seconds.
-3. **Open the gallery:** hold BTN on the PiSugar for 2 seconds. The print shows a QR code; scan it with your phone's camera ([more below](#getting-your-photos-the-gallery)).
+2. **Take a photo:** with a print on, tap BTN. A moment later the light winks, then blinks slowly while the photo develops on the print, which takes about 15 seconds.
+3. **Open the gallery:** hold BTN for 2 seconds. The print shows a QR code; scan it with your phone's camera ([more below](#getting-your-photos-the-gallery)).
 4. **Run the setup check:** in the gallery, tap the **Settings** button (the sliders icon, top right), open **Advanced**, and look at **Setup check**. Every row should have a tick. If one doesn't, it says how to fix it.
 
 ### Check the light
 
-If the shutter's light ring never lights, its two LED wires are probably swapped. Swap the wires on pins 37 and 39.
-
-<details>
-<summary>Testing the light before running the setup script</summary>
-
-Over SSH, before the setup script, `pinctrl set 26 op dh` turns the ring on and `pinctrl set 26 op dl` turns it off. If it doesn't light, swap the wires on pins 37 and 39. After setup, the camera controls the light itself.
-
-</details>
+If you see nothing through the light pipe, or see red, the pipe isn't lined up with the Pi's green light. Move it until it sits over the green one.
 
 ### Before you close the case
 
-- [ ] The light ring is bright enough indoors and in daylight. If not, see [a brighter light](#a-brighter-light).
-- [ ] A print snaps on firmly every time, and the magnets hold it.
-- [ ] With the print out, **Show on camera** in the gallery says there's no display module; slide it back in and it works.
-- [ ] Swapping prints while the camera is on doesn't restart anything.
+- [ ] The green light is easy to see through the light pipe, indoors and in daylight.
+- [ ] A print goes on straight every time, and stays on when you shake the camera gently.
+- [ ] A print pulls off without bending any pins.
+- [ ] With the print off, **Show on camera** in the gallery says there's no display module; put it back on and it works.
+- [ ] Taking a print off and putting one on while the camera is on doesn't restart anything.
 - [ ] PWR and BTN press reliably through the case.
 - [ ] While charging, the PiSugar doesn't get too hot inside the case.
 - [ ] The screen is easy to read outdoors in the shade.
@@ -341,53 +228,54 @@ Over SSH, before the setup script, `pinctrl set 26 op dh` turns the ring on and 
 
 ### Buttons
 
+Both buttons are on the PiSugar's edge.
+
 | Button | Press | What happens |
 |---|---|---|
-| **Shutter** (the button with the light ring) | Press | Take a photo. If the camera is asleep, it wakes and takes the photo a second or two later |
-| **PWR** (on the PiSugar's edge) | Short press, then press and hold | Turn on |
-| | Long press while on | Turn off. A photo that's developing finishes first |
-| **BTN** (on the PiSugar's edge) | Hold for 2 seconds | Sharing on or off: the print shows a QR code for the gallery |
+| **BTN** (the shutter) | Tap | Take a photo. A double tap takes one photo too. If the camera is asleep, it wakes and takes the photo a second or two later |
+| | Hold for 2 seconds | Sharing on or off: the print shows a QR code for the gallery |
 | | Double tap while sharing | Switch between home Wi-Fi and the camera's own Wi-Fi (for a guest's phone) |
+| **PWR** | Short press, then press and hold | Turn on |
+| | Long press while on | Turn off. A photo that's developing finishes first |
 
-- **A quick tap on BTN does nothing,** so a bump in a bag can't start sharing.
-
-- **While a photo develops** (about 15 to 20 seconds), the shutter and BTN are ignored. They work again as soon as the photo is showing.
-- **While sharing,** the shutter is off, so a photo can't be taken by accident while you show the print to someone. The light blinks slowly, and the print says how to stop. Hold BTN to stop sharing, and the shutter works again once the print shows your photo.
+- **The photo is taken a moment after you tap,** not the instant you press: the PiSugar waits briefly to check it isn't a double tap. Hold still until the light winks.
+- **While a photo develops** (about 15 to 20 seconds), BTN is ignored. It works again as soon as the photo is showing.
+- **While sharing,** a tap doesn't take a photo, so one can't be taken by accident while you show the print to someone. The light blinks slowly, and the print says how to stop. Hold BTN to stop sharing, and taps take photos again once the print shows your photo.
 - Plugging in to charge doesn't turn the camera on.
 
 ### The status light
 
-The ring around the shutter is the camera's only light, and it has just four looks:
+The Pi's green light, seen through the light pipe, is the camera's only light, and it has just four looks:
 
 | Light | Meaning |
 |---|---|
-| Solid | On: press the shutter to take a photo |
-| Slow blink (on half a second, off half a second) | Wait, the shutter won't take a photo: starting up, developing a photo, sharing, or finishing before it turns off |
+| Solid | On: tap BTN to take a photo |
+| Slow blink (on half a second, off half a second) | Wait, a tap won't take a photo: starting up, developing a photo, sharing, or finishing before it turns off |
 | A short wink (off for a moment) | Your photo was taken |
-| Off | The camera is off. It also stays off while the slideshow changes the picture |
+| Off | The camera is off. When the slideshow changes the picture, it blinks while the Pi starts, then goes off |
 
-- **No wink when you press the shutter?** No photo was taken. Start sharing, and the gallery says why at the top of the page.
+- **No wink when you tap BTN?** No photo was taken. Start sharing, and the gallery says why at the top of the page.
 - **Everything else shows elsewhere:** sharing shows its QR code on the print, and the battery level and any problems show in the gallery. The PiSugar's own four lights show the charge when you press PWR.
 
 The gallery has the same list under Settings → Light → What it means.
 
 ### Prints
 
-- **Keep a photo:** slide the print out. It keeps its picture with no power.
-- **The newest photo is the one waiting to develop.** If you take five photos with no print in, then slide one in, only the fifth develops. The others are all saved and in the gallery.
-- **A print you slide in keeps whatever it shows,** unless a photo is waiting to develop. A kept photo is never overwritten by accident.
-- **Pulling a print out while it's developing** stops it, like pulling an instant photo out early. That photo develops on the next print instead.
+- **Keep a photo:** pull the print straight off. It keeps its picture with no power.
+- **The newest photo is the one waiting to develop.** If you take five photos with no print on, then put one on, only the fifth develops. The others are all saved and in the gallery.
+- **A print you put on keeps whatever it shows,** unless a photo is waiting to develop. A kept photo is never overwritten by accident.
+- **Pulling a print off while it's developing** stops it, like pulling an instant photo out early. That photo develops on the next print instead.
 - **To put any photo on the print in the camera,** open it in the gallery and tap **Show on camera**.
-- **Swapping is safe** while the camera is on.
+- **Put prints on straight** and pull them off straight, never at an angle or a pin out ([why](#step-1-build-the-hardware)).
 - **Look after the prints** (Waveshare's advice):
   - Keep them out of long direct sunlight, which can damage the screen for good.
   - Use them between 0 and 40 °C. Cold can give the colours a tint.
-  - A picture left on a print for many months can burn in. To store a print, give it a white screen first: put it in the camera with the slideshow off, then turn the camera off, and the screen turns white. Waveshare suggests storing them for at most 6 months.
+  - A picture left on a print for many months can burn in. To store a print, give it a white screen first: put it on the camera with the slideshow off, then turn the camera off, and the screen turns white. Waveshare suggests storing them for at most 6 months.
   - Each print is rated for about a million picture changes.
 
 ### Sleep, turning off and the battery
 
-- **Sleep:** after 5 minutes without taking photos, the camera rests its image sensor to save battery. The light stays solid: press the shutter as usual, and the photo is taken a second or two later.
+- **Sleep:** after 5 minutes without taking photos, the camera rests its image sensor to save battery. The light stays solid: tap BTN as usual, and the photo is taken a second or two later.
 - **Turning off:** after 10 minutes without use, the camera turns itself off. Before it does, it sets an alarm for the next slideshow picture.
 - **Battery saver** turns on by itself at 20%: the camera sleeps and turns off sooner.
 - **Low battery:** the gallery warns at 15%, and the camera turns itself off at 5%.
@@ -410,7 +298,7 @@ The gallery is a small website that the camera runs while sharing is on. It work
 
 1. **Hold BTN** on the PiSugar for 2 seconds. The camera looks for your home Wi-Fi for a few seconds.
 2. **The print shows a QR code.** Scan it with your phone's camera, and the gallery opens in your browser.
-3. **Without the QR code** (no print in, or on a laptop), open a browser on any device on the same Wi-Fi and go to the address printed next to the QR code (like `http://192.168.1.23`), or to **`http://inkstant.local`** (your hostname, followed by `.local`).
+3. **Without the QR code** (no print on, or on a laptop), open a browser on any device on the same Wi-Fi and go to the address printed next to the QR code (like `http://192.168.1.23`), or to **`http://inkstant.local`** (your hostname, followed by `.local`).
 
 ### Away from home
 
@@ -434,7 +322,7 @@ Your phone may say this Wi-Fi has no internet. That's expected: stay connected.
 
 ### Stop sharing
 
-Hold BTN again for 2 seconds, tap **Stop sharing** in the gallery, or just leave it: on battery, sharing stops by itself after 10 minutes without anyone using the gallery. The print goes back to showing your photo, and the shutter works again once it has.
+Hold BTN again for 2 seconds, tap **Stop sharing** in the gallery, or just leave it: on battery, sharing stops by itself after 10 minutes without anyone using the gallery. The print goes back to showing your photo, and taps take photos again once it has.
 
 > [!NOTE]
 > The gallery has no login. At home, anyone on your Wi-Fi can open it while sharing is on, including deleting photos. Sharing only runs when you turn it on, and stops by itself.
@@ -475,9 +363,9 @@ In the gallery, tap the sliders icon at the top right.
 | Setup warns "No camera found" | Turn off, then reseat the ribbon at both ends with the metal contacts facing away from the flaps. On a Pi 3 or 4, the cable must be 15-pin at both ends |
 | Can't SSH in after setup | Expected without developer mode: the camera turns its Wi-Fi off to save battery. SSH works again while sharing at home, or turn on Settings → Advanced → Developer mode |
 | A monitor shows nothing | Expected: setup turns HDMI off to save power. Use SSH |
-| The light doesn't wink when you press the shutter | No photo was taken. Start sharing, and the gallery shows what's wrong at the top of the page |
-| The print never updates | Open a photo in the gallery: if **Show on camera** says "No display module in the camera" with a print in, the print-detect wiring isn't reaching pin 15. Check the print's GND, 9 and 10 join, and connector contact 9 to pin 15 |
-| The light never lights | The LED wires on pins 37 and 39 are probably swapped. A blue ring is also quite dim at 3.3 V |
+| The light doesn't wink when you tap BTN | No photo was taken. Start sharing, and the gallery shows what's wrong at the top of the page |
+| The print never updates | Open a photo in the gallery: if **Show on camera** says "No display module in the camera" with a print on, the print isn't all the way onto the header. Pull it off and press it on again, straight |
+| The light never lights | The light pipe isn't lined up with the Pi's green light. Before the software is installed, the green light only flickers now and then |
 | The gallery won't open from the QR code | Check your phone is on the same Wi-Fi (at home) or joined the camera's Wi-Fi (away). Some guest and office networks block devices from reaching each other: double-tap BTN while sharing to switch to the camera's Wi-Fi |
 | The browser says the site can't be reached, though the phone is on the right Wi-Fi | Some browsers, like Chrome on iPhone, insist on a secure (`https`) connection, which the gallery doesn't use. Open the address in Safari, or turn off the browser's "Always use secure connections" setting |
 | `inkstant.local` doesn't open on some phones | Some Android phones don't support `.local` names. Use the number address printed next to the QR code |
@@ -566,7 +454,7 @@ uv venv --python 3.13 .venv && uv pip install --python .venv -r requirements-dev
 .venv/bin/python tools/sim.py --port 8080
 ```
 
-The simulator runs the real camera app with fake hardware. Type `s` and Enter for the shutter, `h` to hold BTN (sharing on or off), `d` for a BTN double tap, `m` to slide a print in or out, and `q` to quit. Open `http://localhost:8080` for the gallery; the print's picture is written to `sim/display.png`.
+The simulator runs the real camera app with fake hardware. Type `b` and Enter to tap BTN (the shutter), `h` to hold BTN (sharing on or off), `d` for a BTN double tap, `m` to put a print on or take it off, and `q` to quit. Open `http://localhost:8080` for the gallery; the print's picture is written to `sim/display.png`.
 
 </details>
 
@@ -588,10 +476,10 @@ sudo systemctl start inkstant
 | Script | Checks |
 |---|---|
 | `camera_fullres.py` | Full-resolution capture, camera memory, JPEG and screen-image times, sleep and wake |
-| `shutter_latency.py` | Shutter delay at several frame rates (`--auto` without a button) |
+| `shutter_latency.py` | Shutter delay at several frame rates, tapping BTN (`--auto` without tapping) |
 | `settle.py` | Focus, exposure and colour settling |
 | `epd_show.py` | The display: test chart, step timings, no print, pulling it out mid-update |
-| `inputs.py` | Shutter, print detect and BUSY; `--light` steps through every light pattern |
+| `inputs.py` | Print detect and BUSY; `--light` steps through every light pattern |
 | `pisugar_probe.py` | PiSugar socket, settings, firmware, clock, alarm, BTN taps, watchdog |
 | `poweroff_test.sh`, `wake_cycle.sh`, `boot_timing.sh` | Power cut after shutdown, slideshow wake, boot-to-ready time |
 | `share_e2e.md` | A checklist for sharing with an iPhone and an Android phone |
@@ -609,7 +497,7 @@ Bump `VERSION`, then push a tag `v<VERSION>` (for example `v1.0.1`). CI runs the
 
 ## Project status
 
-The software is complete, with automated tests against simulated hardware. On a real Raspberry Pi 4, it's been tested taking photos, developing them on the display (with colours measured on the panel), the gallery, sharing over home Wi-Fi and over the camera's own Wi-Fi, the slideshow waking the camera, and BTN. Still to test on the real hardware: the PWR button, plugging in the charger, and sliding a print in and out. The case design and the first published release are still to come.
+The software is complete, with automated tests against simulated hardware. On a real Raspberry Pi 4, it's been tested taking photos with BTN, developing them on a print pushed onto the Pi's header (with colours measured on the panel), the green status light, the gallery, sharing over home Wi-Fi and over the camera's own Wi-Fi, and the slideshow waking the camera. Still to test on the real hardware: the PWR button, plugging in the charger, taking a print off and putting one on while the camera is on, and the light pipe. The case design and the first published release are still to come.
 
 ## Credits
 

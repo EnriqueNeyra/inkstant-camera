@@ -150,12 +150,12 @@ def check_clock_valid(epoch: int | None) -> Check:
 
 
 def check_led(root: Path) -> Check:
-    path = root / "sys/class/leds/status"
+    path = root / "sys/class/leds/ACT"
     try:
         triggers = (path / "trigger").read_text()
     except OSError:
         return Check("Status light", False, False, "missing",
-                     "The gpio-led overlay isn't loaded: run the install script again, then reboot.")
+                     "The Pi's green light (ACT) isn't there: update Raspberry Pi OS, then reboot.")
     ok = "pattern" in triggers
     return Check("Status light", ok, False, "pattern trigger" if ok else "no pattern trigger",
                  "ledtrig-pattern isn't loaded; the light still works, blinking from software.")
@@ -259,7 +259,7 @@ def run(paths: Paths, *, family: str = "pi3", install: bool = False,
                                 "module in, not tested while idle" if present else "no module in: not tested"))
         else:
             checks.append(Check("Display module", result, True, "answers" if result else "doesn't answer",
-                                "Slide the module out and back in; check the connector's wiring."))
+                                "Take the print off and press it back on, straight, with every pin in its socket."))
     return checks
 
 

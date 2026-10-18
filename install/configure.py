@@ -518,11 +518,9 @@ disable_poe_fan=1
 ignore_lcd=1
 disable_touchscreen=1
 disable_camera_led=1
-dtparam=act_led_trigger=none
+dtparam=act_led_trigger=timer
 dtparam=pwr_led_trigger=none
 dtoverlay=disable-bt
-gpio=26=op,dh
-dtoverlay=gpio-led,gpio=26,label=status,trigger=timer
 [pi3]
 dtoverlay=imx708
 dtoverlay=i2c-rtc,ds3231
@@ -804,8 +802,8 @@ def cmd_summary(a) -> int:
     say("Inkstant is installed.")
     say(f"  Camera Wi-Fi:  {s['hotspot']['ssid']}")
     say(f"  Password:      {s['hotspot']['password']}")
-    say("  To share: hold the PiSugar's BTN for 2 seconds. The display module shows a QR code for the gallery.")
-    say("  The light: solid, then a slow blink while starting, then solid when ready (README: the status light).")
+    say("  To take a photo: tap the PiSugar's BTN. To share: hold it for 2 seconds; the print shows a QR code.")
+    say("  The light: a blink while starting, then solid when ready (README: the status light).")
     if dev:
         say("  Developer mode is on: the camera joins your home Wi-Fi at every start, so SSH keeps working.")
     else:

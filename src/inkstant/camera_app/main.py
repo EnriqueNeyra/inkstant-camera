@@ -20,7 +20,7 @@ def build_hardware(paths: Paths) -> Hardware:
     from inkstant.hw.gpio import Pins
     from inkstant.hw.led import SysfsLed
     from inkstant.hw.network import Network
-    from inkstant.hw.pisugar_i2c import Watchdog
+    from inkstant.hw.pisugar_i2c import TapReader, Watchdog
     from inkstant.hw.system import System
 
     dev = device.load(paths.device_toml)
@@ -35,6 +35,7 @@ def build_hardware(paths: Paths) -> Hardware:
         network=Network(log=log),
         system=system,
         watchdog=Watchdog(log=log),
+        taps=TapReader(log=log),
         is_3b="Raspberry Pi 3 Model B" in model,  # the 3B and 3B+ have the USB hub
     )
 

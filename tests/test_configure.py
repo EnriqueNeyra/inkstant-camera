@@ -132,7 +132,7 @@ def test_apply_writes_everything(installed):
     cfgtxt = (r / "boot/firmware/config.txt").read_text()
     assert cfgtxt.count("# BEGIN inkstant") == 1 and "#inkstant: dtoverlay=vc4-kms-v3d" in cfgtxt
     assert "#inkstant: camera_auto_detect=1" in cfgtxt and "#inkstant: dtparam=audio=on" in cfgtxt
-    assert "dtoverlay=gpio-led,gpio=26,label=status,trigger=timer" in cfgtxt
+    assert "dtparam=act_led_trigger=timer" in cfgtxt and "gpio-led" not in cfgtxt
     assert (r / "boot/firmware/config.txt.inkstant-bak").read_text() == STOCK_CONFIG
     assert (r / "boot/firmware/cmdline.txt").read_text() == STOCK_CMDLINE.strip() + " quiet\n"
     hook = r / "usr/lib/systemd/system-shutdown/inkstant-poweroff"

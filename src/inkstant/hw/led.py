@@ -1,7 +1,8 @@
 """The status light: one steady pattern, and a wink when the shutter takes a photo.
 
-The kernel's `gpio-led` driver owns GPIO 26; patterns are written to
-/sys/class/leds/status. Without the `pattern` trigger, an asyncio task blinks instead.
+It's the Pi's own green activity light (ACT), seen through a light pipe in the case;
+patterns are written to /sys/class/leds/ACT. Without the `pattern` trigger, an asyncio
+task blinks instead.
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ def pattern_steps(pattern: str) -> list[tuple[int, float]]:
 
 
 class SysfsLed:
-    """Writes /sys/class/leds/status/*."""
+    """Writes /sys/class/leds/ACT/*."""
 
     def __init__(self, path: Path):
         self.path = Path(path)

@@ -127,9 +127,7 @@ class PiSugarClient:
                 raise ConnectionError("pisugar-server closed the connection")
             text = raw.decode(errors="replace").strip()
             if not text or text in TAPS:
-                if text in TAPS:
-                    self.on_tap(text)
-                continue
+                continue  # taps are handled by the events connection, which gets every one
             if text.startswith(prefix):
                 return text[len(prefix):].strip()
             errors.append(text)
