@@ -9,6 +9,7 @@ import { Viewer, confirmDelete } from "./viewer.js";
 const root = $("#grid-root");
 let nextBefore = root.dataset.next ? Number(root.dataset.next) : null;
 let total = Number(root.dataset.total || 0);
+let offset = 0; // photos before the first tile, newest first: only after jumping to a month
 let loadingMore = false;
 let today = null;
 let selecting = false;
@@ -130,6 +131,7 @@ async function prependNew() {
     $(".grid", first).prepend(tileFor(p));
   }
   total = r.total;
+  if (r.photos.length) offset = r.offset;
   $("#empty")?.remove();
   refreshLabels();
   pendingNew = 0;
@@ -166,6 +168,7 @@ onStatus(async (st) => {
 const viewer = new Viewer({
   list,
   total: () => total,
+  offset: () => offset,
   more: loadMore,
   onDeleted: (ids) => removeTiles(ids),
 });
@@ -407,6 +410,7 @@ async function jumpTo(m) {
   const r = await api("GET", `/api/photos?month=${m.month || "none"}&limit=60`);
   for (const g of $$(".dayg", root)) g.remove();
   jumped = true;
+  offset = r.offset || 0;
   appendPhotos(r.photos);
   nextBefore = r.next_before;
   $("#end").hidden = nextBefore !== null;

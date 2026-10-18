@@ -27,9 +27,10 @@ class View:
 
 
 def led_steady(v: View) -> str:
-    """The status light: solid when the shutter takes a photo, a slow blink while it won't (busy, or
-    sharing), off when off. Only four things to learn; problems and the battery show in the gallery,
-    and sharing on the print."""
+    """The status light: a slow blink while a tap won't take a photo because the camera is busy or
+    sharing, solid otherwise, off when off. Only four things to learn. Problems (storage full, a
+    failed camera) leave it solid: a refused tap just gets no wink, and the gallery says why. The
+    battery shows in the gallery, and sharing on the print."""
     if v.lifecycle == STARTING:
         return "starting"
     if v.lifecycle == WAKE:
@@ -114,7 +115,3 @@ def power_button_in_wake(level: float | None, plugged: bool) -> str:
     if not plugged and level is not None and level <= Levels(0, 0, 0).backup + 1:
         return "shutdown"
     return "turn_on"
-
-
-def photos_left_text(n: int) -> str:
-    return f"about {n:,} photos left"

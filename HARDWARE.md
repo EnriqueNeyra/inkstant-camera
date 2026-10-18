@@ -12,26 +12,30 @@ Every part of the camera, with the measurements an enclosure needs and links to 
 **The ground rules for the case**
 
 - No soldering, no wiring, and parts anyone can buy (Amazon-level).
-- The print (the display) must pull off easily and go back on.
+- The print (the display) must pull off easily and go back on. Each print has its own enclosure, separate from the camera body, so it pops out like a piece of film.
 - A beginner must be able to assemble it.
+- **Every part is 3D-printed,** in as few parts as possible, and each prints without excessive supports. No light pipe or window in another material.
+- **It holds together securely with no extra hardware:** no screws, glue, inserts or standoffs beyond the screws that come with the PiSugar. The one exception is the optional magnets in each print's enclosure.
+- **The display needs no shading or recess** against sunlight: the small risk of sun damage is accepted.
 - Design for the **Raspberry Pi 3A+ only.** It's the build's one board: the cheapest and smallest, it uses the least power, its outline matches the PiSugar's, and Raspberry Pi will make it until at least January 2030 ✅ ([product page](https://www.raspberrypi.com/products/raspberry-pi-3-model-a-plus/)). The software also runs on the Pi 3B, 3B+, 4B and 5, but this case doesn't need to fit them. [Other boards](#other-boards-not-for-this-case) has pointers for a case designed for one of them later.
 
 ## Contents
 
 1. [The build at a glance](#the-build-at-a-glance)
-2. [Coordinate frame](#coordinate-frame)
-3. [Stack-up (heights)](#stack-up-heights)
-4. [Raspberry Pi 3A+](#raspberry-pi-3a)
-5. [The print: Waveshare 3.6" e-Paper HAT+ (E)](#the-print-waveshare-36-e-paper-hat-e)
-6. [Battery board: PiSugar 3 Plus](#battery-board-pisugar-3-plus)
-7. [Camera module](#camera-module)
-8. [Camera cable](#camera-cable)
-9. [Status light and light pipe](#status-light-and-light-pipe)
-10. [What the case has to do](#what-the-case-has-to-do)
-11. [A layout that fits](#a-layout-that-fits)
-12. [Measure before you finalise](#measure-before-you-finalise)
-13. [Other boards (not for this case)](#other-boards-not-for-this-case)
-14. [Sources](#sources)
+2. [3D models](#3d-models)
+3. [Coordinate frame](#coordinate-frame)
+4. [Stack-up (heights)](#stack-up-heights)
+5. [Raspberry Pi 3A+](#raspberry-pi-3a)
+6. [The print: Waveshare 3.6" e-Paper HAT+ (E)](#the-print-waveshare-36-e-paper-hat-e)
+7. [Battery board: PiSugar 3 Plus](#battery-board-pisugar-3-plus)
+8. [Camera module](#camera-module)
+9. [Camera cable](#camera-cable)
+10. [Status light](#status-light)
+11. [What the case has to do](#what-the-case-has-to-do)
+12. [A layout that fits](#a-layout-that-fits)
+13. [Measure before you finalise](#measure-before-you-finalise)
+14. [Other boards (not for this case)](#other-boards-not-for-this-case)
+15. [Sources](#sources)
 
 ## The build at a glance
 
@@ -41,7 +45,7 @@ Every part of the camera, with the measurements an enclosure needs and links to 
 | Print | Waveshare 3.6" e-Paper HAT+ (E), one per print | Its 40-pin socket pushes onto the Pi's header. Pulled off, it keeps its picture with no power |
 | Battery board | PiSugar 3 Plus, 5000 mAh | Sits under the Pi, touching the header from below with spring pins. Its **BTN** is the shutter and **PWR** is the power button |
 | Camera | Arducam 12MP IMX708 75° autofocus (Raspberry Pi Camera Module 3 outline) | Connects to the Pi's CAMERA connector with a 15-pin flat cable |
-| Light | The Pi's own green ACT LED | A light pipe carries it to the outside |
+| Light | The Pi's own green ACT LED | It shines out through a small opening in the case |
 | Storage | microSD card | In the Pi's slot, at the board's short edge |
 | Charging | USB-C on the PiSugar | The Pi's own power port isn't used |
 
@@ -58,6 +62,17 @@ Side view of the stack, display side up:
    │ USB-C, BTN, PWR, battery LEDs underneath, along the Pi's port edge
    └──────────── 5000 mAh battery ───────────┘    camera module faces the front (down in this view)
 ```
+
+## 3D models
+
+Use these in the CAD where they exist, and check each against its drawing.
+
+| Part | Model | Notes |
+|---|---|---|
+| Pi 3A+ | Two community models on GrabCAD: [Raspberry Pi Model 3 A+](https://grabcad.com/library/raspberry-pi-model-3-a-1) (STEP and STL, from an industrial 3D scan) and [Raspberry Pi 3 Model A+](https://grabcad.com/library/raspberry-pi-3-model-a-1) (simplified STEPs and a Fusion file, from Raspberry Pi's drawings and a real board) | Raspberry Pi publishes no 3A+ model, only PDF drawings. The scan's author says its microSD slot is only a close match. Check both against the [mechanical drawing](https://pip.raspberrypi.com/documents/RP-008330-DS) 📐. GrabCAD needs a free account to download |
+| Print | None published (searched 2026-10-17: Waveshare, GrabCAD, step.parts, Printables, MakerWorld and Thingiverse) | Model it from Waveshare's [board size drawing](https://www.waveshare.com/img/devkit/LCD/3.6inch-e-Paper-E/3.6inch-e-Paper-HAT-plus-E-details-size.jpg) and [panel datasheet](https://files.waveshare.com/wiki/3.6inch_e-Paper_HAT%2B_E/3.6inch_e-Paper_HAT%2B.pdf), with the numbers [below](#the-print-waveshare-36-e-paper-hat-e) |
+| PiSugar 3 Plus | PiSugar's own [STEP](https://github.com/PiSugar/PiSugar/blob/master/model_pro/pisugar3plus.STEP) and [STL](https://github.com/PiSugar/PiSugar/blob/master/model_pro/pisugar3plus.STL) ✅ | The board and its parts, with no battery. The same folder has a SolidWorks part, [batt5000.SLDPRT](https://github.com/PiSugar/PiSugar/blob/master/model_pro/batt5000.SLDPRT), probably a 5000 mAh battery; whether it's this board's battery isn't confirmed 🧪 |
+| Camera | Raspberry Pi's [Camera Module 3 STEP (RP-008154-DS)](https://pip-assets.raspberrypi.com/categories/1207-design-files/documents/RP-008154-DS-1-camera-module-3-step.zip) and [mechanical drawing (RP-008153-DS)](https://pip-assets.raspberrypi.com/categories/1207-design-files/documents/RP-008153-DS-1-camera-module-3-standard-mechanical-drawing.pdf) ✅ | The Arducam board bought uses the Camera Module 3 outline; check it against the model 🧪 |
 
 ## Coordinate frame
 
@@ -183,7 +198,7 @@ The removable "print". Each print is a complete board: an E Ink Spectra 6 panel 
 - **Operating temperature:** 0 to 50 °C. The FAQ says 0 to 40 °C, so design for 40.
 - **Humidity:** 35 to 65 %RH.
 - **Storage:** below 30 °C and 55 %RH, for 6 months at most.
-- **Sunlight:** long direct sunlight can damage the panel for good. A shaded or recessed window helps.
+- **Sunlight:** long direct sunlight can damage the panel for good. The case doesn't shade or recess the display against it: that small risk is accepted.
 - **Refresh:** a full refresh takes about 15 s and flickers. That's normal.
 
 **Electrical facts that affect the case**
@@ -270,7 +285,7 @@ The camera bought is the [Arducam 12MP IMX708 75° autofocus module](https://www
 - **Bending:** the cable can be folded flat, but don't crease it hard across its contacts.
 - **Route:** the CAMERA connector is at x 45, near the port edge, and the cable leaves it upwards (+z) into the gap under the print. Keep it clear of the print's socket. If a fold would press into the print, make a channel for it.
 
-## Status light and light pipe
+## Status light
 
 The camera's only light is the Pi's green **ACT** LED. The software drives it, and its kernel name is `ACT`. It has four looks:
 
@@ -281,14 +296,15 @@ The camera's only light is the Pi's green **ACT** LED. The software drives it, a
 | A 0.4 s wink off | A photo was taken |
 | Off | The camera is off |
 
-The red PWR LED next to it is turned off by the software on the bench Pi 4 ✅, but that isn't checked on a 3A+ yet: keep red light out of the pipe 🧪.
+The red PWR LED next to it is turned off by the software on the bench Pi 4 ✅, but that isn't checked on a 3A+ yet: keep its light out of the opening 🧪.
 
-- **Where:** the light comes out of the microSD edge (x ≈ 0), 11.5 from the port edge, just above the board's top face (z ≈ 0 to 1). The red PWR LED is only 3.6 away, at y ≈ 7.9.
-- **What's above it:** the print covers the LEDs from above, from z ≈ 16 up. Its board edge and panel cable are at x −2.25. So the pipe has to start beside the board edge, under the print.
-  - It can go straight out through the −x wall.
-  - Or it can step outwards past x ≈ −4 and then turn towards the back (+z) to sit beside the display.
-- **The pipe itself:** a 2 to 3 mm clear acrylic rod or a moulded light pipe, with its end within about 0.5 of the LED. Mask it so the red LED next to it doesn't bleed in.
-- **Nearby:** the microSD slot (y 22 to 34) and the Wi-Fi antenna (around y 36 to 42) are on the same edge.
+- **Where:** the light comes out of the microSD edge (x ≈ 0), about 11.5 from the port edge, just above the board's top face (z ≈ 0 to 1). The red PWR LED is only about 3.5 away, at y ≈ 8.
+- **What's above it:** the print covers the LEDs from above, from z ≈ 16 up. Its board edge and panel cable are at x −2.25. So the light has to come out beside the board edge, under the print, through the −x wall.
+- **No light pipe:** there's no separate part and no second material, so the case's own printed wall does the job. Opaque plastic can't carry light round a corner, so the light needs a straight path to the outside 📐:
+  - a small hole through the −x wall, in line with the LED;
+  - or a wall thinned to a layer or two, which glows through in a light-coloured filament.
+- **Keep the red LED out:** line the opening up with the green LED only, or put a printed rib between the two.
+- **Nearby:** the microSD slot (y 22 to 34) and the Wi-Fi antenna (around y 36 to 39) are on the same edge.
 
 ## What the case has to do
 
@@ -298,34 +314,39 @@ The red PWR LED next to it is turned off by the software on the bench Pi 4 ✅, 
 - **Let the print be pulled straight off and pushed straight on,** with a grip that doesn't rock it, since rocking bends the pins. The 22 mm overhang past the Pi is a natural place to grip.
 - **Hold the print firmly while it's on**, without screws. The 40-pin socket's own grip may be enough, or too much to pull easily 🧪.
 - **Protect the bare header when the print is off.** Recess the pins so a key or coin can't bridge them, and so a fingertip is less likely to touch them.
-- **Make a display window** for the active area (x 7.0 to 83.2, y 2.6 to 53.4 in the Pi frame), shaded or recessed against long direct sunlight.
+- **Make a display window** for the active area (x 7.0 to 83.2, y 2.6 to 53.4 in the Pi frame).
 
 **The rest**
 
-- **Light pipe:** from the ACT LED to the outside ([above](#status-light-and-light-pipe)).
+- **Status light:** a straight opening from the ACT LED to the outside ([above](#status-light)).
 - **Button caps:** for **BTN** (the shutter: easy and clear to press) and **PWR** (recessed). Both buttons are on the PiSugar's underside at the port edge and are pressed towards +y.
 - **Openings:**
   - the **PiSugar's USB-C** for charging;
-  - the **five small LEDs** on the PiSugar's underside;
+  - the **four battery LEDs** on the PiSugar's underside (among the row of five small parts);
   - the **microSD slot**, reached from −x between the Pi and the PiSugar.
 
   Cover the Pi's own ports, which aren't used.
-- **Camera:** a lens window and a way to hold the camera board square: four M2 screws or clips, on the 21 × 12.5 pattern.
+- **Camera:** a lens window, and printed clips or a pocket that hold the camera board square, with no screws. Its holes (the 21 × 12.5 pattern) can take printed pegs.
 - **Air:** around the PiSugar's charging chip, and a little through the gap under the print where the Pi's SoC sits.
 - **Plastic, not metal,** near the Wi-Fi antenna corner. Keep any magnets away from it.
-- **Mounting the Pi and PiSugar:** they come as one stack, joined by four M2.5 screws through the Pi into the PiSugar's brass posts. Swapping those screws for M2.5 male-to-female standoffs gives the case something to fix to from above. Or the case can clamp the stack by its board edges.
-- **Prints:** each print is a separate part with its own frame (optional pockets for small magnets, so a kept print can go on the fridge). Every frame must fit the guide the same way.
+- **Mounting the Pi and PiSugar:** they come as one stack, joined by the four M2.5 screws that come with the PiSugar, through the Pi into its brass posts. The case holds that stack itself, for example by its board edges, with no extra hardware.
+- **Prints:** each print has its own printed enclosure, separate from the camera body, so it pops out like a piece of film. Every print's enclosure fits the guide the same way.
+- **Magnets:** each print's enclosure has somewhere to add small disc magnets, so a kept print can go on the fridge or any steel surface.
+  - The magnets are optional: a print without them docks and works the same.
+  - They must stay put without glue (loose neodymium magnets are dangerous if swallowed), and hold the print's 53 g plus its enclosure.
+  - The tall socket on the back mustn't hold them too far off the steel.
+  - Keep them away from the camera module (its autofocus uses a magnet and a coil) and the Wi-Fi antenna corner.
 
 ## A layout that fits
 
 A starting point for the CAD, not a requirement. Everything here is 📐.
 
-- **The stack:** PiSugar and battery at the bottom (front), the Pi, then the print on top (back). The display faces the user, and the lens faces the scene.
+- **The stack:** PiSugar and battery at the bottom (front), the Pi, then the print in its enclosure on top (back). The display faces the user, and the lens faces the scene.
 - **The camera:** in the space beside the Pi, under the print's 22 mm overhang (x 65 to 87, y −1.5 to 57.5). Nothing else is there except the Pi's USB-A port sticking out to x 67.7 at y 25 to 38.
   - The camera board (23.9 × 25) is slightly bigger than the overhang is wide, so the case can extend a couple of millimetres past the print there.
   - The lens faces −z, out of the front, level with or just behind the battery's front face.
 - **The camera cable:** from the CAMERA connector (x 45, y about 0 to 23), up into the gap, across towards +x under the print (keeping to y < 23 to miss the USB-A), then down to the camera's connector.
-- **The light pipe:** out of the −x wall, or up to the back next to the display window.
+- **The status light:** a straight opening in the −x wall, level with the LED, under the print.
 - **The buttons, USB-C and battery LEDs:** all on the port-edge wall (−y), low down at the PiSugar's level, BTN and PWR side by side.
 - **Body size:** roughly 92 × 63 in plan with 2 mm walls. Its depth is about 16 (print gap) + 2.4 (print) + t + 8.8 (PiSugar) + the battery + walls, around 40 to 45 in all 🧪.
 
@@ -333,14 +354,14 @@ A starting point for the CAD, not a requirement. Everything here is 📐.
 
 | What | Why |
 |---|---|
-| The print's socket body height, and the gap between the Pi's board and the print's board when fully seated | Sets the camera's depth and the light pipe's route |
+| The print's socket body height, and the gap between the Pi's board and the print's board when fully seated | Sets the camera's depth, the body's thickness and how far the socket stands off a fridge |
 | How far the print can be left off the header and still work (contact engagement), and the force to pull it off | The pull-off grip and how the print is held |
-| The print's board thickness and its mounting-hole diameter | Guide posts and frame fit |
+| The print's board thickness and its mounting-hole diameter | Guide posts and how each print's enclosure fits |
 | The Pi's board thickness `t` | Every z below the Pi |
 | The PiSugar battery's length, width and thickness, how it's attached, and where its lead runs | The bottom of the stack |
 | How far the PiSugar's extension header pins stick out, if fitted | Clearance under the PiSugar |
 | The Arducam board: outline, holes, lens centre, depth, and which edge its connector is on | The camera mount and lens window |
-| The ACT and PWR LED positions on the actual 3A+, and whether the PWR LED stays off | The light pipe |
+| The ACT and PWR LED positions on the actual 3A+, and whether the PWR LED stays off | The light's opening |
 | BTN and PWR travel and press force through a printed cap | The cap design |
 | Which of the PiSugar's five small parts are the LEDs | The light openings |
 | Whether a print can be taken off and put on with the camera on, with no reset | Whether the case must ask the user to turn it off first |
@@ -382,7 +403,7 @@ The least checked. Source: the [mechanical drawing (RP-008347-DS)](https://pip.r
 - **Ports along the port edge:** USB-C at x 11.2, micro-HDMI at x 25.8 and 39.2 ✅.
 - **The far end:** Ethernet at y 10.2, and USB stacks at y 29.1 and 47, swapped compared with the Pi 4. They stick out 3 past x = 85 ✅.
 - **Two 22-pin camera/display connectors** (0.5 pitch, 11.5 wide ✅): about x 47 to 50 and 53 to 56, y 0.7 to 16 📐. The camera needs a 22-pin (0.5 pitch, 11.5 wide) to 15-pin cable ✅.
-- **Power button and status LED, both at the microSD edge:** the button is centred near y 18.4, and the LED (one LED, red or green) near y 13.3 📐 from the drawing. A light pipe has to reach this LED instead.
+- **Power button and status LED, both at the microSD edge:** the button is centred near y 18.4, and the LED (one LED, red or green) near y 13.3 📐 from the drawing. The light's opening has to line up with this LED instead.
 - **Cooling:** the Active Cooler would sit under the print's overhang. Whether it clears the print hasn't been checked 🧪.
 - **The PiSugar:** its spring pins need lining up carefully, since the Pi 5's header holes are smaller 🧪 ([PiSugar #144](https://github.com/PiSugar/PiSugar/issues/144)).
 

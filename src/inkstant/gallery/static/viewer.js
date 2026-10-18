@@ -28,10 +28,12 @@ export function confirmDelete(n, includesOnCamera) {
 }
 
 export class Viewer {
-  // list(): the photos in order (newest first); total(): how many exist; more(): load more, returns bool.
-  constructor({ list, total, more = async () => false, onDeleted = () => {}, standalone = false }) {
+  // list(): the photos in order (newest first); total(): how many exist; offset(): how many come
+  // before list()'s first; more(): load more, returns bool.
+  constructor({ list, total, offset = () => 0, more = async () => false, onDeleted = () => {}, standalone = false }) {
     this.list = list;
     this.total = total;
+    this.offset = offset;
     this.more = more;
     this.onDeleted = onDeleted;
     this.standalone = standalone;
@@ -177,7 +179,7 @@ export class Viewer {
     this.full.src = this.src(p);
     this.full.alt = `${this.mode === "print" ? "Print" : "Photo"}, ${longWhen(p.day, p.time)}`;
     $("#v-when").textContent = longWhen(p.day, p.time);
-    $("#v-counter").textContent = S.photoOf(this.index + 1, this.total());
+    $("#v-counter").textContent = S.photoOf(this.offset() + this.index + 1, this.total());
     $("#v-download").href = `${this.src(p)}?dl=1`;
     this.updateShow(status());
   }

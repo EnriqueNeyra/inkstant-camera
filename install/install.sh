@@ -165,7 +165,7 @@ pyver="$(python3 -c 'import sys; print("%d.%d" % sys.version_info[:2])')"
 [ "$pyver" = "3.13" ] || say "  warning  Python is $pyver; Inkstant is built for 3.13"
 python3 -c "import picamera2" 2>/dev/null || stop "Picamera2 doesn't import. Run: sudo apt-get install --reinstall python3-picamera2"
 if [ "$family" != pi5 ] && [ ! -f /usr/share/libcamera/pipeline/rpi/vc4/rpi_apps.yaml ]; then
-  stop "libcamera's rpi_apps.yaml is missing, so the camera would need too much memory. Reinstall python3-libcamera."
+  stop "libcamera's rpi_apps.yaml is missing, so the camera would need too much memory. Run: sudo apt-get install --reinstall libcamera-ipa"
 fi
 say "  ok       packages"
 

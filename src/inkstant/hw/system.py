@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import contextlib
 import os
 import socket
 import subprocess
@@ -116,16 +115,6 @@ class System:
             self.log(f"usb hub off: {e}")
             return False
 
-    def journal(self, max_bytes: int = 2_000_000) -> bytes:
-        """This boot's and the previous boot's logs, at most `max_bytes` (the newest kept)."""
-        out = b""
-        for boot in ("-1", "0"):
-            with contextlib.suppress(Exception):
-                p = subprocess.run(["journalctl", "-b", boot, "--no-pager", "-o", "short-iso"],
-                                   capture_output=True, timeout=20)
-                out += p.stdout
-        return out[-max_bytes:]
-
 
 class FakeSystem:
     def __init__(self):
@@ -184,5 +173,3 @@ class FakeSystem:
     def usb_hub_off(self) -> bool:
         return False
 
-    def journal(self, max_bytes: int = 2_000_000) -> bytes:
-        return b"(simulator: no journal)\n"

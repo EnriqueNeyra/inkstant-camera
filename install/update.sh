@@ -8,6 +8,8 @@ BASE="https://github.com/$REPO/releases/download/v$VERSION"
 CTL=/usr/local/bin/inkstant-ctl
 WORK="$(mktemp -d /var/tmp/inkstant-update.XXXXXX)"
 trap 'rm -rf "$WORK"' EXIT
+CURRENT=/opt/inkstant/current
+WAS="$(readlink "$CURRENT" || true)"
 
 report() { "$CTL" update-report "$@" >/dev/null 2>&1 || true; }
 record() {  # record STATE MESSAGE
@@ -20,6 +22,11 @@ PY
 }
 fail() {
   echo "update failed: $1" >&2
+  # The installer switches to the new release before its last checks: if one of those stopped it,
+  # go back, so the camera stays on the version the gallery says it's on.
+  if [ -n "$WAS" ] && [ "$(readlink "$CURRENT" || true)" != "$WAS" ]; then
+    ln -sfn "$WAS" "$CURRENT.tmp" && mv -Tf "$CURRENT.tmp" "$CURRENT" || true
+  fi
   record failed "$1"
   report failed "" "$1"
   exit 1
