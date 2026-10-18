@@ -382,6 +382,21 @@ Facts checked against source code, packaging and vendor docs while writing this 
 23. **pisugar-server reads BTN only every 500 ms** (checked 2026-10-17). Its main loop ticks every 100 ms, but its PiSugar 3 poll returns early unless 500 ms have passed. Each poll reads register 0x08, where bits 0–1 hold the last tap (1 single, 2 double, 3 long), and clears a tap by writing the register back with those two bits cleared. That's too slow for a shutter. **So:** the camera reads 0x08 itself every 20 ms, and drops the copy when both readers get the same tap (§6.6). ✅ [pisugar3.rs](https://github.com/PiSugar/pisugar-power-manager-rs/blob/v2.3.5/pisugar-core/src/pisugar3.rs) (`read_tap`, `reset_tap`, `poll`), [lib.rs](https://github.com/PiSugar/pisugar-power-manager-rs/blob/v2.3.5/pisugar-core/src/lib.rs) (`I2C_READ_INTERVAL`)
 24. **The module's ID chip can detect it, with no wire.** The HAT+ (E) doesn't connect the old detect pin (§2.1, 2026-10-17). It does have an ID chip on ID_SD and ID_SC (GPIO0 and 1, pins 27 and 28) with its own pull-ups, which hold ID_SD high even against the Pi's internal pull-down; with no HAT on, the pull-down reads low. ✅ bench Pi 4 (2026-10-17: `pinctrl` reads high with `pd`, and the chip answers at 0x50 on i2c-0 with "R-Pi"). `force_eeprom_read=0`, already in config.txt for boot speed, stops the firmware reading that chip at power-up ✅ [config.txt boot docs](https://github.com/raspberrypi/documentation/blob/master/documentation/asciidoc/computers/config_txt/boot.adoc). **So:** GPIO0 is the detect pin, read as a plain input (§6.1).
 25. **The Pi's own ACT LED can be the status light.** Every supported board's device tree has an `ACT` LED whose default trigger the `act_led_trigger` parameter sets; the Pi 3B drives it through the firmware's virtual GPIO. ✅ [Pi 3B](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/broadcom/bcm2710-rpi-3-b.dts), [Pi 3B+](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/broadcom/bcm2710-rpi-3-b-plus.dts), [Pi 4B](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/broadcom/bcm2711-rpi-4-b.dts), [Pi 5](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm64/boot/dts/broadcom/bcm2712-rpi-5-b.dts). On the bench Pi 4, `/sys/class/leds/ACT` lists the `timer` and `pattern` triggers ✅ (2026-10-17). **So:** `dtparam=act_led_trigger=timer` replaces the `gpio-led` overlay, and nothing on the header is used for a light (§6.2).
+26. **NetworkManager's `wpa-psk` already means WPA2 or WPA3, except when it auto-connects** (checked 2026-10-17).
+    - Its docs define `wpa-psk` as "WPA2 + WPA3 personal" and `sae` as "WPA3 personal only". ✅ [nm-settings-nmcli](https://networkmanager.dev/docs/api/latest/nm-settings-nmcli.html)
+    - Since 1.32, a `wpa-psk` profile hands wpa_supplicant `SAE` (WPA3) beside `WPA-PSK` whenever the Wi-Fi interface reports SAE, PMF and BIP support, so it uses WPA3 when the network offers it. `sae` offers WPA3 alone and makes PMF required. ✅ [nm-supplicant-config.c](https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/blob/1.52.1/src/core/supplicant/nm-supplicant-config.c), [commit f5d78c2d](https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/commit/f5d78c2d289c9e4a4c247d2520c7c3e2baf537c8)
+    - But NetworkManager's check of which access points suit a profile matches `wpa-psk` only to networks that offer WPA1 or WPA2, so auto-connect never picks a `wpa-psk` profile for a WPA3-only network. A manual `nmcli connection up` skips that check and lets wpa_supplicant find the network, as it does for hidden ones. The fix is only on NetworkManager's main branch (2026-07-28): 1.58 and older all have the gap. ✅ [nm-setting-wireless.c](https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/blob/1.52.1/src/libnm-core-impl/nm-setting-wireless.c), [nm-device-wifi.c](https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/blob/1.52.1/src/core/devices/wifi/nm-device-wifi.c) (`check_connection_available`, `act_stage1_prepare`), [commit 6b56139c](https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/commit/6b56139cf8a5fbdffbad6d22b48a9c8a42ffe5bf)
+    - `nmcli device wifi list` names each access point's security: `WPA2` for WPA2-Personal (or 802.1X), `WPA3` for SAE, `WPA1` for the old WPA. A WPA2/WPA3 transition network shows `WPA2 WPA3`; a WPA3-only one shows `WPA3`. ✅ [devices.c](https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/blob/1.52.1/src/nmcli/devices.c)
+    - On the bench Pi 4 (2026-10-17), the installed `wpa-psk` profile for a WPA2/WPA3 router got `key_mgmt` `WPA-PSK WPA-PSK-SHA256 FT-PSK SAE FT-SAE`, and wpa_supplicant joined with `SAE`. ✅ bench
+
+    **So:** networks are saved as `wpa-psk`, which joins WPA2 and transition networks on any chip. When sharing starts, the scan switches a WPA3-only network to `sae`, so every path joins it, developer mode's auto-connect included (§6.8, §9.5).
+27. **The 3A+'s Wi-Fi chip does WPA3 with today's firmware, but didn't in 2023.**
+    - The 3A+, 3B+, 4 and 5 load the same CYW43455 firmware: Pi OS's `firmware-brcm80211` links each board's `brcmfmac43455-sdio.raspberrypi,…bin` to `cypress/cyfmac43455-sdio.bin`, which picks the "standard" build over the "minimal" one. The 3B loads the CYW43438's instead. ✅ bench Pi 4 (2026-10-17, package 1:20260519-1~bpo13+1+rpt1)
+    - The firmware Pi OS shipped in 2023, 7.45.241, had no SAE. 7.45.265 (2023-09) lists `extsae`, SAE done by the host's supplicant, but the kernel then didn't use it. In January 2024 Raspberry Pi got WPA3 working only through iwd, not wpa_supplicant. ✅ [firmware-nonfree #41](https://github.com/RPi-Distro/firmware-nonfree/issues/41)
+    - The 6.18 kernel's brcmfmac turns `extsae` into SAE support for wpa_supplicant. ✅ [feature.c](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/drivers/net/wireless/broadcom/brcm80211/brcmfmac/feature.c), [cfg80211.c](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c) On the bench Pi 4 with firmware 7.45.265, kernel 6.18.50 and wpa_supplicant 2.10, `iw` reports "Device supports SAE with AUTHENTICATE command", wlan0 lists `sae`, and it joins a WPA2/WPA3 router with SAE. ✅ bench (2026-10-17)
+    - 🧪 Not yet tried: a real 3A+, a WPA3-only network, the minimal firmware, and the 3B's chip.
+
+    **So:** a current install can join WPA3-only networks. Where the chip has no SAE, a WPA3-only network can't be joined either way, and WPA2 and transition networks still join through `wpa-psk`.
 
 ### 3.2 Confirmed facts this spec relies on
 
@@ -404,6 +419,7 @@ Facts checked against source code, packaging and vendor docs while writing this 
 
 - **Android with mobile data on:** whether Chrome reaches `http://10.42.0.1` while the phone treats the camera's Wi-Fi as having no internet. Nothing I could reach documents how Android routes this. 🧪 Bench test (§19.6), with fallbacks in §9.4.
 - **Hotspot with Protected Management Frames:** forum reports of clients failing to join NetworkManager hotspots that use PMF. The profile turns PMF off; 🧪 test iPhone, Android and a Mac.
+- **A WPA3-only home network:** the code and NetworkManager's source say it joins (finding 26), and the bench Pi does WPA3 with a transition router (finding 27). 🧪 Not tried with a router or phone hotspot set to WPA3 only (§19.6).
 
 ## 4. Architecture
 
@@ -969,9 +985,14 @@ Talks to `pisugar-server` over `/tmp/pisugar-server.sock`. The camera app's unit
 - **`inkstant-home-1` … `inkstant-home-5`:**
   ```text
   type wifi, ifname wlan0, connection.autoconnect no (yes for home-1 in dev mode),
-  ssid <ssid>, wifi-sec.key-mgmt <wpa-psk|sae|none>, wifi-sec.psk <psk>,
+  ssid <ssid>, wifi-sec.key-mgmt <wpa-psk|sae>, wifi-sec.psk <psk>,
   ipv4.method auto, ipv6.method auto
   ```
+  A network with no password has no `wifi-sec` settings.
+- **WPA2 or WPA3** (§3, findings 26 and 27):
+  - **Saved as `wpa-psk`**, from the gallery and by the install script. It joins WPA2 and WPA2/WPA3 networks on any chip, using WPA3 where the chip has SAE. ✅ The install script keeps `sae` when Imager's network had it.
+  - **When sharing starts, the scan decides.** Its `SECURITY` words, merged over every access point with that name: any `WPA1` or `WPA2` means `wpa-psk`; `WPA3` alone means `sae`. When the saved profile differs, `nmcli connection modify` switches it before joining. The password stays in the keyfile and is never passed again. Open networks, and profiles saved with no password, are left alone. ✅ tests 🧪 WPA3 only
+  - **Why not `sae` for transition networks too:** `sae` never joins WPA2, so it fails on a chip without SAE, or if the router goes back to WPA2.
 
 **Commands:**
 
@@ -979,7 +1000,8 @@ Talks to `pisugar-server` over `/tmp/pisugar-server.sock`. The camera app's unit
 |---|---|---|
 | Radio on/off | `nmcli radio wifi on` / `off` (NetworkManager remembers it across reboots ✅) | 5 s |
 | Wait for wlan0 | Poll `nmcli -t -f DEVICE,STATE device` until wlan0 is `disconnected` | 10 s |
-| Scan | `nmcli -t -f SSID,SIGNAL device wifi list ifname wlan0 --rescan yes` | 12 s |
+| Scan | `nmcli -t -f SSID,SIGNAL,SECURITY device wifi list ifname wlan0 --rescan yes` → `Home:70:WPA2 WPA3` | 12 s |
+| Match security | `nmcli connection modify id inkstant-home-N wifi-sec.key-mgmt sae` (or `wpa-psk`), only when it differs | 5 s |
 | Join home | `nmcli --wait 20 connection up id inkstant-home-N ifname wlan0` | 25 s |
 | Address | `nmcli -g IP4.ADDRESS device show wlan0` → `192.168.1.23/24` | 5 s |
 | Hotspot | `nmcli --wait 15 connection up id inkstant-hotspot` | 20 s |
@@ -1403,7 +1425,7 @@ Every error is also logged with its detail and kept in memory for `/api/status`.
 1. `share = starting`; light → wait (slow blink). From here until sharing has stopped, taps take no photos (§1.2).
 2. Start the gallery (`systemctl start inkstant-gallery`) alongside the Wi-Fi, since it listens on every address; it's ready once `http://127.0.0.1/healthz` answers (polled every 200 ms, up to 10 s).
 3. `nmcli radio wifi on`; wait for wlan0 (§6.8).
-4. **Home** (skipped when a double tap while sharing switches to the camera's Wi-Fi, §9.3, or for `inkstant-ctl share on --hotspot`): if wlan0 is already on an `inkstant-home-*` network (developer mode keeps it for SSH), use it, with no scan. Otherwise scan, and try each visible `inkstant-home-*` network, strongest first. On success, get the IP; `url = http://<IP>/`; mode `home`; send `rtc_web` (§6.7).
+4. **Home** (skipped when a double tap while sharing switches to the camera's Wi-Fi, §9.3, or for `inkstant-ctl share on --hotspot`): if wlan0 is already on an `inkstant-home-*` network (developer mode keeps it for SSH), use it, with no scan. Otherwise scan, and try each visible `inkstant-home-*` network, strongest first, after matching its saved security to the scan (§9.5). On success, get the IP; `url = http://<IP>/`; mode `home`; send `rtc_web` (§6.7).
 5. **Away:** if no home network is visible or joining fails, bring up `inkstant-hotspot`; `url = http://10.42.0.1/`; mode `hotspot`. Then wait for the gallery from step 2.
 6. `share = on(mode, url)`; with a module in, queue `SHARE_SCREEN`.
 7. **If no network came up, or the gallery didn't start:** `wifi` error, then share mode off. The module goes back to its photo, developing one saved just before sharing started (fixed 2026-10-17).
@@ -1453,6 +1475,10 @@ Every error is also logged with its detail and kept in memory for `/api/status`.
 
 - **Up to five, in priority order** (`inkstant-home-1` to `-5`). The install script imports the one Imager set up.
 - **Choosing:** the strongest visible network wins.
+- **WPA2 and WPA3:** a network is saved as WPA2 (`wpa-psk`), which also joins WPA2/WPA3 routers and uses WPA3 when the chip can. The scan when sharing starts shows whether a network is WPA3 only; if so, its profile switches to `sae` before joining, and back if the router offers WPA2 again (§6.8).
+  - So a WPA3-only network added in the gallery joins the first time sharing starts in range of it. Until then, developer mode can't auto-connect to it at boot (§3, finding 26).
+  - The scan is the camera's own, so it only sees bands the camera can join: on a Pi 3B, just 2.4 GHz (§15.1.2).
+  - 🧪 Not yet tried with a WPA3-only network (§3.3).
 - **Wi-Fi with client isolation** (often guest networks): the phone can't reach the camera. A double tap while sharing switches to the hotspot (§9.3).
 
 ### 9.6 What the phone does
@@ -2919,6 +2945,7 @@ The software's checks on real hardware, in M1 and M8 (§20), and the parts and c
 - [ ] The hotspot (WPA2, PMF off) joins from an iPhone, an Android phone and a Mac
 - [ ] Android with mobile data on reaches `http://10.42.0.1`, with and without "stay connected"; try the no-gateway DHCP option if it doesn't (§9.4)
 - [ ] Share mode on iPhone and Android, at home (home Wi-Fi, IP QR code) and away (hotspot): QR join, the phone stays connected, the gallery opens, press-and-hold saves, a ZIP gets into Photos
+- [ ] A WPA3-only home network (a router or phone hotspot set to WPA3 only), added in the gallery: sharing starts on it, the log says `inkstant-home-N now uses sae`, and in developer mode it then joins at boot. On a 3A+ as well as the bench Pi 4 (§9.5)
 - [ ] The streamed ZIP opens in iOS Files and the Android Files app; the download shows progress
 - [ ] `/tmp` is tmpfs on Pi OS (`findmnt /tmp`)
 

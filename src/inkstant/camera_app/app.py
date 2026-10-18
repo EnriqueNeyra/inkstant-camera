@@ -961,7 +961,13 @@ class CameraApp:
                         info = ShareInfo("home", f"http://{ip}/", joined.ssid)
                 if info.mode is None and homes:
                     visible = await self.in_io(net.scan)
-                    for h in sorted((h for h in homes if h.ssid in visible), key=lambda h: -visible[h.ssid]):
+                    for h in sorted((h for h in homes if h.ssid in visible), key=lambda h: -visible[h.ssid].signal):
+                        # Networks are saved as WPA2 (`wpa-psk`); one that's WPA3 only needs `sae`, and back
+                        # again if the router changes. An open network, or one saved without a password, stays.
+                        want = visible[h.ssid].key_mgmt
+                        if (want and h.key_mgmt in ("wpa-psk", "sae") and want != h.key_mgmt
+                                and await self.in_io(net.set_home_key_mgmt, h.n, want)):
+                            self.log(f"share: {HOME_PREFIX}{h.n} now uses {want}")
                         if await self.in_io(net.up, f"{HOME_PREFIX}{h.n}", 20):
                             ip = await self.in_io(net.address)
                             if ip:
