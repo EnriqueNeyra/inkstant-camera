@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import queue
 import threading
 import time
 from datetime import UTC
@@ -8,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+from inkstant.camera_app import display
 from inkstant.hw import camera, epd, gpio, led, network, pisugar, pisugar_i2c
 from inkstant.imaging import epdfile
 
@@ -154,6 +156,66 @@ def test_epd_timeout_raises_display_timeout(pins, monkeypatch):
         d.show(bytes(epdfile.FRAME_BYTES))
 
 
+def answer_resets(pins):
+    """BUSY drops for about 7 ms as each reset ends, as the bench print does."""
+    busy, rst_on = pins.factory.pin(gpio.BUSY), pins.rst.on
+
+    def on():
+        rst_on()
+        busy.drive_low()
+        threading.Timer(0.007, busy.drive_high).start()
+
+    pins.rst.on = on
+
+
+def test_epd_probe_sends_nothing(pins):
+    pins.factory.pin(gpio.BUSY).drive_high()
+    answer_resets(pins)
+    spi = RecordingSpi(pins)
+    d = epd.EpdDriver(pins, spi=spi)
+    assert d.probe() is True
+    assert spi.log == []  # no command, so no refresh: the panel keeps its picture
+    assert not pins.pwr.value and not pins.rst.value and not pins.dc.value and not spi.opened
+
+
+def test_epd_probe_needs_busy_to_drop_after_the_reset(pins):
+    pins.factory.pin(gpio.BUSY).drive_high()  # high, but nothing answers the reset
+    assert epd.EpdDriver(pins, spi=RecordingSpi(pins)).probe() is False
+
+
+def test_epd_probe_aborts(pins, monkeypatch):
+    monkeypatch.setattr(epd, "TIMEOUT_RESET", 30)
+    d = epd.EpdDriver(pins, spi=RecordingSpi(pins))  # BUSY stays low
+    threading.Timer(0.2, d.request_abort).start()
+    t0 = time.monotonic()
+    with pytest.raises(epd.Aborted):
+        d.probe()
+    assert time.monotonic() - t0 < 2
+    assert not pins.pwr.value
+
+
+def test_display_worker_runs_a_probe_without_a_frame(pins, monkeypatch):
+    monkeypatch.setattr(epd, "TIMEOUT_RESET", 0.2)
+    spi = RecordingSpi(pins)
+    posts = queue.Queue()
+    worker = display.DisplayWorker(epd.EpdDriver(pins, spi=spi), lambda *e: posts.put(e))
+    worker.start()
+
+    def probe():
+        job = display.Job(display.PROBE)
+        worker.submit(job)
+        return posts.get(timeout=3) == ("display_finished", job, "ok")
+
+    try:
+        assert not probe()  # BUSY low: no module
+        answer_resets(pins)
+        assert probe()
+        assert spi.log == [] and not pins.pwr.value
+    finally:
+        worker.stop()
+        worker.join(3)
+
+
 # Camera tuning ------------------------------------------------------------------------
 @pytest.mark.parametrize("fixture", ["imx708_vc4.json", "imx708_pisp.json"])
 def test_tuning_override(fixture):
@@ -256,7 +318,7 @@ def test_selftest_says_when_a_module_is_in_but_untested(paths):
                               module_present=lambda: present)
         return next(c.detail for c in checks if c.name == "Display module")
 
-    assert display(True) == "module in, not tested while idle"
+    assert display(True) == "module in, not tested"
     assert display(False) == "no module in: not tested"
 
 

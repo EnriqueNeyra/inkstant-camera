@@ -107,8 +107,10 @@ class EpdDriver:
         self.log = log or (lambda *_: None)
         self._wake = threading.Event()
         self._abort = threading.Event()
+        self._reset_seen = threading.Event()  # BUSY went low after the last reset
         self._sleep = sleep
         pins.busy.when_activated = self._wake.set
+        pins.busy.when_deactivated = self._reset_seen.set
 
     # Abort -------------------------------------------------------------------
     def request_abort(self) -> None:
@@ -168,6 +170,7 @@ class EpdDriver:
         self._delay(0.020)
         self.pins.rst.off()
         self._delay(0.002)
+        self._reset_seen.clear()
         self.pins.rst.on()
         self._delay(0.020)
         self._wait_busy(TIMEOUT_RESET, ModuleMissing)
@@ -213,12 +216,16 @@ class EpdDriver:
             self._off()  # 11
 
     def probe(self) -> bool:
-        """Self-test: power, reset and wait for BUSY, with no refresh. True if a module answers."""
+        """Self-test: power, reset and wait for BUSY. No command or data is sent, so nothing is
+        refreshed and the panel keeps its picture. True if a module answers; aborts as show() does.
+
+        A module answers when BUSY drops as the reset ends (about 7 ms) and comes back high. BUSY
+        reading high alone proves little: a print on the header reads high even with PWR low."""
         self._abort.clear()
         try:
             self._power_on()
             self._reset_and_wait()
-            return True
+            return self._reset_seen.is_set()
         except ModuleMissing:
             return False
         finally:
@@ -226,6 +233,7 @@ class EpdDriver:
 
     def close(self) -> None:
         self.pins.busy.when_activated = None
+        self.pins.busy.when_deactivated = None
 
 
 class FakeEpd:
@@ -275,7 +283,12 @@ class FakeEpd:
             self.log(f"fake epd: {e}")
 
     def probe(self) -> bool:
-        return self.module_present()
+        self._abort.clear()
+        if not self.module_present():
+            self._delay(TIMEOUT_RESET)
+            return False
+        self._delay(0.25)  # the reset pulse, BUSY and Waveshare's 200 ms
+        return True
 
     def close(self) -> None:
         pass

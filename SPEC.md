@@ -397,6 +397,7 @@ Facts checked against source code, packaging and vendor docs while writing this 
     - 🧪 Not yet tried: a real 3A+, a WPA3-only network, the minimal firmware, and the 3B's chip.
 
     **So:** a current install can join WPA3-only networks. Where the chip has no SAE, a WPA3-only network can't be joined either way, and WPA2 and transition networks still join through `wpa-psk`.
+28. **BUSY dips for about 7 ms as each reset ends, and reading high proves little.** The print's controller pulls BUSY low as RST goes high and lets it go 6.7 ms later, every time. That happens with PWR low too, and BUSY reads high whenever a print is on: chip select (CE0, which idles high) and RST run straight from the header to the panel ✅ [schematic](https://files.waveshare.com/wiki/3.6inch_e-Paper_HAT%2B_E/3.6inch_e-Paper_HAT%2B_Schematic.pdf), so the controller runs on what leaks through those pins ✅ bench Pi 4 (2026-10-17, BUSY sampled about every 3 µs). Waveshare's datasheet names only waveform output, OTP programming and the temperature sensor as times BUSY goes low ✅ [datasheet](https://files.waveshare.com/wiki/3.6inch_e-Paper_HAT%2B_E/3.6inch_e-Paper_HAT%2B.pdf). **So:** the setup check's probe (§17) passes only if it sees that dip, which shows RST reaches the controller, the controller restarts and BUSY reaches the Pi. With RST held low on the bench, BUSY still read high and the probe failed, as it should ✅. What leaks in also means "switched off" may still draw a little (§14), not yet measured 🧪.
 
 ### 3.2 Confirmed facts this spec relies on
 
@@ -793,7 +794,7 @@ Our port of Waveshare's `epd3in6e.py`. It keeps Waveshare's commands, data and d
 - **A timeout with the module still detected** raises `DisplayTimeout`. The app reports a display error (in the gallery; errors don't show on the light, §8.14) until the next screen update succeeds or the module is reinserted.
 - **"Image shown"** is the end of step 8: the driver calls back then, and the app unlocks the buttons. Steps 9 to 11 (about 2.4 s) run as a tail with the buttons free; a new screen update simply waits for the tail to finish. 📐
 - **Timing:** about 20 to 22 s per screen update, the image appearing at about 17 to 19 s. 🧪 Measure.
-- **No module, or an unpowered one:** BUSY reads low through the pull-down, so step 2 times out after 2 s → `ModuleMissing`. ✅ That backs up the detect pin (§6.1).
+- **No module:** BUSY reads low through the pull-down, so step 2 times out after 2 s → `ModuleMissing`. ✅ That backs up the detect pin (§6.1). A print with PWR low still reads high (§3, finding 28).
 - **Waveshare's 3-minute minimum between refreshes is not enforced** (§1.4).
 
 ### 6.4 Camera
@@ -1191,6 +1192,7 @@ One job runs at a time, with one pending slot; a newer job replaces the pending 
 | `SHOW(id, why)` (why: `show_on_camera`, `restore`, `slideshow`) | `epd/<id>.epd` | `current = id`; if `undeveloped == id`, it becomes null ("Show on camera" counts as developed); `display_content = photo` |
 | `SHARE_SCREEN(info)` | Rendered (§7.5) | `display_content = share` |
 | `BLANK` | All white | `current = null`; `display_content = blank` |
+| `PROBE` | None: reset and BUSY only, for the setup check (§17) | Nothing changes; the setup check gets whether the module answered |
 
 - **When share mode ends:**
   - An undeveloped photo → `DEVELOP` it.
@@ -1198,6 +1200,7 @@ One job runs at a time, with one pending slot; a newer job replaces the pending 
 - **"Show on camera" during share mode** replaces the share screen with that photo, the point being to see it on the module. When share mode ends, the photo is already showing, so nothing is restored. 📐
 - **"Show on camera" while the camera is asleep** works without waking it: the display doesn't need the camera.
 - **Missing or unreadable `.epd`** (deleted, or corrupt) → skip the job, log it, and queue a rebuild.
+- **`PROBE` isn't a screen update:** it starts only in `ACTIVE` with no job running, and never waits in the pending slot. While it runs (2 s at most), the shutter takes photos and the light doesn't change for it; a photo taken then develops as soon as it ends.
 
 ### 8.4 Taking a photo
 
@@ -2406,7 +2409,7 @@ Each measure is specified in the section listed; the savings are estimates until
 | Share mode stops after 10 min without use on battery; status polls don't count; downloads keep it alive | Wi-Fi time | Nothing | Decided | 9.2 |
 | CPU frequency scaling: the kernel's default `ondemand` governor idles at the lowest clock and speeds up at once under load | Idle current | Nothing | ✅ [kernel config](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm64/configs/bcm2711_defconfig) | Kept as is |
 | Event-driven app: BUSY and module detect by edge, 10 s timers. The one polling loop is the BTN reader, 50 I2C reads a second, since the PiSugar has no line to the Pi but I2C and power ✅ [PiSugar 3 docs](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series) (§6.6) | CPU wake-ups | 🧪 The BTN reader's current | 📐 | 4.5 |
-| Display module switched off between updates (PWR low) | The module draws almost nothing | Nothing | ✅ | 6.3 |
+| Display module switched off between updates (PWR low) | The module draws almost nothing | Nothing | ✅ PWR switches its supply; 🧪 what leaks in through CE0 and RST (§3, finding 28) | 6.3 |
 | Low battery stops the slideshow; quiet hours skip wakes overnight | Wakes | Nothing | Decided | 8.12 |
 | USB hub and Ethernet chip off on the 3B and 3B+ (the 3A+ has none), except in developer mode | Up to ~100 mA (unmeasured) | Their USB and Ethernet ports stop working; the camera uses neither | 📐 🧪 | 13.6 |
 | Shortest safe PiSugar power-cut delay (10 s now). A halted Pi 3B still draws 100 mA until the cut ✅ | About 0.5 J per power-off | Nothing | 🧪 | 13.4 |
@@ -2769,7 +2772,7 @@ From the gallery's settings page, at home only (decided 2026-10-15):
 - **Clock:** `/dev/rtc0` is the DS3231 driver (Pi 3 and 4); the RTC is valid.
 - **Buses:** `/dev/spidev0.0` and `/dev/i2c-1` exist.
 - **Camera:** listed by `Picamera2.global_camera_info()`; `rpi_apps.yaml` present on Pi 3 and 4.
-- **Display:** the module-detect level only: "module in, not tested while idle" or "no module in", never a failure. The camera app owns the e-paper driver, so the check doesn't power the panel; `tools/bench/epd_show.py --probe` runs the reset/BUSY check from §6.3. A module that stops answering shows as the gallery's display error instead (§8.14).
+- **Display:** with a print on and no screen update running, the reset/BUSY check from §6.3, run by the camera app as a `PROBE` display job (§8.3): power, reset, wait up to 2 s for BUSY, power off, about 0.25 s in all ✅ bench. The print answers only if BUSY dips as the reset ends and comes back high (§3, finding 28). No command or data is sent, so nothing is refreshed ✅ (the driver test checks the bus stays silent) and the print keeps its picture 🧪. It reports "answers", or "doesn't answer" as a critical failure, with the hint: take the print off and press it back on, straight, with every pin in its socket. While a screen update is running, it reports "answers" without a probe. With no print on: "no module in: not tested". With the print just pushed on, outside `ACTIVE`, or when a shutdown aborted the probe: "module in, not tested". Pulling the print off aborts the probe as it does any job. Only the camera app can probe, as it owns the driver: `inkstant-ctl selftest` with the app stopped has no display check, and `tools/bench/epd_show.py --probe` runs the same probe then.
 - **Status light:** `/sys/class/leds/ACT` exists (if not, the hint is to update Raspberry Pi OS) and lists the `pattern` trigger (if not, a warning only: the light still blinks from software).
 - **System:** the config.txt block is present and, on Pi 3 and 4, `CmaTotal` in `/proc/meminfo` is at least 120 MB (the `cma-128` option sets it through the device tree, so it never shows in `/proc/cmdline`); NetworkManager has the `inkstant-hotspot` profile; pisugar-server listens on no TCP port (`ss -ltn`).
 - **Storage:** free space; the folders have the right modes.

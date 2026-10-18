@@ -26,7 +26,7 @@ from typing import Any
 from inkstant import atomic, device, ipc, selftest, settings, state, store, version
 from inkstant.camera_app import machine, slideshow
 from inkstant.camera_app.capture import CaptureWorker
-from inkstant.camera_app.display import BLANK, DEVELOP, SHARE_SCREEN, SHOW, DisplayWorker, Job
+from inkstant.camera_app.display import BLANK, DEVELOP, PROBE, SHARE_SCREEN, SHOW, DisplayWorker, Job
 from inkstant.camera_app.machine import ACTIVE, SHUTTING_DOWN, STARTING, WAKE
 from inkstant.hw import led as led_mod
 from inkstant.hw.network import HOME_PREFIX
@@ -142,6 +142,7 @@ class CameraApp:
         self.display = "idle"
         self.display_job: Job | None = None
         self.pending_job: Job | None = None
+        self._probe_done: asyncio.Future | None = None  # the running PROBE job's result
         self.share = "off"
         self.share_info = ShareInfo()
         self.share_activity = 0.0
@@ -576,7 +577,7 @@ class CameraApp:
 
     def _start_job(self, job: Job) -> None:
         self.display_job = job
-        self.display = "refreshing"
+        self.display = "probing" if job.kind == PROBE else "refreshing"
         self.log(f"display: {job.describe()}")
         self.display_worker.submit(job)
         self.update_led()
@@ -595,7 +596,10 @@ class CameraApp:
             return
         # finished
         result = detail
-        if result == "ok":
+        if job.kind == PROBE:  # changes nothing: the setup check reads the result
+            if not self._probe_done.done():
+                self._probe_done.set_result(result)
+        elif result == "ok":
             self.errors.clear("display")
             if job.kind in (DEVELOP, SHOW):
                 self.state.current = job.photo_id
@@ -1275,6 +1279,27 @@ class CameraApp:
         await asyncio.sleep(5)  # let the camera start first
         await self.run_selftest()  # a failure shows as the gallery's setup-check banner
 
+    async def probe_display(self) -> bool | None:
+        """The setup check's display test: True if the print answers, False if it doesn't, None if
+        not tested (no print on, or not now). It's a PROBE display job, so it never overlaps a
+        screen update or the shutdown, and pulling the print off aborts it. It doesn't count as a
+        screen update: the shutter still takes photos, and their prints wait for it (2 s at most)."""
+        if not (self.module_present and self.hw.pins.module_present()):
+            return None
+        if self.display_job is not None and self.display_job.kind != PROBE:
+            return True  # a screen update is running
+        if self.display_job is None:
+            if self.lifecycle != ACTIVE:
+                return None
+            self._probe_done = self.loop.create_future()
+            self._start_job(Job(PROBE))
+        result = await asyncio.shield(self._probe_done)  # a second check waits for the same probe
+        if result == "ok":
+            return True
+        if result == "aborted" or not self.hw.pins.module_present():
+            return None
+        return False
+
     async def run_selftest(self) -> dict:
         loop = asyncio.get_running_loop()
 
@@ -1295,17 +1320,13 @@ class CameraApp:
             except Exception:
                 return False
 
-        def display_probe() -> bool | None:
-            if not self.hw.pins.module_present():
-                return None
-            return True if self.display_job is not None else None  # the app owns the driver
-
+        display = await self.probe_display()
         rtc = self.hw.system.rtc0_epoch() if self.hw.system.rtc0_is_pisugar() else None
         if rtc is None and self.clock_valid:
             rtc = int(time.time())
         checks = await self.in_io(lambda: selftest.run(
             self.paths, family=self.device.family, pisugar_get=pis_get, camera_present=camera_present,
-            display_probe=display_probe, module_present=self.hw.pins.module_present, rtc_epoch=rtc))
+            display_probe=lambda: display, module_present=self.hw.pins.module_present, rtc_epoch=rtc))
         result = selftest.summary(checks)
         result["version"] = version.VERSION
         result["at"] = datetime.now().astimezone().isoformat(timespec="seconds")

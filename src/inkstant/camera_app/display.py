@@ -16,6 +16,7 @@ from inkstant.hw import epd as epd_mod
 from inkstant.imaging import epdfile
 
 DEVELOP, SHOW, SHARE_SCREEN, BLANK = "DEVELOP", "SHOW", "SHARE_SCREEN", "BLANK"
+PROBE = "PROBE"  # the setup check's: reset and BUSY only, no refresh, so the print keeps its picture
 
 
 @dataclass
@@ -73,15 +74,18 @@ class DisplayWorker:
                 return
             self.busy.set()
             try:
-                frame = epdfile.oriented(self._frame(job), self.rotation)
+                frame = None if job.kind == PROBE else epdfile.oriented(self._frame(job), self.rotation)
             except (OSError, epdfile.EpdFileError) as e:
                 self.log(f"display: {job.describe()}: {e}")
                 self.post("display_finished", job, "unreadable")
                 self.busy.clear()
                 continue
             try:
-                self.driver.show(frame, on_shown=lambda j=job: self.post("display_shown", j, None))
-                result = "ok"
+                if job.kind == PROBE:
+                    result = "ok" if self.driver.probe() else "missing"
+                else:
+                    self.driver.show(frame, on_shown=lambda j=job: self.post("display_shown", j, None))
+                    result = "ok"
             except epd_mod.Aborted:
                 result = "aborted"
             except epd_mod.ModuleMissing:
