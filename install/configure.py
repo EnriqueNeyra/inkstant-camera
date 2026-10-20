@@ -167,7 +167,7 @@ def cmd_preflight(a) -> int:
     model = board_model()
     fam = devmod.family_from_model(model)
     if fam is None and not a.force_model:
-        problems.append(f"{model} isn't supported: use a Raspberry Pi 3A+, 3B, 3B+, 4B or 5 (see the README)."
+        problems.append(f"{model} isn't supported: use a Raspberry Pi 3B+, 3A+, 3B, 4B or 5 (see the README)."
                         " Use --force-model to try anyway.")
     if Path("/") == ROOT and shutil.which("cloud-init") and not P("/etc/cloud/cloud-init.disabled").exists():
         say("  waiting for first-boot setup (cloud-init) to finish …")

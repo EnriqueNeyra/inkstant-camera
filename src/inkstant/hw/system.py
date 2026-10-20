@@ -104,16 +104,16 @@ class System:
             return "unknown"
 
     def usb_hub_off(self) -> bool:
-        """3B and 3B+ only: unbind the on-board USB hub and Ethernet chip."""
-        path = self.root / "sys/bus/usb/drivers/usb/unbind"
-        if not (self.root / "sys/bus/usb/devices/1-1").exists():
-            return False
-        try:
-            path.write_text("1-1")
-            return True
-        except OSError as e:
-            self.log(f"usb hub off: {e}")
-            return False
+        """3B and 3B+ only: cut the USB bus power, which switches off the on-board USB hub and
+        Ethernet chip. Unbinding the hub instead leaves the chip powered and saves little."""
+        for path in sorted((self.root / "sys/devices/platform/soc").glob("*.usb/buspower")):
+            try:
+                path.write_text("0")
+                return True
+            except OSError as e:
+                self.log(f"usb hub off: {e}")
+                return False
+        return False
 
 
 class FakeSystem:
@@ -123,7 +123,7 @@ class FakeSystem:
         self.tz = "UTC"
         self.units: set[str] = set()
         self.rtc_epoch: int | None = int(time.time())
-        self._model = "Raspberry Pi 3 Model A Plus Rev 1.1 (simulated)"
+        self._model = "Raspberry Pi 3 Model B Plus Rev 1.3 (simulated)"
         self._t0 = time.monotonic()
         self.stopping: str | None = "poweroff"  # what an outside stop is for (stopping_for)
 
