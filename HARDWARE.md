@@ -334,7 +334,7 @@ The red PWR LED next to it is turned off by the software on the bench Pi 4 ✅, 
 
   Cover the Pi's own ports, the USB and Ethernet sockets included. None are used.
 - **Camera:** a lens window, and printed clips or a pocket that hold the camera board square, with no screws. Its holes (the 21 × 12.5 pattern) can take printed pegs.
-- **Air:** around the PiSugar's charging chip, and a little through the gap under the print where the Pi's SoC and USB chip sit.
+- **Air:** around the PiSugar's charging chip, and a little through the gap under the print where the Pi's SoC and USB chip sit. With the camera streaming in open air, the 3B+ already reached its 60 °C soft limit, where it slows down ✅ (bench, 2026-10-23), so a closed case needs that air.
 - **Plastic, not metal,** near the Wi-Fi antenna corner. Keep any magnets away from it.
 - **Mounting the Pi and PiSugar:** they come as one stack, joined by the four M2.5 screws that come with the PiSugar, through the Pi into its brass posts. The case holds that stack itself, for example by its board edges, with no extra hardware.
 - **Prints:** each print has its own printed enclosure, separate from the camera body, so it pops out like a piece of film. Every print's enclosure fits the guide the same way.

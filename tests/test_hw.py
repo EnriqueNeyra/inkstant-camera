@@ -228,6 +228,7 @@ def test_tuning_override(fixture):
     af = camera.find_algo(t, "rpi.af")
     assert af["skip_frames"] == 1
     assert af["speeds"]["normal"]["step_frames"] == 2 and af["speeds"]["normal"]["max_slew"] == 3.0
+    assert af["speeds"]["normal"]["pdaf_gain"] == -0.045
     assert af["speeds"]["fast"] == camera.find_algo(base, "rpi.af")["speeds"]["fast"]
     assert camera.find_algo(base, "rpi.awb").get("speed") is None  # the original is untouched
 
