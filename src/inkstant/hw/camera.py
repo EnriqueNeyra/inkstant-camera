@@ -33,11 +33,15 @@ WAKE_MIN_FRAMES = 4
 TUNING_ENV = "LIBCAMERA_RPI_TUNING_FILE"
 
 # The tuning override, worked out for 5 fps. Absolute values, used at every frame rate.
+# pdaf_gain was measured on a Pi 3B+, whose ISP passes about 3 full-resolution frames a second:
+# Raspberry Pi's -0.016 closes about 12% of the focus error a frame, -0.045 settles twice as fast
+# with no overshoot.
 TUNING_OVERRIDE = {
     "rpi.agc": {"speed": 0.62},
     "rpi.awb": {"speed": 0.26, "frame_period": 2},
     "rpi.af": {"skip_frames": 1},
-    "rpi.af.speeds.normal": {"step_frames": 2, "dropout_frames": 2, "retrigger_delay": 2, "max_slew": 3.0},
+    "rpi.af.speeds.normal": {"step_frames": 2, "dropout_frames": 2, "retrigger_delay": 2, "max_slew": 3.0,
+                             "pdaf_gain": -0.045},
 }
 
 
