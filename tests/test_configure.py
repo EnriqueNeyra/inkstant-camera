@@ -69,7 +69,7 @@ STOCK_CMDLINE = ("console=serial0,115200 console=tty1 root=PARTUUID=4e639091-02 
                  "rootwait cfg80211.ieee80211_regdom=US\n")
 
 
-def fake_root(tmp_path: Path, model="Raspberry Pi 3 Model A Plus Rev 1.1") -> Path:
+def fake_root(tmp_path: Path, model="Raspberry Pi 3 Model B Plus Rev 1.3") -> Path:
     r = tmp_path / "root"
     (r / "etc/netplan").mkdir(parents=True)
     (r / "etc/rpi-issue").write_text("Raspberry Pi reference 2026-10-06\n")

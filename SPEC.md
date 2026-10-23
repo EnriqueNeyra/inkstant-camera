@@ -272,7 +272,7 @@ Every product decision, with the date it was made. The user decides product beha
 | Date | Area | Decision | § |
 |---|---|---|---|
 | 2026-10-13 | Power | PiSugar 3 Plus battery board (replaces the PiSugar S Plus) | 1.5, 6.5 |
-| 2026-10-14 | Boards | Raspberry Pi 3A+ is the main target; the Pi 3B, 3B+, 4B and 5 are also supported (2026-10-17: the build and its case are for the 3A+ only; the software still supports all five) | 15.1 |
+| 2026-10-14 | Boards | Raspberry Pi 3A+ is the main target; the Pi 3B, 3B+, 4B and 5 are also supported (2026-10-17: the build and its case are for the 3A+ only; 2026-10-19: for the 3B+ instead; the software still supports all five) | 15.1 |
 | 2026-10-14 | Display | Waveshare 3.6" e-Paper HAT+ (E) in a slide-out module (2026-10-17: pushed straight onto the header instead) | 1.4 |
 | 2026-10-14 | Controls | Shutter with an LED ring on the Pi; power and sharing on the PiSugar's side buttons (2026-10-17: BTN is the shutter, and the ring is gone) | 1.2 |
 | 2026-10-14 | Locking | Shutter and BTN locked only while a photo develops; Waveshare's 3-minute spacing not enforced | 1.2, 1.4 |
@@ -320,7 +320,8 @@ Every product decision, with the date it was made. The user decides product beha
 | 2026-10-17 | Docs | HARDWARE.md retired: this spec is the design record, and the README is the public build guide. HARDWARE.md held the parts list, the wired build (wiring, the connector and button assembly), the case requirements and the hardware bench tests. The facts still needed are now in §1.4, §3, §6 and §19.6 | — |
 | 2026-10-17 | Sharing | No photos while sharing starts, is on, or stops; the light blinks slowly, and the share screen says to hold the shutter to stop sharing and take photos | 1.2, 9 |
 | 2026-10-17 | Docs | A new HARDWARE.md, written from scratch as the hardware reference for designing the case: every part's dimensions in one coordinate frame, the stack-up, what the case has to do, the measurements still needed, and links to the drawings, schematics and 3D models. SPEC.md and HARDWARE.md are published in the repo, and the README links to both as design notes | — |
-| 2026-10-17 | Boards | The build is for the Pi 3A+ only: the README's build guide, HARDWARE.md and the case cover just that board. It's the cheapest and smallest, uses the least power, has the PiSugar 3 Plus's outline (which leaves the print's 22 mm overhang free for the camera), and stays in production until at least January 2030 ✅ [product page](https://www.raspberrypi.com/products/raspberry-pi-3-model-a-plus/). The software still supports the 3B, 3B+, 4B and 5, so anyone can design a case for another board, and the bench camera stays a Pi 4 | 15.1 |
+| 2026-10-17 | Boards | The build is for the Pi 3A+ only: the README's build guide, HARDWARE.md and the case cover just that board. It's the cheapest and smallest, uses the least power, has the PiSugar 3 Plus's outline (which leaves the print's 22 mm overhang free for the camera), and stays in production until at least January 2030 ✅ [product page](https://www.raspberrypi.com/products/raspberry-pi-3-model-a-plus/). The software still supports the 3B, 3B+, 4B and 5, so anyone can design a case for another board, and the bench camera stays a Pi 4 (2026-10-19: replaced by the 3B+) | 15.1 |
+| 2026-10-19 | Boards | The build is for the Pi 3B+ only, replacing the 3A+, which was hard to buy: sold out at Adafruit and PiShop.us, on backorder at SparkFun, and about $44 on Amazon (checked 2026-10-19). The Zero 2 W is short too, of chip substrates. The 3B+ is in stock widely, stays in production until at least January 2030 ✅ [product page](https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/), has the 3A+'s chip, clock and layout plus 1 GB, and the PiSugar 3 Plus is made for it. Its USB and Ethernet chip is switched off by cutting the USB bus power, which should bring its draw close to the 3A+'s (§13.6, §14.1). The case changes: the USB and Ethernet sockets fill the space beside the Pi where the 3A+ layout put the camera. The software still supports all five boards | 15.1 |
 | 2026-10-17 | Case | Each print has its own printed enclosure, separate from the camera body, so it pops out like a piece of film, with pockets for optional magnets so a kept print can go on a fridge. Every part is 3D-printed, in as few parts as possible, without excessive supports. It holds together with no extra hardware: no screws, glue or inserts beyond the screws that come with the PiSugar. No light pipe or second material: the ACT LED shines out through a small opening in the case. The display isn't shaded or recessed against sunlight; that small risk is accepted. Real 3D models are used where they exist | HARDWARE.md |
 
 ### 2.2 Rejected
@@ -390,11 +391,11 @@ Facts checked against source code, packaging and vendor docs while writing this 
     - On the bench Pi 4 (2026-10-17), the installed `wpa-psk` profile for a WPA2/WPA3 router got `key_mgmt` `WPA-PSK WPA-PSK-SHA256 FT-PSK SAE FT-SAE`, and wpa_supplicant joined with `SAE`. ✅ bench
 
     **So:** networks are saved as `wpa-psk`, which joins WPA2 and transition networks on any chip. When sharing starts, the scan switches a WPA3-only network to `sae`, so every path joins it, developer mode's auto-connect included (§6.8, §9.5).
-27. **The 3A+'s Wi-Fi chip does WPA3 with today's firmware, but didn't in 2023.**
+27. **The 3B+'s and 3A+'s Wi-Fi chip does WPA3 with today's firmware, but didn't in 2023.**
     - The 3A+, 3B+, 4 and 5 load the same CYW43455 firmware: Pi OS's `firmware-brcm80211` links each board's `brcmfmac43455-sdio.raspberrypi,…bin` to `cypress/cyfmac43455-sdio.bin`, which picks the "standard" build over the "minimal" one. The 3B loads the CYW43438's instead. ✅ bench Pi 4 (2026-10-17, package 1:20260519-1~bpo13+1+rpt1)
     - The firmware Pi OS shipped in 2023, 7.45.241, had no SAE. 7.45.265 (2023-09) lists `extsae`, SAE done by the host's supplicant, but the kernel then didn't use it. In January 2024 Raspberry Pi got WPA3 working only through iwd, not wpa_supplicant. ✅ [firmware-nonfree #41](https://github.com/RPi-Distro/firmware-nonfree/issues/41)
     - The 6.18 kernel's brcmfmac turns `extsae` into SAE support for wpa_supplicant. ✅ [feature.c](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/drivers/net/wireless/broadcom/brcm80211/brcmfmac/feature.c), [cfg80211.c](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c) On the bench Pi 4 with firmware 7.45.265, kernel 6.18.50 and wpa_supplicant 2.10, `iw` reports "Device supports SAE with AUTHENTICATE command", wlan0 lists `sae`, and it joins a WPA2/WPA3 router with SAE. ✅ bench (2026-10-17)
-    - 🧪 Not yet tried: a real 3A+, a WPA3-only network, the minimal firmware, and the 3B's chip.
+    - 🧪 Not yet tried: a real 3B+ or 3A+, a WPA3-only network, the minimal firmware, and the 3B's chip.
 
     **So:** a current install can join WPA3-only networks. Where the chip has no SAE, a WPA3-only network can't be joined either way, and WPA2 and transition networks still join through `wpa-psk`.
 28. **BUSY dips for about 7 ms as each reset ends, and reading high proves little.** The print's controller pulls BUSY low as RST goes high and lets it go 6.7 ms later, every time. That happens with PWR low too, and BUSY reads high whenever a print is on: chip select (CE0, which idles high) and RST run straight from the header to the panel ✅ [schematic](https://files.waveshare.com/wiki/3.6inch_e-Paper_HAT%2B_E/3.6inch_e-Paper_HAT%2B_Schematic.pdf), so the controller runs on what leaks through those pins ✅ bench Pi 4 (2026-10-17, BUSY sampled about every 3 µs). Waveshare's datasheet names only waveform output, OTP programming and the temperature sensor as times BUSY goes low ✅ [datasheet](https://files.waveshare.com/wiki/3.6inch_e-Paper_HAT%2B_E/3.6inch_e-Paper_HAT%2B.pdf). **So:** the setup check's probe (§17) passes only if it sees that dip, which shows RST reaches the controller, the controller restarts and BUSY reaches the Pi. With RST held low on the bench, BUSY still read high and the probe failed, as it should ✅. What leaks in also means "switched off" may still draw a little (§14), not yet measured 🧪.
@@ -464,7 +465,7 @@ ACT LED      ◄───    ├─ LED service ── /sys/class/leds/ACT      
 | Process model | One camera process on every boot. Picamera2, numpy and Pillow are imported lazily, so a slideshow wake never loads them | 📐 |
 | Concurrency | One asyncio loop owns all state; hardware work runs in threads that report back as events | 📐 |
 | Display driver | Our own port of Waveshare's `epd3in6e` (same commands and timings) on spidev and gpiozero, with BUSY waits that can be aborted | ✅ sequence · 📐 port |
-| Camera | Picamera2 still configuration: 4608 × 2592 YUV420 main, 1152 × 648 lores, 2 buffers, continuous autofocus, and a tuning override for the low frame rate. 5 fps to start; M1 picks 5, 10 or 14. Camera memory (CMA) about 69 MB | ✅ · 🧪 on the 3A+ |
+| Camera | Picamera2 still configuration: 4608 × 2592 YUV420 main, 1152 × 648 lores, 2 buffers, continuous autofocus, and a tuning override for the low frame rate. 5 fps to start; M1 picks 5, 10 or 14. Camera memory (CMA) about 69 MB | ✅ · 🧪 on the 3B+ |
 | CMA size | 128 MB in config.txt (`vc4-kms-v3d,cma-128`). The overlay's default is 256 MB on every board, the 512 MB 3A+ included | ✅ |
 | pisugar-server | Reachable only through its Unix socket, mode 0600. Its defaults also open TCP 8423 with no authentication, and a web UI with the login admin/admin | ✅ |
 | Clock | Kernel driver for the PiSugar's DS3231-compatible RTC on Pi 3 and 4; `rtc_rtc2pi` as the fallback and on the Pi 5. Internet time through pisugar-server's `rtc_web` | ✅ · 🧪 |
@@ -581,7 +582,7 @@ inkstant-camera/
 
 ### 4.6 Boot timeline
 
-📐 Estimates for the 3A+, to be measured in milestone M8 (§20).
+📐 Estimates for the 3B+ (the 3A+'s chip and clock), to be measured in milestone M8 (§20).
 
 | Step | Normal boot | Slideshow wake |
 |---|---|---|
@@ -593,7 +594,7 @@ inkstant-camera/
 | Screen update | only if a photo is undeveloped | ~20 s |
 | Shutdown → halted → PiSugar cuts power | — | ~5 s + 10 s |
 
-### 4.7 Memory budget (Pi 3A+, 512 MB)
+### 4.7 Memory budget (512 MB, the smallest supported board: the Pi 3A+)
 
 📐 To be measured in M1 and M8 (§20).
 
@@ -1077,7 +1078,7 @@ Rendered at 600 × 400 in pure black and white, so no dithering is needed; then 
 - **At home:** one large QR code with `http://<IP>/`, the address in text, and "On <home network name>". Then: "Not on this Wi-Fi? Double-tap the shutter button for the camera's own." and "Hold the shutter button to stop sharing and take photos." (§2.1, 2026-10-17: the shutter is off while sharing, and the share screen calls BTN "the shutter button")
 - **QR settings:** python3-qrcode's matrix (`QRCode(error_correction=M, border=4).get_matrix()`), drawn as whole pixels per module at the largest scale that fits. 🧪 Scan from 15 to 30 cm with an iPhone and an Android phone.
 
-### 7.6 Timing targets on the 3A+
+### 7.6 Timing targets on the 3B+
 
 📐 🧪 Measured in M2 and M8 (§20).
 
@@ -1652,7 +1653,7 @@ The app the camera serves in share mode: what it's for, every screen, how it loo
 | No internet on the camera's Wi-Fi | Everything ships from the camera: no web fonts, CDNs or third-party scripts. System fonts and inline SVG icons only |
 | Plain `http://`, no HTTPS (§9.7) | No Web Share sheet, no service worker, no "install as app", no Clipboard API. These all need a secure context. ✅ [MDN secure contexts](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts/features_restricted_to_secure_contexts) |
 | 2.4 GHz camera Wi-Fi, about 3 to 5 MB/s 📐; photos are 3 to 5 MB | The grid uses 480 × 270 thumbnails; full photos load only in the viewer; downloads show their size first |
-| A Pi 3A+ serving with 4 threads | Few requests per screen; thumbnails and photos cached forever (IDs are never reused) |
+| A Pi 3 serving with 4 threads | Few requests per screen; thumbnails and photos cached forever (IDs are never reused) |
 | The camera can turn off or stop sharing at any time | Every screen handles "can't reach the camera" (§11.4.9) |
 
 **Browser support:**
@@ -2350,7 +2351,7 @@ exit 0
 | Disable | `apt-daily.timer`, `apt-daily-upgrade.timer`, `man-db.timer`, `e2scrub_all.timer`, `dpkg-db-backup.timer`, `fstrim.timer` | Persistent timers catch up right after boot when they were missed while off, which slows every boot and wake 📐 |
 | Disable | `NetworkManager-wait-online.service`, `systemd-timesyncd.service`, `bluetooth.service`, `hciuart.service` and `ModemManager.service` if present, `rpi-eeprom-update.service` (Pi 4/5) | Never wait for the network; Bluetooth is off; no internet time (§6.7); EEPROM updates by hand |
 | Keep | `NetworkManager`, `avahi-daemon` (`<hostname>.local`), `ssh` (as set up in Imager), `cron`, `logrotate.timer` | |
-| USB hub off (3B and 3B+ only, not in developer mode) | The camera app, at start: `echo 1-1 > /sys/bus/usb/drivers/usb/unbind` (the on-board USB hub and Ethernet chip) | Up to ~100 mA by secondary reports, and the camera uses neither USB nor Ethernet. 📐 🧪 Keep it only if M8 measures a real saving with nothing else affected; the 3A+, 4B and 5 have no such chip to switch off this way. [Pi-Supply](https://learn.pi-supply.com/make/how-to-save-power-on-your-raspberry-pi) |
+| USB hub off (3B and 3B+ only, not in developer mode) | The camera app, at start: `echo 0 > /sys/devices/platform/soc/3f980000.usb/buspower` (any `*.usb/buspower` under `soc`) | Cuts the USB bus power, which switches off the on-board USB hub and Ethernet chip. On a 3B+ that measured 435 → 195 mA at idle with Wi-Fi on ✅ [forum, 2018](https://forums.raspberrypi.com/viewtopic.php?t=208110). Unbinding the hub (`echo 1-1 > …/unbind`, used until 2026-10-19) leaves the chip powered: about 50 mA at most ✅ (same thread). The attribute is still in the 6.18 kernel's `dwc_otg` driver ✅ [dwc_otg_attr.c](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/drivers/usb/host/dwc_otg/dwc_otg_attr.c). The camera uses neither USB nor Ethernet, and Wi-Fi is on SDIO. 🧪 Measure on the 3B+ in M8; the 3A+, 4B and 5 have no such chip to switch off this way |
 | Measure in M8 | `systemd-analyze critical-chain inkstant.service` and `systemd-analyze blame`; trim further only with numbers | §20 |
 
 ## 14. Power and battery life
@@ -2360,17 +2361,20 @@ Goal: the longest battery life that costs nothing in speed or features, except w
 ### 14.1 Budget
 
 - **Battery:** 5000 mAh × 3.7 V ≈ 18.5 Wh. Assuming about 85% boost efficiency, about 16 Wh usable, or about 3.2 Ah at 5 V. 📐
-- **The Pi:** Raspberry Pi gives 350 mA as the Pi 3A+'s typical bare-board active current. ✅ [Pi power docs](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#power-supply) raspi.tv measured 240 to 350 mA with an HDMI screen and keyboard dongle attached. ✅ [raspi.tv](https://raspi.tv/2018/how-much-power-does-raspberry-pi-3a-plus-use)
+- **The Pi:** Raspberry Pi gives 500 mA as the 3B+'s typical bare-board active current, and 350 mA as the 3A+'s ✅ [Pi power docs](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#power-supply). The difference is mostly the 3B+'s USB and Ethernet chip, which the camera switches off (§13.6).
+  - Measured on a 3B+, idle: 435 mA with Wi-Fi connected; 195 mA with the USB bus power cut; 142 mA with Wi-Fi down as well ✅ [forum, 2018](https://forums.raspberrypi.com/viewtopic.php?t=208110). Pi Dramble measured 350 mA with HDMI and LEDs off, 400 mA with Wi-Fi ✅ [Pi Dramble](https://pidramble.com/wiki/benchmarks/power-consumption).
+  - On a 3A+, raspi.tv measured 240 to 350 mA with an HDMI screen and keyboard dongle attached ✅ [raspi.tv](https://raspi.tv/2018/how-much-power-does-raspberry-pi-3a-plus-use).
+  - **So** with its USB power cut, the 3B+ should draw about what the 3A+ does 📐, and the table below holds for both. Without the cut, add about 200 mA to every state.
 - **The camera:** Raspberry Pi gives 250 mA as a Camera Module's typical draw. ✅ [Pi power docs](https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/raspberry-pi/power-supplies.adoc) It's the largest single draw while the camera is on.
 - **The display module:** under 100 mW while refreshing, and nothing between refreshes (PWR held low). ✅ [Waveshare wiki](https://www.waveshare.com/wiki/3.6inch_e-Paper_HAT%2B_%28E%29_Manual)
 
-| State (Pi 3A+) | Draw at 5 V 📐 | On-time from full 📐 |
+| State (Pi 3B+ with its USB power cut, or 3A+) | Draw at 5 V 📐 | On-time from full 📐 |
 |---|---|---|
 | Ready, camera streaming | ~600 mA | ~5 h |
 | Asleep: camera stopped, Pi on | ~350 mA or less (bare board) | ~9 h |
 | Developing | Ready + under 20 mA for the panel | — |
 | Sharing | + Wi-Fi 🧪 | — |
-| Halted, until the PiSugar's cut | ~100 mA (Raspberry Pi's figure for a halted 3B ✅) | — |
+| Halted, until the PiSugar's cut | ~100 mA (Raspberry Pi's figure for a halted 3B ✅; the USB chip is powered again from boot until the app starts) | — |
 | Off | The PiSugar's own standby only; its "more than a year" clock implies at most about 0.57 mA on average (§6.7) | Months |
 
 **Other boards** (typical bare-board active current ✅; on-time from 16 Wh before the camera and Wi-Fi 📐):
@@ -2411,7 +2415,7 @@ Each measure is specified in the section listed; the savings are estimates until
 | Event-driven app: BUSY and module detect by edge, 10 s timers. The one polling loop is the BTN reader, 50 I2C reads a second, since the PiSugar has no line to the Pi but I2C and power ✅ [PiSugar 3 docs](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series) (§6.6) | CPU wake-ups | 🧪 The BTN reader's current | 📐 | 4.5 |
 | Display module switched off between updates (PWR low) | The module draws almost nothing | Nothing | ✅ PWR switches its supply; 🧪 what leaks in through CE0 and RST (§3, finding 28) | 6.3 |
 | Low battery stops the slideshow; quiet hours skip wakes overnight | Wakes | Nothing | Decided | 8.12 |
-| USB hub and Ethernet chip off on the 3B and 3B+ (the 3A+ has none), except in developer mode | Up to ~100 mA (unmeasured) | Their USB and Ethernet ports stop working; the camera uses neither | 📐 🧪 | 13.6 |
+| USB hub and Ethernet chip off on the 3B and 3B+ (the 3A+ has none), except in developer mode, by cutting the USB bus power | About 240 mA on a 3B+ (one forum measurement ✅) | Their USB and Ethernet ports stop working; the camera uses neither | ✅ 🧪 on our 3B+ | 13.6 |
 | Shortest safe PiSugar power-cut delay (10 s now). A halted Pi 3B still draws 100 mA until the cut ✅ | About 0.5 J per power-off | Nothing | 🧪 | 13.4 |
 | Camera tuned for the lowest current that keeps it responsive: 5, 10 or 14 fps, and continuous autofocus against focus that rests once settled | Part of the camera's ~250 mA | Nothing, as long as the shutter delay stays at or under 0.5 s and refocusing within 1 s | 🧪 | 6.4 |
 | A slideshow wake saves state and arms the next wake while the panel finishes powering down | 1 to 2 s per wake | Nothing | 📐 | 8.11 |
@@ -2445,7 +2449,7 @@ How a builder turns a freshly flashed Raspberry Pi into an Inkstant camera with 
 
 ### 15.1 Supported models
 
-Decided 2026-10-14: the **Pi 3A+** is the main target, and the **Pi 3B, 3B+, 4B and 5** are also supported. Since 2026-10-17 the build itself (the README's guide, HARDWARE.md and the case) is for the 3A+ only, while the software keeps supporting all five, for other people's cases and the bench Pi 4. One release, one script and one SD card image layout serve all five. The differences are handled in two places: config.txt sections written by the script, and model checks in the software at run time.
+Decided 2026-10-14: the **Pi 3A+** is the main target, and the **Pi 3B, 3B+, 4B and 5** are also supported. Since 2026-10-19 the build itself (the README's guide, HARDWARE.md and the case) is for the **3B+** only (it was the 3A+ from 2026-10-17, until that was hard to buy), while the software keeps supporting all five, for other people's cases and the bench Pi 4. One release, one script and one SD card image layout serve all five. The differences are handled in two places: config.txt sections written by the script, and model checks in the software at run time.
 
 #### 15.1.1 Every layer, every model
 
@@ -2454,7 +2458,7 @@ Decided 2026-10-14: the **Pi 3A+** is the main target, and the **Pi 3B, 3B+, 4B 
 | **Pi OS Lite (64-bit), Trixie** | ✓ | ✓ | ✓ | ✓ | ✓ | ✅ Imager lists the image for the `pi3-64bit`, `pi4-64bit` and `pi5-64bit` device families ([Imager OS list](https://downloads.raspberrypi.com/os_list_imagingutility_v4.json)) |
 | **Kernel** | Pi 3/4 kernel | same | same | same | Pi 5 kernel | Both builds include the IMX708 driver, the LED pattern trigger, the DS1307/DS3231 RTC driver, spidev and i2c-dev ✅ ([Pi 3/4 config](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm64/configs/bcm2711_defconfig), [Pi 5 config](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm64/configs/bcm2712_defconfig)) |
 | **config.txt section** | `[pi3]` | `[pi3]` | `[pi3]` | `[pi4]` | `[pi5]` | ✅ `[pi3]` covers the 3B, 3B+ and 3A+, not the Zero 2 W ([conditional filters](https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/config_txt/conditional.adoc)) |
-| **CPU** | 4 × Cortex-A53, 1.4 GHz | 4 × A53, 1.2 GHz | 4 × A53, 1.4 GHz | 4 × A72, 1.5 to 1.8 GHz | 4 × A76, 2.4 GHz | Raspberry Pi product pages. Speed targets in §7.6 are set on the 3A+; the 3B runs about 15% slower 📐 |
+| **CPU** | 4 × Cortex-A53, 1.4 GHz | 4 × A53, 1.2 GHz | 4 × A53, 1.4 GHz | 4 × A72, 1.5 to 1.8 GHz | 4 × A76, 2.4 GHz | Raspberry Pi product pages. Speed targets in §7.6 are set on the 3B+, which has the 3A+'s chip and clock; the 3B runs about 15% slower 📐 |
 | **RAM** | 512 MB | 1 GB | 1 GB | 1 to 8 GB | 1 to 16 GB | Raspberry Pi product pages |
 | **Camera connector and cable** | 15-pin; standard cable | same | same | same | Two 22-pin ports; Standard–Mini cable; `dtoverlay=imx708` is CAM1, `imx708,cam0` is CAM0 | ✅ [camera docs](https://www.raspberrypi.com/documentation/accessories/camera.html), [overlay README](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/overlays/README) |
 | **Camera pipeline** | Unicam + ISP; buffers from CMA (about 69 MB) | same | same | same | PiSP; camera buffers not from CMA | ✅ §3 finding 10, Picamera2 manual. Picamera2 picks the pipeline itself; our configuration is the same on all |
@@ -2472,7 +2476,7 @@ Decided 2026-10-14: the **Pi 3A+** is the main target, and the **Pi 3B, 3B+, 4B 
 | **PiSugar 3 Plus** | Listed (as "3A") | Listed | Listed | Listed | Listed; line the PiSugar's spring pins up carefully (the Pi 5's header holes are smaller) 🧪 | ✅ [PiSugar 3 docs](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series), [PiSugar #144](https://github.com/PiSugar/PiSugar/issues/144) |
 | **Power from the PiSugar (3 A max)** | Typical 350 mA | 400 mA | 500 mA | 600 mA | 800 mA; with a 3 A supply, USB is limited to 600 mA (we use none) | ✅ [Pi power docs](https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/raspberry-pi/power-supplies.adoc) |
 | **Boot firmware** | On the SD card | same | same | EEPROM (`rpi-eeprom-update` disabled; update by hand) | EEPROM (same) | §13.6 |
-| **Case** | The build's case (65 × 56 mm board) | None: 85 × 56 mm, different ports | same | same | same | HARDWARE.md (the case is for the 3A+ only; its Other boards section has pointers for the rest) |
+| **Case** | None: 65 × 56 mm, no USB stack or Ethernet | Should fit: the 3B+'s footprint ✅ | The build's case (85 × 56 mm) | None: its ports are swapped round | None | HARDWARE.md (the case is for the 3B+ only; its Other boards section has pointers for the rest) |
 | **On-time per charge** | ~9 h | ~8 h | ~6.5 h | ~5.5 h | ~4 h | 📐 §14.1, before the camera and Wi-Fi |
 
 **Result:** no layer stops any of the five models. Four things need checking on real boards:
@@ -2495,12 +2499,13 @@ All four are on the bench list (§19.6).
 | Run time: camera | Logs `CmaFree` on Pi 3 and 4 only | Picamera2's platform check |
 | Run time: GPIO | Chip number | gpiozero chooses |
 | Gallery | On a 3B, "Add network" notes "This camera can only join 2.4 GHz networks" | `wifi_5ghz` in `/api/status` |
+| Run time: USB | The 3B and 3B+ cut the USB bus power, except in developer mode | The model string (§13.6) |
 
 #### 15.1.3 Not supported
 
 | Board | Why | What the script does |
 |---|---|---|
-| Pi Zero 2 W | Needs the PiSugar 3 for the Zero, the mini camera cable and a soldered header. The software itself would run | Stops with a message; `--force-model` lets experimenters continue |
+| Pi Zero 2 W | The camera and clock lines are in `[pi3]`, which it doesn't read: it reads `[pi02]`, `[pi0w]` and `[pi0]` ✅ ([conditional filters](https://github.com/raspberrypi/documentation/blob/master/documentation/asciidoc/computers/config_txt/conditional.adoc)). It also needs the mini camera cable and a header (the Zero 2 WH). PiSugar lists the 3 Plus as working on it, and recommends the smaller PiSugar 3 ✅ ([PiSugar docs](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series)). Same 512 MB as the 3A+, 1 GHz, 2.4 GHz Wi-Fi only | Stops with a message; `--force-model` continues, but without the camera and clock overlays |
 | Pi 400, Pi 500, Pi 500+ | No camera connector | Stops |
 | Compute Modules 3, 4, 5 | No standard board for the PiSugar and the module's header | Stops; `--force-model` to experiment |
 | Pi 1, 2, Zero, Zero W | No 64-bit Pi OS image for them ✅ ([Imager OS list](https://downloads.raspberrypi.com/os_list_imagingutility_v4.json)) | Can't run the image |
@@ -2521,7 +2526,7 @@ All four are on the bench list (§19.6).
    Imager writes these as cloud-init files, which the Pi applies on its first boot. ✅ [Raspberry Pi news](https://www.raspberrypi.com/news/cloud-init-on-raspberry-pi-os/)
 3. **First boot:** wait about two minutes for it to finish, then log in over SSH (`ssh <user>@<hostname>.local`).
 4. **Internet** is needed for the whole install: Wi-Fi, or an Ethernet cable on the boards that have a port.
-5. **Time:** about 15 to 25 minutes on a 3A+, mostly downloading and unpacking packages (roughly 200 MB). 📐 🧪
+5. **Time:** about 15 to 25 minutes on a 3B+, mostly downloading and unpacking packages (roughly 200 MB). 📐 🧪
 
 ### 15.3 Running it
 
@@ -2859,11 +2864,11 @@ From the gallery's settings page, at home only (decided 2026-10-15):
 
 | Board | Tests |
 |---|---|
-| **Pi 3A+** (main) | Fresh flash → install → setup check passes. Every bench test (§19.6) and acceptance test A1 to A16 (§19.7); soak tests; run the install again; update from the previous release; uninstall |
+| **Pi 3B+** (main) | Fresh flash → install → setup check passes. Every bench test (§19.6) and acceptance test A1 to A16 (§19.7); soak tests; run the install again; update from the previous release; uninstall |
 | **Pi 4B** | Fresh install, setup check, A1 to A9, share mode with an iPhone and an Android phone |
 | **Pi 5** | Same as the 4B, plus PiSugar fit and I2C, the ACT LED and module detect, `rtc_rtc2pi` clock, CAM0 and CAM1 |
 | **Pi 3B** | Fresh install, setup check, A1, A5, A7; a 2.4 GHz home network; Picamera2 import time and the §7.6 speed targets |
-| **Pi 3B+** | Fresh install, setup check, A1, A5, A7 |
+| **Pi 3A+** | Fresh install, setup check, A1, A5, A7; full-resolution camera memory (512 MB) |
 
 Each release's notes list the boards it was tested on.
 
@@ -2873,7 +2878,7 @@ Each release's notes list the boards it was tested on.
 
 | Script | Measures | Bench test (§19.6) |
 |---|---|---|
-| `camera_fullres.py` | Starts the §6.4 configuration on the 3A+; logs `CmaFree` before and after; captures 20 frames; checks libcamera used `rpi_apps.yaml` | Full-resolution capture without CMA errors |
+| `camera_fullres.py` | Starts the §6.4 configuration on the 3B+ (and the 512 MB 3A+); logs `CmaFree` before and after; captures 20 frames; checks libcamera used `rpi_apps.yaml` | Full-resolution capture without CMA errors |
 | `shutter_latency.py` | BTN tap time (when the camera reads it, after the PiSugar's double-tap window) against `SensorTimestamp` − exposure, and against the frame's arrival; 50 taps each at 5, 10 and 14 fps; `--auto` presses from software | Shutter delay |
 | `settle.py` | Per-frame lens position, `AfState`, exposure and colour gains after re-aiming from far to near and after a lamp is switched; at 5, 10 and 14 fps, with and without the tuning override | Focus, exposure and colour settling |
 | `epd_show.py` | Shows a test `.epd`; times each step of §6.3; `--abort-after N` for pull-out tests | No-module timeout, pull-out mid-develop |
@@ -2892,14 +2897,14 @@ The software's checks on real hardware, in M1 and M8 (§20), and the parts and c
 
 **Camera:**
 
-- [ ] Full-resolution capture on the 3A+ with main + lores and 2 buffers, without CMA errors; `rpi_apps.yaml` is used and camera CMA is about 69 MB (`cma-128` set)
-- [ ] Shutter delay (moment captured and frame in hand), current and CMA use on the 3A+ at 5, 10 and 14 fps
+- [ ] Full-resolution capture on the 3B+ and the 512 MB 3A+ with main + lores and 2 buffers, without CMA errors; `rpi_apps.yaml` is used and camera CMA is about 69 MB (`cma-128` set)
+- [ ] Shutter delay (moment captured and frame in hand), current and CMA use on the 3B+ at 5, 10 and 14 fps
 - [ ] Camera current at 5, 10 and 14 fps, and continuous against settled autofocus. Pick the lowest that keeps the shutter delay at or under 0.5 s and refocusing within 1 s
 - [ ] Focus, exposure and colour settling after re-aiming and after a change of light, with and without the tuning override (`settle.py`)
 - [ ] The first photo after the camera starts is settled (start-up runs 10 frames at 14 fps)
 - [ ] Sleep and wake: the frame is in hand within 1 s of a press while asleep, in focus after re-aiming; no CMA allocation on waking; current while asleep
 - [ ] `AeExposureMode` Short against Normal: handheld sharpness indoors
-- [ ] Picamera2 import time and the camera app's memory on the 3A+
+- [ ] Picamera2 import time and the camera app's memory on the 3B+ and the 3A+
 - [ ] Dithering palette tuned on the real panel
 
 **Display:**
@@ -2916,8 +2921,8 @@ The software's checks on real hardware, in M1 and M8 (§20), and the parts and c
 **Light:**
 
 - [x] The ACT LED has the `timer` and `pattern` triggers, and the red PWR LED is off (trigger `none`, brightness 0), on the Pi 4 with kernel 6.18 (2026-10-17)
-- [ ] `act_led_trigger=timer` blinks the ACT LED from early kernel boot (needs a reinstall with the new config.txt), and what the LED shows before the kernel starts: the Pi 4, then the 3A+, 3B and Pi 5
-- [ ] The pattern trigger and the red PWR LED staying dark on the 3A+, 3B and Pi 5
+- [ ] `act_led_trigger=timer` blinks the ACT LED from early kernel boot (needs a reinstall with the new config.txt), and what the LED shows before the kernel starts: the Pi 4, then the 3B+, 3A+, 3B and Pi 5
+- [ ] The pattern trigger and the red PWR LED staying dark on the 3B+, 3A+, 3B and Pi 5
 - [ ] The ACT LED through the case's opening: easy to see indoors and in daylight
 - [ ] The four looks in §1.3 are easy to tell apart through the case's opening, in daylight and in the dark, by someone who hasn't read the table
 - [ ] The LED stays dark from the app's "off" to the power cut
@@ -2948,7 +2953,7 @@ The software's checks on real hardware, in M1 and M8 (§20), and the parts and c
 - [ ] The hotspot (WPA2, PMF off) joins from an iPhone, an Android phone and a Mac
 - [ ] Android with mobile data on reaches `http://10.42.0.1`, with and without "stay connected"; try the no-gateway DHCP option if it doesn't (§9.4)
 - [ ] Share mode on iPhone and Android, at home (home Wi-Fi, IP QR code) and away (hotspot): QR join, the phone stays connected, the gallery opens, press-and-hold saves, a ZIP gets into Photos
-- [ ] A WPA3-only home network (a router or phone hotspot set to WPA3 only), added in the gallery: sharing starts on it, the log says `inkstant-home-N now uses sae`, and in developer mode it then joins at boot. On a 3A+ as well as the bench Pi 4 (§9.5)
+- [ ] A WPA3-only home network (a router or phone hotspot set to WPA3 only), added in the gallery: sharing starts on it, the log says `inkstant-home-N now uses sae`, and in developer mode it then joins at boot. On a 3B+ as well as the bench Pi 4 (§9.5)
 - [ ] The streamed ZIP opens in iOS Files and the Android Files app; the download shows progress
 - [ ] `/tmp` is tmpfs on Pi OS (`findmnt /tmp`)
 
@@ -2987,8 +2992,8 @@ Milestones in order. Each ends with an exit check. M2 and the gallery half of M6
 | Milestone | Deliverables | Exit check | Needs |
 |---|---|---|---|
 | **M0 Foundations** | Repo layout (§4.4), `pyproject.toml`, dev requirements, CI (pytest and ruff on Python 3.13), `ipc.py`, `atomic.py`, all `hw/` interfaces with fakes, simulator skeleton | CI green; `sim.py` starts and shows a blank display | — |
-| **M1 Hardware bring-up** (3A+ on the bench) | `tools/bench/` scripts for the camera, display, inputs, PiSugar, power-off and wake cycle; first measurements | These §19.6 tests pass: full-res capture and CMA, shutter delay and settling (frame rate chosen), display driver and no-module timeout, BTN, the ACT LED and module detect, PiSugar socket, watchdog, firmware ≥ 1.2.4, delayed power-off, RTC wake cycle, kernel RTC | Parts, Pi OS card |
-| **M2 Core libraries** | `store.py`, `settings.py`, `state.py`, `imaging/*`, palette tuner; palette tuned on the panel | Unit tests; §7.6 timings measured on the 3A+ | M0 (and M1's display for tuning) |
+| **M1 Hardware bring-up** (3B+ on the bench) | `tools/bench/` scripts for the camera, display, inputs, PiSugar, power-off and wake cycle; first measurements | These §19.6 tests pass: full-res capture and CMA, shutter delay and settling (frame rate chosen), display driver and no-module timeout, BTN, the ACT LED and module detect, PiSugar socket, watchdog, firmware ≥ 1.2.4, delayed power-off, RTC wake cycle, kernel RTC | Parts, Pi OS card |
+| **M2 Core libraries** | `store.py`, `settings.py`, `state.py`, `imaging/*`, palette tuner; palette tuned on the panel | Unit tests; §7.6 timings measured on the 3B+ | M0 (and M1's display for tuning) |
 | **M3 Camera app core** | `machine.py`, capture, display jobs, module events, BTN taps, status light (four looks and the wink), sleep and wake, turn-off, shutdown, watchdog, control socket, `inkstant-ctl power-button` | Acceptance A1 to A5, A10, A13 and A15 on hardware | M1, M2 |
 | **M4 Power and slideshow** | Wake detection and path, scheduling, quiet hours, battery rules, battery saver, clock (§6.7) | A6 (one night), A9, A12, A14 | M3 |
 | **M5 Share mode** | Keyfiles, home and hotspot start/stop, share screen, timeouts, `rtc_web` | Phones join and reach a test page, home and away | M3 |
@@ -3000,7 +3005,7 @@ Milestones in order. Each ends with an exit check. M2 and the gallery half of M6
 
 **Biggest risks, tackled first in M1:**
 
-1. Full-resolution camera memory on the 512 MB 3A+.
+1. Full-resolution camera memory on a 512 MB board (the 3A+; the 3B+ has 1 GB).
 2. The module on the header: going on straight every time, and taking it off and putting it on while the camera is on.
 3. PiSugar power-off, alarm and watchdog behaving as documented on our firmware.
 4. Android reaching the hotspot gallery (this one is M5).

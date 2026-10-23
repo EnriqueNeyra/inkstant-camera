@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 from inkstant.camera_app import display
-from inkstant.hw import camera, epd, gpio, led, network, pisugar, pisugar_i2c
+from inkstant.hw import camera, epd, gpio, led, network, pisugar, pisugar_i2c, system
 from inkstant.imaging import epdfile
 
 FIX = Path(__file__).parent / "fixtures"
@@ -547,3 +547,17 @@ def test_homes_from_keyfiles(tmp_path):
     n = network.Network(conn_dir=tmp_path)
     assert [(h.n, h.ssid, h.key_mgmt) for h in n.homes()] == [(2, "Neyra Home", "sae"), (4, "Hi", None)]
     assert n.free_home_slot() == 1
+
+
+def test_usb_hub_off_cuts_the_bus_power(tmp_path):
+    logs = []
+    s = system.System(root=tmp_path, log=logs.append)
+    assert s.usb_hub_off() is False  # no USB controller with that switch (a Pi 4 or 5)
+    bus = tmp_path / "sys/devices/platform/soc/3f980000.usb/buspower"
+    bus.parent.mkdir(parents=True)
+    bus.write_text("Bus Power = 0x1\n")
+    assert s.usb_hub_off() is True
+    assert bus.read_text() == "0"
+    bus.chmod(0o444)
+    if os.geteuid() != 0:
+        assert s.usb_hub_off() is False and logs
