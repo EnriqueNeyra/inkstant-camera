@@ -165,8 +165,17 @@ def test_family_from_model():
     assert device.family_from_model("Raspberry Pi 3 Model B Rev 1.2") == "pi3"
     assert device.family_from_model("Raspberry Pi 4 Model B Rev 1.5") == "pi4"
     assert device.family_from_model("Raspberry Pi 5 Model B Rev 1.0") == "pi5"
-    assert device.family_from_model("Raspberry Pi Zero 2 W Rev 1.0") is None
+    assert device.family_from_model("Raspberry Pi Zero 2 W Rev 1.0") == "pi3"
+    assert device.family_from_model("Raspberry Pi Zero W Rev 1.1") is None
     assert device.family_from_model("Raspberry Pi 400 Rev 1.0") is None
+
+
+def test_wifi_5ghz_from_model():
+    assert device.wifi_5ghz_from_model("Raspberry Pi 3 Model B Plus Rev 1.3")
+    assert device.wifi_5ghz_from_model("Raspberry Pi 3 Model A Plus Rev 1.1")
+    assert device.wifi_5ghz_from_model("Raspberry Pi 4 Model B Rev 1.5")
+    assert not device.wifi_5ghz_from_model("Raspberry Pi 3 Model B Rev 1.2")
+    assert not device.wifi_5ghz_from_model("Raspberry Pi Zero 2 W Rev 1.0")
 
 
 # ipc ------------------------------------------------------------------------

@@ -272,7 +272,7 @@ Every product decision, with the date it was made. The user decides product beha
 | Date | Area | Decision | § |
 |---|---|---|---|
 | 2026-10-13 | Power | PiSugar 3 Plus battery board (replaces the PiSugar S Plus) | 1.5, 6.5 |
-| 2026-10-14 | Boards | Raspberry Pi 3A+ is the main target; the Pi 3B, 3B+, 4B and 5 are also supported (2026-10-17: the build and its case are for the 3A+ only; 2026-10-19: for the 3B+ instead; the software still supports all five) | 15.1 |
+| 2026-10-14 | Boards | Raspberry Pi 3A+ is the main target; the Pi 3B, 3B+, 4B and 5 are also supported (2026-10-17: the build and its case are for the 3A+ only; 2026-10-19: for the 3B+ instead; the software still supports all five; 2026-10-26: the Zero 2 W too) | 15.1 |
 | 2026-10-14 | Display | Waveshare 3.6" e-Paper HAT+ (E) in a slide-out module (2026-10-17: pushed straight onto the header instead) | 1.4 |
 | 2026-10-14 | Controls | Shutter with an LED ring on the Pi; power and sharing on the PiSugar's side buttons (2026-10-17: BTN is the shutter, and the ring is gone) | 1.2 |
 | 2026-10-14 | Locking | Shutter and BTN locked only while a photo develops; Waveshare's 3-minute spacing not enforced | 1.2, 1.4 |
@@ -322,6 +322,7 @@ Every product decision, with the date it was made. The user decides product beha
 | 2026-10-17 | Docs | A new HARDWARE.md, written from scratch as the hardware reference for designing the case: every part's dimensions in one coordinate frame, the stack-up, what the case has to do, the measurements still needed, and links to the drawings, schematics and 3D models. SPEC.md and HARDWARE.md are published in the repo, and the README links to both as design notes | — |
 | 2026-10-17 | Boards | The build is for the Pi 3A+ only: the README's build guide, HARDWARE.md and the case cover just that board. It's the cheapest and smallest, uses the least power, has the PiSugar 3 Plus's outline (which leaves the print's 22 mm overhang free for the camera), and stays in production until at least January 2030 ✅ [product page](https://www.raspberrypi.com/products/raspberry-pi-3-model-a-plus/). The software still supports the 3B, 3B+, 4B and 5, so anyone can design a case for another board, and the bench camera stays a Pi 4 (2026-10-19: replaced by the 3B+) | 15.1 |
 | 2026-10-19 | Boards | The build is for the Pi 3B+ only, replacing the 3A+, which was hard to buy: sold out at Adafruit and PiShop.us, on backorder at SparkFun, and about $44 on Amazon (checked 2026-10-19). The Zero 2 W is short too, of chip substrates. The 3B+ is in stock widely, stays in production until at least January 2030 ✅ [product page](https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/), has the 3A+'s chip, clock and layout plus 1 GB, and the PiSugar 3 Plus is made for it. Its USB and Ethernet chip is switched off by cutting the USB bus power, which should bring its draw close to the 3A+'s (§13.6, §14.1). The case changes: the USB and Ethernet sockets fill the space beside the Pi where the 3A+ layout put the camera. The software still supports all five boards | 15.1 |
+| 2026-10-26 | Boards | The Pi Zero 2 W is supported too, so the build runs on the 3B+, 3A+, 4B and Zero 2 W, every one on the PiSugar 3 Plus. The case already takes all four: a body per board since 2026-10-23, and since 2026-10-24 one tub that holds the PiSugar, with a deck per board. The Zero 2 W has the Pi 3's chip, so the software treats it as the `pi3` family. config.txt gains a `[pi02]` section with the camera and clock lines, since the Zero 2 W doesn't read `[pi3]`, and `pwr_led_trigger` moves into the sections of the boards that have a PWR LED. Its Wi-Fi is 2.4 GHz only. It needs the Standard–Mini camera cable and the version with headers, sits on two of the PiSugar's posts and two printed spacers, and its green light doesn't show through the case | 15.1 |
 | 2026-10-17 | Case | Each print has its own printed enclosure, separate from the camera body, so it pops out like a piece of film, with pockets for optional magnets so a kept print can go on a fridge. Every part is 3D-printed, in as few parts as possible, without excessive supports. It holds together with no extra hardware: no screws, glue or inserts beyond the screws that come with the PiSugar. No light pipe or second material: the ACT LED shines out through a small opening in the case. The display isn't shaded or recessed against sunlight; that small risk is accepted. Real 3D models are used where they exist | HARDWARE.md |
 
 ### 2.2 Rejected
@@ -728,7 +729,7 @@ gpiozero 2.0.1 with the lgpio pin factory (`GPIOZERO_PIN_FACTORY=lgpio` in the u
 
 | GPIO (pin) | gpiozero device | Settings | Role |
 |---|---|---|---|
-| 0 (27, ID_SD) | `DigitalInputDevice` | `pull_up=False` (pull-down), active high, `bounce_time=0.05` | Module detect: the module's ID-chip pull-up holds it high, so high means a module is on (§3 finding 24). ✅ bench Pi 4 (2026-10-17); 🧪 the 3A+, 3B, 3B+ and Pi 5 |
+| 0 (27, ID_SD) | `DigitalInputDevice` | `pull_up=False` (pull-down), active high, `bounce_time=0.05` | Module detect: the module's ID-chip pull-up holds it high, so high means a module is on (§3 finding 24). ✅ bench Pi 4 (2026-10-17); 🧪 the 3A+, 3B, 3B+, Zero 2 W and Pi 5 |
 | 24 (18) | `DigitalInputDevice` | `pull_up=False` (pull-down), active high | E-paper BUSY: high = idle, low = busy (or no module) |
 | 17 (11) | `DigitalOutputDevice` | `initial_value=False` | E-paper RST |
 | 25 (22) | `DigitalOutputDevice` | `initial_value=False` | E-paper DC |
@@ -744,7 +745,7 @@ gpiozero 2.0.1 with the lgpio pin factory (`GPIOZERO_PIN_FACTORY=lgpio` in the u
 
 ### 6.2 Status light
 
-The light is the Pi's own green ACT LED, `/sys/class/leds/ACT`, seen through a small opening in the case (decided 2026-10-17, replacing an LED ring on the header; §3 finding 25). The patterns and their meanings are in §1.3; which one shows is decided in §8.6.
+The light is the Pi's own green ACT LED, `/sys/class/leds/ACT`, seen through a small opening in the case (decided 2026-10-17, replacing an LED ring on the header; §3 finding 25). On the Zero 2 W it can't be seen: its LED isn't at the case's opening (§15.1). The patterns and their meanings are in §1.3; which one shows is decided in §8.6.
 
 **From power-on:**
 
@@ -752,7 +753,7 @@ The light is the Pi's own green ACT LED, `/sys/class/leds/ACT`, seen through a s
 2. From early kernel boot, `dtparam=act_led_trigger=timer` in config.txt (§13.1) gives the LED the built-in `timer` trigger. With no delays given, the timer trigger blinks 500 ms on and 500 ms off. ✅ [led-core.c](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/drivers/leds/led-core.c), [Pi 4B device tree](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/broadcom/bcm2711-rpi-4-b.dts). ✅ Bench Pi 4 (2026-10-17): `ACT` has the `timer` and `pattern` triggers on kernel 6.18. 🧪 The boot blink itself isn't seen yet: it needs a reinstall with this config.txt
 3. So the camera shows the slow "wait" blink with no software running. The app takes over by writing to `/sys/class/leds/ACT/` (root).
 
-Before the software is installed, the ACT LED keeps Pi OS's default trigger (`mmc0`), so it only flickers with card activity; the README says so.
+Before the software is installed, the ACT LED keeps Pi OS's default trigger (`mmc0`), so it only flickers with card activity; the README says so. The Zero 2 W's default is `actpwr` instead, since it has no PWR LED ✅ ([device tree](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/broadcom/bcm2710-rpi-zero-2-w.dts)).
 
 - **Why not `heartbeat`:** the kernel's heartbeat is a double pulse every 0.7 to 1.3 s, depending on load, which doesn't read as "wait". ✅ [ledtrig-heartbeat.c](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/drivers/leds/trigger/ledtrig-heartbeat.c)
 - **On or off only:** the ACT LED is a plain GPIO LED (on the Pi 3B, through the firmware's virtual GPIO), so there's no dimming or fading. ✅ device trees (§3 finding 25)
@@ -2180,15 +2181,20 @@ ignore_lcd=1
 disable_touchscreen=1
 disable_camera_led=1
 dtparam=act_led_trigger=timer
-dtparam=pwr_led_trigger=none
 dtoverlay=disable-bt
 [pi3]
+dtparam=pwr_led_trigger=none
+dtoverlay=imx708
+dtoverlay=i2c-rtc,ds3231
+[pi02]
 dtoverlay=imx708
 dtoverlay=i2c-rtc,ds3231
 [pi4]
+dtparam=pwr_led_trigger=none
 dtoverlay=imx708
 dtoverlay=i2c-rtc,ds3231
 [pi5]
+dtparam=pwr_led_trigger=none
 # configure.py writes dtoverlay=imx708,cam0 when device.toml says camera_port = "cam0"
 dtoverlay=imx708
 [all]
@@ -2199,7 +2205,7 @@ dtoverlay=imx708
   - **HDMI off:** `nohdmi` and `max_framebuffers=1`. No screen is ever attached; the camera still needs the GPU. KittenLabs measured 136.7 → 122.6 mA on a Zero 2 W with HDMI off.
   - **CMA:** `cma-128` (§3, finding 9).
   - **Skip probing:** `camera_auto_detect=0`, `display_auto_detect=0`, `force_eeprom_read=0`, `ignore_lcd=1`, `disable_touchscreen=1` and `disable_poe_fan=1`. The camera is named directly with `dtoverlay=imx708`. `force_eeprom_read=0` also stops the firmware reading the module's ID chip, whose pin is the module detect (§3 finding 24).
-  - **Onboard LEDs:** the red power LED and the camera LED off (`pwr_led_trigger=none`, `disable_camera_led=1`). The green ACT LED is the status light, blinking from early kernel boot (`act_led_trigger=timer`, §6.2; decided 2026-10-17, replacing `act_led_trigger=none` and a `gpio-led` overlay for an LED on the header).
+  - **Onboard LEDs:** the red power LED and the camera LED off (`pwr_led_trigger=none`, `disable_camera_led=1`). The Zero 2 W has no PWR LED and no `pwr_led_trigger` parameter, so that line is only in the sections of the boards that have one. The green ACT LED is the status light, blinking from early kernel boot (`act_led_trigger=timer`, §6.2; decided 2026-10-17, replacing `act_led_trigger=none` and a `gpio-led` overlay for an LED on the header).
   - **Bluetooth off:** `dtoverlay=disable-bt`.
   - **Audio off:** nothing plays sound.
   - **Buses:** I2C for the PiSugar and SPI for the display.
@@ -2459,63 +2465,63 @@ How a builder turns a freshly flashed Raspberry Pi into an Inkstant camera with 
 
 ### 15.1 Supported models
 
-Decided 2026-10-14: the **Pi 3A+** is the main target, and the **Pi 3B, 3B+, 4B and 5** are also supported. Since 2026-10-19 the build itself (the README's guide, HARDWARE.md and the case) is for the **3B+** only (it was the 3A+ from 2026-10-17, until that was hard to buy), while the software keeps supporting all five, for other people's cases and the bench Pi 4. One release, one script and one SD card image layout serve all five. The differences are handled in two places: config.txt sections written by the script, and model checks in the software at run time.
+Supported: the **Pi 3B+, 3A+, 4B and Zero 2 W** (the Zero 2 W since 2026-10-26), and also the **Pi 3B and 5**. The case takes the four main boards, each with its own deck, and the README's guide covers them; HARDWARE.md gives positions on the 3B+, with what differs on the others. One release, one script and one SD card image layout serve all six. The differences are handled in two places: config.txt sections written by the script, and model checks in the software at run time.
 
 #### 15.1.1 Every layer, every model
 
-| Layer | 3A+ | 3B | 3B+ | 4B | 5 | Source |
-|---|---|---|---|---|---|---|
-| **Pi OS Lite (64-bit), Trixie** | ✓ | ✓ | ✓ | ✓ | ✓ | ✅ Imager lists the image for the `pi3-64bit`, `pi4-64bit` and `pi5-64bit` device families ([Imager OS list](https://downloads.raspberrypi.com/os_list_imagingutility_v4.json)) |
-| **Kernel** | Pi 3/4 kernel | same | same | same | Pi 5 kernel | Both builds include the IMX708 driver, the LED pattern trigger, the DS1307/DS3231 RTC driver, spidev and i2c-dev ✅ ([Pi 3/4 config](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm64/configs/bcm2711_defconfig), [Pi 5 config](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm64/configs/bcm2712_defconfig)) |
-| **config.txt section** | `[pi3]` | `[pi3]` | `[pi3]` | `[pi4]` | `[pi5]` | ✅ `[pi3]` covers the 3B, 3B+ and 3A+, not the Zero 2 W ([conditional filters](https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/config_txt/conditional.adoc)) |
-| **CPU** | 4 × Cortex-A53, 1.4 GHz | 4 × A53, 1.2 GHz | 4 × A53, 1.4 GHz | 4 × A72, 1.5 to 1.8 GHz | 4 × A76, 2.4 GHz | Raspberry Pi product pages. Speed targets in §7.6 are set on the 3B+, which has the 3A+'s chip and clock; the 3B runs about 15% slower 📐 |
-| **RAM** | 512 MB | 1 GB | 1 GB | 1 to 8 GB | 1 to 16 GB | Raspberry Pi product pages |
-| **Camera connector and cable** | 15-pin; standard cable | same | same | same | Two 22-pin ports; Standard–Mini cable; `dtoverlay=imx708` is CAM1, `imx708,cam0` is CAM0 | ✅ [camera docs](https://www.raspberrypi.com/documentation/accessories/camera.html), [overlay README](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/overlays/README) |
-| **Camera pipeline** | Unicam + ISP; buffers from CMA (about 69 MB) | same | same | same | PiSP; camera buffers not from CMA | ✅ §3 finding 10, Picamera2 manual. Picamera2 picks the pipeline itself; our configuration is the same on all |
-| **CMA** | `cma-128` | same | same | same | same, used for the display only | ✅ `vc4-kms-v3d` is mapped to `vc4-kms-v3d-pi4` and `-pi5`, which take the same `cma-128` and `nohdmi` options ([overlay map](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/overlays/overlay_map.dts)) |
-| **`gpu_mem`** | 64 MB default | 76 MB default | 76 MB default | 76 MB default | Not used | ✅ [Pi docs](https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/legacy_config_txt/memory.adoc) |
-| **40-pin header, our GPIO numbers** | Same | same | same | same | Same (on the RP1 chip) | ✅ §6.1: the HAT's own pins, the same on every 40-pin Pi |
-| **Module detect on ID_SD (GPIO0)** | 🧪 | 🧪 | 🧪 | ✅ bench (2026-10-17) | 🧪 | §3 finding 24 |
-| **GPIO library** | gpiozero + lgpio on `gpiochip0` | same | same | same | gpiozero picks `gpiochip4` if it exists, else `gpiochip0` | ✅ [gpiozero lgpio.py](https://github.com/gpiozero/gpiozero/blob/master/gpiozero/pins/lgpio.py) |
-| **SPI0 and I2C1** | `/dev/spidev0.0`, `/dev/i2c-1` | same | same | same | Same paths, on RP1 | ✅ |
-| **Status light: the ACT LED, blinking from early kernel boot** | `act_led_trigger=timer` 🧪 | same, through the firmware's virtual GPIO 🧪 | same 🧪 | same 🧪 (its triggers ✅ bench, 2026-10-17) | same 🧪 | §3 finding 25, §6.2 |
-| **Bluetooth off** | `dtoverlay=disable-bt` | same | same | same | Same line; the firmware maps it to `disable-bt-pi5` | ✅ [overlay map](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/overlays/overlay_map.dts) |
-| **Wi-Fi** | 2.4 + 5 GHz | 2.4 GHz only (BCM43438) | 2.4 + 5 GHz | 2.4 + 5 GHz | 2.4 + 5 GHz | ✅ [3B product page](https://www.raspberrypi.com/products/raspberry-pi-3-model-b/) names the chip. The hotspot is 2.4 GHz on every model; on a 3B, home networks must be 2.4 GHz |
-| **Ethernet** | None | Yes | Yes | Yes | Yes | Not used by the camera; fine for running the install |
-| **Clock at boot** | PiSugar RTC through the kernel (`i2c-rtc,ds3231`) | same | same | same | `rtc_rtc2pi`. The Pi 5's own RTC is `rtc0` and keeps time only with a backup battery, which we don't fit | ✅ [Pi 5 RTC docs](https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/raspberry-pi/rtc.adoc), §6.7 |
-| **PiSugar 3 Plus** | Listed (as "3A") | Listed | Listed | Listed | Listed; line the PiSugar's spring pins up carefully (the Pi 5's header holes are smaller) 🧪 | ✅ [PiSugar 3 docs](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series), [PiSugar #144](https://github.com/PiSugar/PiSugar/issues/144) |
-| **Power from the PiSugar (3 A max)** | Typical 350 mA | 400 mA | 500 mA | 600 mA | 800 mA; with a 3 A supply, USB is limited to 600 mA (we use none) | ✅ [Pi power docs](https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/raspberry-pi/power-supplies.adoc) |
-| **Boot firmware** | On the SD card | same | same | EEPROM (`rpi-eeprom-update` disabled; update by hand) | EEPROM (same) | §13.6 |
-| **Case** | None: 65 × 56 mm, no USB stack or Ethernet | Should fit: the 3B+'s footprint ✅ | The build's case (85 × 56 mm) | None: its ports are swapped round | None | HARDWARE.md (the case is for the 3B+ only; its Other boards section has pointers for the rest) |
-| **On-time per charge** | ~9 h | ~8 h | ~6.5 h | ~5.5 h | ~4 h | 📐 §14.1, before the camera and Wi-Fi |
+| Layer | 3A+ | 3B | 3B+ | 4B | 5 | Zero 2 W | Source |
+|---|---|---|---|---|---|---|---|
+| **Pi OS Lite (64-bit), Trixie** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✅ Imager lists the image for the `pi3-64bit`, `pi4-64bit` and `pi5-64bit` device families, and puts the Zero 2 W in `pi3-64bit` ([Imager OS list](https://downloads.raspberrypi.com/os_list_imagingutility_v4.json)) |
+| **Kernel** | Pi 3/4 kernel | same | same | same | Pi 5 kernel | Pi 3/4 kernel | Both builds include the IMX708 driver, the LED pattern trigger, the DS1307/DS3231 RTC driver, spidev and i2c-dev ✅ ([Pi 3/4 config](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm64/configs/bcm2711_defconfig), [Pi 5 config](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm64/configs/bcm2712_defconfig)) |
+| **config.txt section** | `[pi3]` | `[pi3]` | `[pi3]` | `[pi4]` | `[pi5]` | `[pi02]` | ✅ `[pi3]` covers the 3B, 3B+ and 3A+; the Zero 2 W reads `[pi02]`, `[pi0w]` and `[pi0]` ([conditional filters](https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/config_txt/conditional.adoc)) |
+| **CPU** | 4 × Cortex-A53, 1.4 GHz | 4 × A53, 1.2 GHz | 4 × A53, 1.4 GHz | 4 × A72, 1.5 to 1.8 GHz | 4 × A76, 2.4 GHz | 4 × A53, 1 GHz (RP3A0) | Raspberry Pi product pages. Speed targets in §7.6 are set on the 3B+, which has the 3A+'s chip and clock; the 3B runs about 15% slower and the Zero 2 W about 30% slower 📐 |
+| **RAM** | 512 MB | 1 GB | 1 GB | 1 to 8 GB | 1 to 16 GB | 512 MB | Raspberry Pi product pages |
+| **Camera connector and cable** | 15-pin; standard cable | same | same | same | Two 22-pin ports; Standard–Mini cable; `dtoverlay=imx708` is CAM1, `imx708,cam0` is CAM0 | 22-pin; Standard–Mini cable | ✅ [camera docs](https://www.raspberrypi.com/documentation/accessories/camera.html), [overlay README](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/overlays/README) |
+| **Camera pipeline** | Unicam + ISP; buffers from CMA (about 69 MB) | same | same | same | PiSP; camera buffers not from CMA | As the 3A+; ISP clock 300 MHz by default ✅ ([clock defaults](https://github.com/raspberrypi/documentation/blob/master/documentation/asciidoc/computers/config_txt/overclocking.adoc)) | ✅ §3 finding 10, Picamera2 manual. Picamera2 picks the pipeline itself; our configuration is the same on all |
+| **CMA** | `cma-128` | same | same | same | same, used for the display only | As the 3A+ | ✅ `vc4-kms-v3d` is mapped to `vc4-kms-v3d-pi4` and `-pi5`, which take the same `cma-128` and `nohdmi` options ([overlay map](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/overlays/overlay_map.dts)) |
+| **`gpu_mem`** | 64 MB default | 76 MB default | 76 MB default | 76 MB default | Not used | 64 MB default | ✅ [Pi docs](https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/legacy_config_txt/memory.adoc) |
+| **40-pin header, our GPIO numbers** | Same | same | same | same | Same (on the RP1 chip) | As the 3A+, on the version with headers | ✅ §6.1: the HAT's own pins, the same on every 40-pin Pi |
+| **Module detect on ID_SD (GPIO0)** | 🧪 | 🧪 | 🧪 | ✅ bench (2026-10-17) | 🧪 | 🧪 | §3 finding 24 |
+| **GPIO library** | gpiozero + lgpio on `gpiochip0` | same | same | same | gpiozero picks `gpiochip4` if it exists, else `gpiochip0` | As the 3A+ | ✅ [gpiozero lgpio.py](https://github.com/gpiozero/gpiozero/blob/master/gpiozero/pins/lgpio.py) |
+| **SPI0 and I2C1** | `/dev/spidev0.0`, `/dev/i2c-1` | same | same | same | Same paths, on RP1 | As the 3A+ | ✅ |
+| **Status light: the ACT LED, blinking from early kernel boot** | `act_led_trigger=timer` 🧪 | same, through the firmware's virtual GPIO 🧪 | same 🧪 | same 🧪 (its triggers ✅ bench, 2026-10-17) | same 🧪 | `act_led_trigger=timer` 🧪; ACT is on GPIO 29, and there's no PWR LED ✅ ([device tree](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/broadcom/bcm2710-rpi-zero-2-w.dts)); the case has no opening for it | §3 finding 25, §6.2 |
+| **Bluetooth off** | `dtoverlay=disable-bt` | same | same | same | Same line; the firmware maps it to `disable-bt-pi5` | As the 3A+ | ✅ [overlay map](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/overlays/overlay_map.dts) |
+| **Wi-Fi** | 2.4 + 5 GHz | 2.4 GHz only (BCM43438) | 2.4 + 5 GHz | 2.4 + 5 GHz | 2.4 + 5 GHz | 2.4 GHz only | ✅ [3B product page](https://www.raspberrypi.com/products/raspberry-pi-3-model-b/) names the chip. The hotspot is 2.4 GHz on every model; on a 3B or Zero 2 W, home networks must be 2.4 GHz ([Zero 2 W product page](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/)) |
+| **Ethernet** | None | Yes | Yes | Yes | Yes | None | Not used by the camera; fine for running the install |
+| **Clock at boot** | PiSugar RTC through the kernel (`i2c-rtc,ds3231`) | same | same | same | `rtc_rtc2pi`. The Pi 5's own RTC is `rtc0` and keeps time only with a backup battery, which we don't fit | As the 3A+ | ✅ [Pi 5 RTC docs](https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/raspberry-pi/rtc.adoc), §6.7 |
+| **PiSugar 3 Plus** | Listed (as "3A") | Listed | Listed | Listed | Listed; line the PiSugar's spring pins up carefully (the Pi 5's header holes are smaller) 🧪 | Not listed: PiSugar recommends its PiSugar 3 for the Zero ✅. The build uses the 3 Plus anyway: the Zero is screwed to its two posts beside the header and stands on two printed spacers, and the spring pins meet the same header pins 📐. That it starts and charges the Zero 🧪 | ✅ [PiSugar 3 docs](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series), [PiSugar #144](https://github.com/PiSugar/PiSugar/issues/144) |
+| **Power from the PiSugar (3 A max)** | Typical 350 mA | 400 mA | 500 mA | 600 mA | 800 mA; with a 3 A supply, USB is limited to 600 mA (we use none) | 350 mA | ✅ [Pi power docs](https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/raspberry-pi/power-supplies.adoc) |
+| **Boot firmware** | On the SD card | same | same | EEPROM (`rpi-eeprom-update` disabled; update by hand) | EEPROM (same) | On the SD card | §13.6 |
+| **Case** | The case, with its own deck | Should fit the 3B+'s deck: the same footprint ✅ | The case, with its own deck | The case, with its own deck | None | The case, with its own deck and two spacers; its green light doesn't show | HARDWARE.md (positions on the 3B+; its Other boards section has what differs) |
+| **On-time per charge** | ~9 h | ~8 h | ~6.5 h | ~5.5 h | ~4 h | ~9 h | 📐 §14.1, before the camera and Wi-Fi |
 
-**Result:** no layer stops any of the five models. Four things need checking on real boards:
+**Result:** no layer stops any of the six models. Five things need checking on real boards:
 
 - the PiSugar 3 Plus fit and I2C on the Pi 5;
 - the ACT LED and module detect on every board but the Pi 4;
 - putting a module on and taking it off while the camera is on;
-- full-resolution camera memory on the 512 MB 3A+.
+- full-resolution camera memory on the 512 MB 3A+ and Zero 2 W;
+- the Zero 2 W as a whole: its frame rate and focus time, the camera's Wi-Fi on its 2.4 GHz-only chip, and the PiSugar 3 Plus on it.
 
-All four are on the bench list (§19.6).
+All five are on the bench list (§19.6).
 
 #### 15.1.2 What the software does differently
 
 | Where | What changes by model | How |
 |---|---|---|
-| Install: config.txt | RTC overlay on Pi 3 and 4 only; `,cam0` on a Pi 5 whose camera is on CAM0 | `[pi3]`, `[pi4]` and `[pi5]` sections (§13.1) |
-| Install: `device.toml` | `family` (`pi3`, `pi4`, `pi5`), `wifi_5ghz` (false on the 3B), `camera_port` (Pi 5) | From `/proc/device-tree/model`, and the camera-port question on a Pi 5 (§15.5) |
+| Install: config.txt | RTC overlay on Pi 3, Zero 2 W and Pi 4 only; `,cam0` on a Pi 5 whose camera is on CAM0; `pwr_led_trigger` only on boards with a PWR LED | `[pi3]`, `[pi02]`, `[pi4]` and `[pi5]` sections (§13.1) |
+| Install: `device.toml` | `family` (`pi3`, which includes the Zero 2 W, `pi4`, `pi5`), `wifi_5ghz` (false on the 3B and Zero 2 W), `camera_port` (Pi 5) | From `/proc/device-tree/model`, and the camera-port question on a Pi 5 (§15.5) |
 | Install: checks | `rpi_apps.yaml` must exist on Pi 3 and 4 (CMA) | §15.6, step 4 |
 | Run time: clock | Kernel RTC on Pi 3 and 4, `rtc_rtc2pi` on Pi 5 | The app checks what `rtc0` is (§6.7) |
 | Run time: camera | Logs `CmaFree` on Pi 3 and 4 only | Picamera2's platform check |
 | Run time: GPIO | Chip number | gpiozero chooses |
-| Gallery | On a 3B, "Add network" notes "This camera can only join 2.4 GHz networks" | `wifi_5ghz` in `/api/status` |
+| Gallery | On a 3B or Zero 2 W, "Add network" notes "This camera can only join 2.4 GHz networks" | `wifi_5ghz` in `/api/status` |
 | Run time: USB | The 3B and 3B+ cut the USB bus power, except in developer mode | The model string (§13.6) |
 
 #### 15.1.3 Not supported
 
 | Board | Why | What the script does |
 |---|---|---|
-| Pi Zero 2 W | The camera and clock lines are in `[pi3]`, which it doesn't read: it reads `[pi02]`, `[pi0w]` and `[pi0]` ✅ ([conditional filters](https://github.com/raspberrypi/documentation/blob/master/documentation/asciidoc/computers/config_txt/conditional.adoc)). It also needs the mini camera cable and a header (the Zero 2 WH). PiSugar lists the 3 Plus as working on it, and recommends the smaller PiSugar 3 ✅ ([PiSugar docs](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series)). Same 512 MB as the 3A+, 1 GHz, 2.4 GHz Wi-Fi only | Stops with a message; `--force-model` continues, but without the camera and clock overlays |
 | Pi 400, Pi 500, Pi 500+ | No camera connector | Stops |
 | Compute Modules 3, 4, 5 | No standard board for the PiSugar and the module's header | Stops; `--force-model` to experiment |
 | Pi 1, 2, Zero, Zero W | No 64-bit Pi OS image for them ✅ ([Imager OS list](https://downloads.raspberrypi.com/os_list_imagingutility_v4.json)) | Can't run the image |
@@ -2536,7 +2542,7 @@ All four are on the bench list (§19.6).
    Imager writes these as cloud-init files, which the Pi applies on its first boot. ✅ [Raspberry Pi news](https://www.raspberrypi.com/news/cloud-init-on-raspberry-pi-os/)
 3. **First boot:** wait about two minutes for it to finish, then log in over SSH (`ssh <user>@<hostname>.local`).
 4. **Internet** is needed for the whole install: Wi-Fi, or an Ethernet cable on the boards that have a port.
-5. **Time:** about 15 to 25 minutes on a 3B+, mostly downloading and unpacking packages (roughly 200 MB). 📐 🧪
+5. **Time:** about 15 to 25 minutes on a 3B+, mostly downloading and unpacking packages (roughly 200 MB), and a little longer on the slower Zero 2 W. 📐 🧪
 
 ### 15.3 Running it
 
@@ -2907,14 +2913,15 @@ The software's checks on real hardware, in M1 and M8 (§20), and the parts and c
 
 **Camera:**
 
-- [ ] Full-resolution capture on the 3B+ and the 512 MB 3A+ with main + lores and 2 buffers, without CMA errors; `rpi_apps.yaml` is used and camera CMA is about 69 MB (`cma-128` set)
+- [ ] Full-resolution capture on the 3B+ and the 512 MB 3A+ and Zero 2 W with main + lores and 2 buffers, without CMA errors; `rpi_apps.yaml` is used and camera CMA is about 69 MB (`cma-128` set)
 - [ ] Shutter delay (moment captured and frame in hand), current and CMA use on the 3B+ at 5, 10 and 14 fps
 - [ ] Camera current at 5, 10 and 14 fps, and continuous against settled autofocus. Pick the lowest that keeps the shutter delay at or under 0.5 s and refocusing within 1 s
 - [ ] Focus, exposure and colour settling after re-aiming and after a change of light, with and without the tuning override (`settle.py`)
 - [ ] The first photo after the camera starts is settled (start-up runs 10 frames at 14 fps)
 - [ ] Sleep and wake: the frame is in hand within 1 s of a press while asleep, in focus after re-aiming; no CMA allocation on waking; current while asleep
 - [ ] `AeExposureMode` Short against Normal: handheld sharpness indoors
-- [ ] Picamera2 import time and the camera app's memory on the 3B+ and the 3A+
+- [ ] The Zero 2 W: frames delivered a second at full resolution and the time to refocus, against the 3B+'s (finding 29), and the time to develop a photo
+- [ ] Picamera2 import time and the camera app's memory on the 3B+, the 3A+ and the Zero 2 W
 - [ ] Dithering palette tuned on the real panel
 
 **Display:**
@@ -2922,7 +2929,7 @@ The software's checks on real hardware, in M1 and M8 (§20), and the parts and c
 - [ ] No module: the BUSY timeout works and the app doesn't hang
 - [ ] Taking a module off mid-develop: the app stops the update cleanly, the module is unharmed, and the next module put on develops that photo
 - [x] Module detect on ID_SD (GPIO0) with the Pi's pull-down: high with a module on (the HAT's ID-chip pull-up wins; the chip answers at 0x50 on i2c-0 with "R-Pi"), low without (bench Pi 4, 2026-10-17)
-- [ ] The same on the 3A+, 3B, 3B+ and Pi 5
+- [ ] The same on the 3A+, 3B, 3B+, Zero 2 W and Pi 5
 - [ ] A module with PWR held low draws almost nothing
 - [ ] Putting a module on and taking it off while the camera is on and idle doesn't reset the Pi or upset the PiSugar
 - [ ] Share-screen QR codes scan from 15 to 30 cm on the real panel
@@ -2931,8 +2938,8 @@ The software's checks on real hardware, in M1 and M8 (§20), and the parts and c
 **Light:**
 
 - [x] The ACT LED has the `timer` and `pattern` triggers, and the red PWR LED is off (trigger `none`, brightness 0), on the Pi 4 with kernel 6.18 (2026-10-17)
-- [ ] `act_led_trigger=timer` blinks the ACT LED from early kernel boot (needs a reinstall with the new config.txt), and what the LED shows before the kernel starts: the Pi 4, then the 3B+, 3A+, 3B and Pi 5
-- [ ] The pattern trigger and the red PWR LED staying dark on the 3B+, 3A+, 3B and Pi 5
+- [ ] `act_led_trigger=timer` blinks the ACT LED from early kernel boot (needs a reinstall with the new config.txt), and what the LED shows before the kernel starts: the Pi 4, then the 3B+, 3A+, Zero 2 W, 3B and Pi 5
+- [ ] The pattern trigger on the 3B+, 3A+, Zero 2 W, 3B and Pi 5, and the red PWR LED staying dark on all but the Zero 2 W (which has none)
 - [ ] The ACT LED through the case's opening: easy to see indoors and in daylight
 - [ ] The four looks in §1.3 are easy to tell apart through the case's opening, in daylight and in the dark, by someone who hasn't read the table
 - [ ] The LED stays dark from the app's "off" to the power cut
@@ -2955,12 +2962,14 @@ The software's checks on real hardware, in M1 and M8 (§20), and the parts and c
 - [ ] Boot-to-ready time, before and after §13's changes; `quiet`, initramfs removal and HDMI probe skips
 - [ ] Battery cost of share mode (Wi-Fi on)
 - [ ] Pi 5 with the PiSugar 3 Plus: every spring pin lands on its header pin, then I2C, power and the `rtc_rtc2pi` clock
+- [ ] Zero 2 W on the PiSugar 3 Plus, held by its two posts beside the header and the case's two spacers: spring pins, start-up, charging, I2C, BTN, power-off and the clock
 - [ ] PWR and BTN press reliably through the case's caps
 - [ ] The PiSugar's charging chip inside the case while charging at full current: it reaches 50 to 80 °C, so check the case leaves it air
 
 **Sharing:**
 
 - [ ] The hotspot (WPA2, PMF off) joins from an iPhone, an Android phone and a Mac
+- [ ] On the Zero 2 W's 2.4 GHz-only Wi-Fi: the hotspot, joining a home network, and switching between them with a double tap
 - [ ] Android with mobile data on reaches `http://10.42.0.1`, with and without "stay connected"; try the no-gateway DHCP option if it doesn't (§9.4)
 - [ ] Share mode on iPhone and Android, at home (home Wi-Fi, IP QR code) and away (hotspot): QR join, the phone stays connected, the gallery opens, press-and-hold saves, a ZIP gets into Photos
 - [ ] A WPA3-only home network (a router or phone hotspot set to WPA3 only), added in the gallery: sharing starts on it, the log says `inkstant-home-N now uses sae`, and in developer mode it then joins at boot. On a 3B+ as well as the bench Pi 4 (§9.5)

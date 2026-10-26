@@ -107,7 +107,7 @@ def test_preflight(tmp_path):
     r = fake_root(tmp_path)
     p = cfg(r, "preflight")
     assert p.returncode == 0, p.stdout
-    r2 = fake_root(tmp_path / "zero", model="Raspberry Pi Zero 2 W Rev 1.0")
+    r2 = fake_root(tmp_path / "zero", model="Raspberry Pi Zero W Rev 1.1")
     p = cfg(r2, "preflight")
     assert p.returncode == 1 and "isn't supported" in p.stdout
     assert cfg(r2, "preflight", "--force-model").returncode == 0
@@ -235,6 +235,29 @@ def test_config_txt_edit_unit():
         configure.edit_config_txt(STOCK_CONFIG + "\ndtoverlay=vc4-kms-v3d,cma-256\n", "pi3", "cam1")
 
 
+# The config.txt sections each board reads: the firmware's conditional filters.
+READS = {"3B+": ["all", "pi3", "pi3+"], "3A+": ["all", "pi3", "pi3+"], "3B": ["all", "pi3"],
+         "Zero 2 W": ["all", "pi0", "pi0w", "pi02"], "4B": ["all", "pi4"], "5": ["all", "pi5"]}
+
+
+@pytest.mark.parametrize("board", READS)
+def test_config_txt_block_per_board(board):
+    sys.path.insert(0, str(REPO / "install"))
+    import configure
+
+    section, seen = "all", []
+    for line in configure.config_txt_block("pi3", "cam1").splitlines()[1:-1]:
+        if line.startswith("["):
+            section = line.strip("[]")
+        elif section in READS[board]:
+            seen.append(line)
+    assert "dtoverlay=imx708" in seen
+    assert ("dtoverlay=i2c-rtc,ds3231" in seen) != (board == "5")  # the Pi 5 reads the PiSugar's clock itself
+    assert "dtparam=act_led_trigger=timer" in seen and "dtoverlay=vc4-kms-v3d,nohdmi,cma-128" in seen
+    # The Zero 2 W has no PWR LED, so it mustn't get the PWR LED's parameter.
+    assert ("dtparam=pwr_led_trigger=none" in seen) != (board == "Zero 2 W")
+
+
 def test_pi3b_has_no_5ghz(tmp_path):
     r = fake_root(tmp_path, model="Raspberry Pi 3 Model B Rev 1.2")
     assert cfg(r, "questions", "--yes", "--no-home").returncode == 0
@@ -250,6 +273,7 @@ def test_pi3b_has_no_5ghz(tmp_path):
     ("Raspberry Pi 3 Model B Plus Rev 1.3", "pi3"),
     ("Raspberry Pi 4 Model B Rev 1.5", "pi4"),
     ("Raspberry Pi 5 Model B Rev 1.0", "pi5"),
+    ("Raspberry Pi Zero 2 W Rev 1.0", "pi3"),
 ])
 def test_supported_models(tmp_path, model, family):
     r = fake_root(tmp_path, model=model)
@@ -258,10 +282,10 @@ def test_supported_models(tmp_path, model, family):
     assert cfg(r, "apply", "--release", str(REPO)).returncode == 0
     dev = (r / "etc/inkstant/device.toml").read_text()
     assert f'family = "{family}"' in dev
-    assert ("wifi_5ghz = false" in dev) == ("Model B Rev" in model and "Pi 3" in model)
+    assert ("wifi_5ghz = false" in dev) == ("Pi 3 Model B Rev" in model or "Zero 2 W" in model)
 
 
-@pytest.mark.parametrize("model", ["Raspberry Pi Zero 2 W Rev 1.0", "Raspberry Pi 2 Model B Rev 1.1",
+@pytest.mark.parametrize("model", ["Raspberry Pi Zero W Rev 1.1", "Raspberry Pi 2 Model B Rev 1.1",
                                    "Raspberry Pi Compute Module 4 Rev 1.0", "Raspberry Pi Compute Module 5 Rev 1.0",
                                    "Raspberry Pi 400 Rev 1.0", "Raspberry Pi 500 Rev 1.0", "Raspberry Pi 500+ Rev 1.0"])
 def test_unsupported_models(tmp_path, model):

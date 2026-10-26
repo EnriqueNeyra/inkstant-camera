@@ -100,7 +100,7 @@ detect_family() {
   case "$model" in
     *"Raspberry Pi 5 Model B"*) family=pi5 ;;
     *"Raspberry Pi 4 Model B"*) family=pi4 ;;
-    *"Raspberry Pi 3 Model"*) family=pi3 ;;
+    *"Raspberry Pi 3 Model"*|*"Raspberry Pi Zero 2 W"*) family=pi3 ;;
     *) family=unknown ;;
   esac
   say "  board: $model"
