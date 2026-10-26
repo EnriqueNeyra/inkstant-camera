@@ -17,7 +17,7 @@ Every part of the camera, with the measurements an enclosure needs and links to 
 - **Every part is 3D-printed,** in as few parts as possible, and each prints without excessive supports. No light pipe or window in another material.
 - **It holds together securely with no extra hardware:** no screws, glue, inserts or standoffs beyond the screws that come with the PiSugar. The one exception is the optional magnets in each print's enclosure.
 - **The display needs no shading or recess** against sunlight: the small risk of sun damage is accepted.
-- Design for the **Raspberry Pi 3B+ only** (decided 2026-10-19, replacing the 3A+, which is often sold out). It's easy to buy, Raspberry Pi will make it until at least January 2030 ✅ ([product page](https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/)), and the PiSugar 3 Plus is made for it. It's the 3A+'s chip and layout with a USB and Ethernet end added, which the camera doesn't use. The software also runs on the Pi 3A+, 3B, 4B and 5, but this case doesn't need to fit them. The 3B has the same footprint as the 3B+ ✅ ([product brief](https://pip.raspberrypi.com/documents/RP-008338-DS)), so it should fit anyway. [Other boards](#other-boards-not-for-this-case) has pointers for the rest.
+- **The case takes four boards: the Raspberry Pi 3B+, 3A+, 4B and Zero 2 W,** every one on the PiSugar 3 Plus (a body per board since 2026-10-23; since 2026-10-24, one tub for all four that holds the PiSugar, with a deck for each board). This guide gives every position on the 3B+, the reference board ✅ ([product page](https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/)); [Other boards](#other-boards) has what differs on the rest. The software also runs on the Pi 3B and 5. The 3B has the same footprint as the 3B+ ✅ ([product brief](https://pip.raspberrypi.com/documents/RP-008338-DS)), so it should fit the 3B+'s deck.
 
 ## Contents
 
@@ -34,7 +34,7 @@ Every part of the camera, with the measurements an enclosure needs and links to 
 11. [What the case has to do](#what-the-case-has-to-do)
 12. [A layout that fits](#a-layout-that-fits)
 13. [Measure before you finalise](#measure-before-you-finalise)
-14. [Other boards (not for this case)](#other-boards-not-for-this-case)
+14. [Other boards](#other-boards)
 15. [Sources](#sources)
 
 ## The build at a glance
@@ -372,9 +372,9 @@ Notes for the CAD, not requirements. Everything here is 📐.
 | Which of the PiSugar's five small parts are the LEDs | The light openings |
 | Whether a print can be taken off and put on with the camera on, with no reset | Whether the case must ask the user to turn it off first |
 
-## Other boards (not for this case)
+## Other boards
 
-The case is for the 3B+ only. The software also runs on these boards, so this is a head start for anyone designing a case for one of them. Everything else in this guide (the print, the PiSugar, the camera, the hole pattern, the header and the coordinate frame) is the same on all of them ✅.
+The case also takes the 3A+, 4B and Zero 2 W, each with its own deck. The 3B and Pi 5 run the software too, but have no deck of their own. Everything else in this guide (the print, the PiSugar, the camera, the hole pattern, the header and the coordinate frame) is the same on all of them ✅, except on the Zero 2 W, which is smaller and has its own hole pattern.
 
 **Pi 3B**
 
@@ -408,6 +408,20 @@ All ✅ from the [PDF drawing (RP-008343-DS)](https://pip.raspberrypi.com/docume
   - PoE header: 5 × 5, centred at (61.5, 46.4).
 - **microSD card:** underneath, x −2.27 to 13.1, y 22.1 to 34.1.
 - **With the PiSugar 3 Plus:** the PiSugar covers only x 0 to 65. The USB/Ethernet end has no battery board under it.
+
+**Pi Zero 2 W**
+
+Sources: the [mechanical drawing (RP-008358-DS)](https://pip.raspberrypi.com/documents/RP-008358-DS), the [product brief (RP-008359-DS)](https://pip.raspberrypi.com/documents/RP-008359-DS) and the [reduced schematics (RP-008360-DS)](https://pip.raspberrypi.com/documents/RP-008360-DS). In its own Pi frame: the port edge is y = 0, the microSD edge x = 0, and the header runs along the far long edge.
+
+- **Board:** 65 × 30 ✅. Holes at (3.5, 3.5), (61.5, 3.5), (3.5, 26.5) and (61.5, 26.5), a 58 × 23 pattern ✅.
+- **40-pin header:** centred on (32.5, 26.5), with pin 1 at the low-x end ✅: the same place relative to the two holes beside it as on the 3B+, so a print sits on it the same way. The plain Zero 2 W has no header; the build needs the version with headers ✅ ([product page](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/)).
+- **On the 3B+'s frame,** with the header lined up, the Zero covers y 26 to 56 📐, and its port edge faces the space where the rest of a 3B+ would be.
+- **Ports along the port edge (y = 0):** mini-HDMI at x 12.4, USB (data) at x 41.4 and USB power at x 54, all centres ✅.
+- **Camera connector:** 22-pin, on the short edge opposite the microSD slot ✅ ([camera docs](https://www.raspberrypi.com/documentation/accessories/camera.html)), at about x 61.4 to 65, y 6.8 to 23.3 📐 read off the drawing. The camera needs a 22-pin to 15-pin cable ✅.
+- **Status light:** only the green ACT LED; there's no PWR LED ✅ (its [device tree](https://github.com/raspberrypi/linux/blob/rpi-6.18.y/arch/arm/boot/dts/broadcom/bcm2710-rpi-zero-2-w.dts)). The drawing doesn't show where it is: measure 🧪. It isn't at the microSD end, where the case's light opening is, so the Zero's body shows no light.
+- **On the PiSugar 3 Plus** (65 × 56): only the two posts beside the header land under the Zero's holes. The Zero is screwed to those two and stands on two printed spacers at its other two holes, and the PiSugar reaches 26 past its port edge 📐. The spring pins meet the same header pins as on the other boards. PiSugar lists the 3 Plus for the 3A, 3B, 3B+, 4B and 5, and its smaller PiSugar 3 for the Zero ✅ ([PiSugar docs](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series)), so check it starts and charges the Zero 🧪.
+- **microSD:** the card sits on top of the Zero, not under it as on the other boards 📐.
+- **Wi-Fi:** 2.4 GHz only ✅.
 
 **Pi 5**
 

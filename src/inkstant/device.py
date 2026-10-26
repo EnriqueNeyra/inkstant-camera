@@ -11,7 +11,7 @@ from pathlib import Path
 @dataclass(frozen=True)
 class Device:
     model: str = "unknown"
-    family: str = "pi3"  # pi3, pi4 or pi5
+    family: str = "pi3"  # pi3 (the 3A+, 3B, 3B+ and Zero 2 W: the Pi 3 chip), pi4 or pi5
     wifi_5ghz: bool = True
     camera_hflip: bool = False
     camera_vflip: bool = False
@@ -22,15 +22,21 @@ class Device:
 
 
 def family_from_model(model: str) -> str | None:
-    """Map /proc/device-tree/model to a config.txt family."""
+    """Map /proc/device-tree/model to a board family, or None for a board we don't support."""
     m = model.lower()
     if "raspberry pi 5 model b" in m:  # not the Pi 500 keyboard (no camera port)
         return "pi5"
     if "raspberry pi 4 model b" in m:
         return "pi4"
-    if any(s in m for s in ("raspberry pi 3 model b plus", "raspberry pi 3 model a plus", "raspberry pi 3 model b")):
+    if any(s in m for s in ("raspberry pi 3 model b plus", "raspberry pi 3 model a plus", "raspberry pi 3 model b",
+                            "raspberry pi zero 2 w")):
         return "pi3"
     return None
+
+
+def wifi_5ghz_from_model(model: str) -> bool:
+    """False on the boards whose Wi-Fi is 2.4 GHz only: the 3B and the Zero 2 W."""
+    return "Raspberry Pi 3 Model B Rev" not in model and "Raspberry Pi Zero 2 W" not in model
 
 
 def load(path: Path) -> Device:

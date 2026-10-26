@@ -167,7 +167,7 @@ def cmd_preflight(a) -> int:
     model = board_model()
     fam = devmod.family_from_model(model)
     if fam is None and not a.force_model:
-        problems.append(f"{model} isn't supported: use a Raspberry Pi 3B+, 3A+, 3B, 4B or 5 (see the README)."
+        problems.append(f"{model} isn't supported: use a Raspberry Pi 3B+, 3A+, 4B, Zero 2 W, 3B or 5 (see the README)."
                         " Use --force-model to try anyway.")
     if Path("/") == ROOT and shutil.which("cloud-init") and not P("/etc/cloud/cloud-init.disabled").exists():
         say("  waiting for first-boot setup (cloud-init) to finish …")
@@ -470,7 +470,7 @@ def step_device(ans: dict) -> None:
     d = devmod.Device(
         model=ans.get("model", "unknown"),
         family=ans.get("family", "pi3"),
-        wifi_5ghz="Raspberry Pi 3 Model B Rev" not in ans.get("model", ""),  # the 3B is 2.4 GHz only
+        wifi_5ghz=devmod.wifi_5ghz_from_model(ans.get("model", "")),
         camera_hflip=ans.get("camera_rotate", 0) == 180,
         camera_vflip=ans.get("camera_rotate", 0) == 180,
         display_rotation=ans.get("display_rotation", 0),
@@ -518,15 +518,20 @@ ignore_lcd=1
 disable_touchscreen=1
 disable_camera_led=1
 dtparam=act_led_trigger=timer
-dtparam=pwr_led_trigger=none
 dtoverlay=disable-bt
 [pi3]
+dtparam=pwr_led_trigger=none
+dtoverlay=imx708
+dtoverlay=i2c-rtc,ds3231
+[pi02]
 dtoverlay=imx708
 dtoverlay=i2c-rtc,ds3231
 [pi4]
+dtparam=pwr_led_trigger=none
 dtoverlay=imx708
 dtoverlay=i2c-rtc,ds3231
 [pi5]
+dtparam=pwr_led_trigger=none
 {pi5_cam}
 [all]
 {END}
