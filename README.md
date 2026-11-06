@@ -1,357 +1,271 @@
-# Inkstant Camera
+# Inkstant: The Instant Camera That Never Runs Out of Film
 
-An instant camera that never runs out of film. Every photo "develops" on a small colour e-paper print that pops off the back of the camera for you to keep. Each photo is also saved at full size, so you can open them on your phone, with no app and no internet needed.
+<!-- Hero photo of the finished camera goes here. -->
 
-It's a Raspberry Pi (a 3B+, 3A+, 4B or Zero 2 W), a camera module, a battery board and a 3.6" six-colour e-paper display. It goes together with no soldering and no wiring: the boards plug into each other, and the camera plugs in with its ribbon cable.
+### Inkstant is a Raspberry Pi instant camera. Every photo "develops" on a small colour e-paper print that pops off the back for you to keep, and every photo is also saved at full size for your phone. No app, no account and no internet needed.
 
-<!-- Add a photo of the finished camera here. -->
+**[How it works](#how-it-works) · [What you need](#what-you-need) · [Build it](#build-it) · [Install the software](#install-the-software) · [Using Inkstant](#using-inkstant) · [Troubleshooting](#troubleshooting) · [For developers](#for-developers)**
 
-**How it works:**
+---
 
-- **Shoot:** tap the shutter button. The photo is saved, then develops on the e-paper print in about 20 seconds.
-- **Keep:** pull the print off to keep it. E-paper holds its picture with no power. Put the same print or a fresh one back on to keep shooting.
-- **No print on?** Photos are still saved. The newest one develops on the next print you put on.
-- **Share:** hold the shutter button for 2 seconds and the print shows a QR code. Scan it with your phone to see every photo in your phone's browser, and save the ones you want.
-- **Slideshow:** while the camera is off, it wakes up every hour to show a different photo on the print in the camera.
+## How it works
 
-## Contents
+- **Shoot:** tap the shutter button. The photo develops on the print in about 20 seconds.
+- **Keep:** pull the print off. E-paper keeps its picture with no power, so it's yours to keep. Put a fresh print on and keep shooting.
+- **Share:** hold the shutter button and the print shows a QR code. Scan it, and every photo opens in your phone's browser.
+- **Slideshow:** while the camera is off, it wakes up every hour to show a different photo on the print.
 
-1. [What you need](#what-you-need)
-2. [How it fits together](#how-it-fits-together)
-3. [Step 1: Build the hardware](#step-1-build-the-hardware)
-4. [Step 2: Prepare the SD card](#step-2-prepare-the-sd-card)
-5. [Step 3: Install the software](#step-3-install-the-software)
-6. [Step 4: First start](#step-4-first-start)
-7. [Using the camera](#using-the-camera)
-8. [Getting your photos: the gallery](#getting-your-photos-the-gallery)
-9. [Settings](#settings)
-10. [Troubleshooting](#troubleshooting)
-11. [Commands for SSH](#commands-for-ssh)
-12. [For developers](#for-developers)
-13. [Project status](#project-status)
-14. [Credits](#credits)
-15. [License](#license)
+It goes together with **no soldering and no wiring**: the boards plug into each other, and the camera plugs in with a ribbon cable.
+
+---
 
 ## What you need
 
-### Parts
+<!-- Photo of all the parts laid out goes here. -->
 
 | Part | What to get | Notes |
 |---|---|---|
-| Computer | [Raspberry Pi 3B+](https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/), [3A+](https://www.raspberrypi.com/products/raspberry-pi-3-model-a-plus/), [4B](https://www.raspberrypi.com/products/raspberry-pi-4-model-b/) or [Zero 2 W](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/) | The case fits all four. See [which Raspberry Pi](#which-raspberry-pi) for how they differ. A Zero 2 W must be the version **with headers** |
-| Camera | [Arducam 12MP IMX708 autofocus camera module](https://www.arducam.com/arducam-12mp-imx708-autofocus-camera-module-with-hdr-pdaf-for-raspberry-pi.html) ([Amazon](https://www.amazon.com/dp/B0C9PYCV9S)) | The 75° lens. Raspberry Pi's own Camera Module 3 (standard lens) uses the same sensor and should work, but only the Arducam has been tested |
-| Camera cable, 150 mm | **15-pin to 15-pin** for a 3B+, 3A+ or 4B. **15-pin to 22-pin** for a Zero 2 W (Raspberry Pi's [Standard–Mini cable](https://www.raspberrypi.com/products/camera-cable/), 150 mm or longer) | The Arducam box may only include the 15-to-22-pin cable, which fits only the Zero 2 W (and the Pi 5) |
-| Display, one per print | [Waveshare 3.6" e-Paper HAT+ (E)](https://www.amazon.com/dp/B0G656R3M9) | The **HAT+ (E)**: the display on a driver board, with a 40-pin socket on the back that pushes straight onto the Pi. Not the bare panel. Six colours, 600 × 400 |
-| Battery | [PiSugar 3 Plus](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series) | 5000 mAh battery with a clock and two buttons: **BTN is the shutter**, and PWR turns the camera on and off. It needs firmware 1.2.4 or newer; the setup script checks this for you. The same board for every Pi, the Zero 2 W included |
-| microSD card | 32 GB or larger, A1-rated, from a known brand | Holds several thousand photos |
-| Charging | A USB-C cable and any 5 V USB charger | |
-| Case | 3D-printed | The case design isn't published yet. See [what the case needs](#what-the-case-needs) |
-| Magnets (optional) | Small neodymium disc magnets | They fit into each print's own case, so a print you keep can go on the fridge |
+| **Raspberry Pi** | [Raspberry Pi 3B+](https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/) | Or a 3A+, 4B or Zero 2 W ([compare them](#which-raspberry-pi)) |
+| **Camera** | [Arducam 12MP IMX708 autofocus](https://www.amazon.com/dp/B0C9PYCV9S) | The 75° lens |
+| **Camera cable** | 15-pin to 15-pin, 150 mm | The camera's box may only have a 15-to-22-pin one, which fits only a Zero 2 W ([Raspberry Pi's](https://www.raspberrypi.com/products/camera-cable/)) |
+| **Battery** | [PiSugar 3 Plus](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series) | 5000 mAh. Its two buttons are the shutter and the power button |
+| **Prints** | [Waveshare 3.6" e-Paper HAT+ (E)](https://www.amazon.com/dp/B0G656R3M9) | One per print. Get the **HAT+ (E)**, not the bare screen |
+| **microSD card** | 32 GB or larger, A1-rated | Holds thousands of photos |
+| **Case** | 3D-printed | Files coming soon |
+| **Magnets** (optional) | Small disc magnets | Put a print you keep on the fridge |
+
+You'll also need a small screwdriver, a USB-C charger, and a computer on the same Wi-Fi as the camera.
 
 ### Which Raspberry Pi?
 
-Inkstant runs on four boards, with the same software, the same setup command and the same case: the setup script works out which board it's on, and the case has one body for all four, with a small inner part (the deck) for each board. Every one runs on the PiSugar 3 Plus. Raspberry Pi will keep making all four until at least January 2030.
-
-| | Pi 3B+ | Pi 3A+ | Pi 4B | Pi Zero 2 W |
-|---|---|---|---|---|
-| Size | 85 × 56 mm | 65 × 56 mm | 85 × 56 mm | 65 × 30 mm |
-| Status light | Shows through the case | Shows through the case | Shows through the case | Doesn't show: the Zero's green light isn't at the case's light opening |
-| Camera cable | 15-to-15 pin | 15-to-15 pin | 15-to-15 pin | 15-to-22 pin |
-| On the PiSugar 3 Plus | Made for it | Same outline | Covers the first 65 mm of the board | Two screws beside the header, and two printed spacers under its other two holes |
-| Battery use | Low: the camera switches its USB ports and Ethernet off | Lowest | Highest: about 1.7 times the 3A+'s | Low, about the 3A+'s |
-| Wi-Fi | 2.4 and 5 GHz | 2.4 and 5 GHz | 2.4 and 5 GHz | 2.4 GHz only |
-| Speed | Focuses in about 4 s from far to near | Like the 3B+ | Fastest: it handles about 5 camera frames a second to the 3B+'s 3, so it focuses about 1.5 times as fast | Like the 3B+ to focus. Its processor is slower, so photos take a little longer to develop |
-| Buying | Easy to find | Often sold out | Easy to find; the 1 GB is plenty | Buy the version **with headers**. The plain Zero 2 W needs a header soldered on |
-| Software tried on it | Yes | Not yet | Yes | Not yet |
-
-Battery use comes from Raspberry Pi's typical figures for each board. It hasn't been measured on the camera yet.
-
-On a **3B+**, the camera switches the USB ports and Ethernet off to save battery, except in developer mode (Settings → Advanced). With them off, it should use about as much as a 3A+.
-
-PiSugar lists the 3 Plus for the bigger boards and its smaller PiSugar 3 for the Zero, so on a **Zero 2 W**, check that the Pi starts and charges from the PiSugar before you close the case.
+The **3B+** is the easiest to buy, and it's the board Inkstant is built on. The 3A+, 4B and Zero 2 W work too: all four run the same software, use the PiSugar 3 Plus and fit the same case.
 
 <details>
-<summary><b>The Pi 3B and Pi 5</b></summary>
+<summary><b>Compare the boards</b></summary>
 
-The software also runs on these two. [HARDWARE.md](HARDWARE.md#other-boards) has their measurements, and the other boards'.
+<br>
 
-| Board | Camera cable | Notes |
+| Board | Camera cable | Good to know |
 |---|---|---|
-| Pi 3B | 15-to-15 pin | The same size and layout as the 3B+, so the case should fit it (not tried). It can only join 2.4 GHz Wi-Fi |
-| Pi 5 | 15-to-22 pin (usually in the camera's box) | Clean any flux off the bottom of the header pins, and check that every PiSugar spring pin lands on its pin. The official Active Cooler may not fit. The camera can go on either connector: the setup script asks which one, and you answer 0 or 1, as printed next to it |
+| **Pi 3B+** | 15-to-15 pin | The camera switches off its unused USB ports and Ethernet to save battery |
+| **Pi 3A+** | 15-to-15 pin | The smallest, and the lightest on the battery, but often sold out. Not tried yet |
+| **Pi 4B** | 15-to-15 pin | Focuses fastest, and uses the most battery |
+| **Pi Zero 2 W** | 15-to-22 pin | Buy the version **with headers**. It joins 2.4 GHz Wi-Fi only, and its green light doesn't show through the case. It's held by two of the PiSugar's screws plus two printed spacers. Not tried yet: check that it starts and charges from the PiSugar before you close the case |
+
+The Pi 3B and Pi 5 also run the software. [HARDWARE.md](HARDWARE.md#other-boards) has the measurements for every board.
 
 </details>
 
-### Tools
+---
 
-- A small screwdriver, for the PiSugar's screws
-- A computer (Mac, Windows or Linux) on the same Wi-Fi as the camera, to install the software
+## Build it
 
-There's no soldering, crimping or wiring.
-
-## How it fits together
-
-```text
- ┌────────────────────────────────────────────┐
- │ PRINT: Waveshare 3.6" e-Paper HAT+ (E)     │ ◄── pops off to keep
- └──────────────────────┬─────────────────────┘
-                        │ its 40-pin socket pushes onto the Pi's header
- ┌──────────────────────┴─────────────────────┐
- │ Raspberry Pi                               │ ◄── ribbon ── camera module
- │   green light ──► opening in the case      │
- └──────────────────────┬─────────────────────┘
-                        │ spring pins touch the header from underneath
- ┌──────────────────────┴─────────────────────┐
- │ PiSugar 3 Plus: battery, clock, USB-C,     │
- │ PWR (on and off) and BTN (the shutter)     │
- └────────────────────────────────────────────┘
-```
-
-- The **PiSugar** sits under the Pi. It powers the Pi through spring pins, so there's no cable between them. Its **BTN** button is the shutter, and **PWR** turns the camera on and off.
-- The **camera** plugs into the Pi's camera connector with a ribbon cable.
-- Each **print** is a complete Waveshare display. Its socket pushes straight onto the Pi's 40-pin header, and pulls off again when you want to keep the print. The camera tells that a print is on from the print's own ID chip, so there's nothing to wire.
-- The **light** is the Pi's own green light. It shines out through a small opening in the case.
-
-## Step 1: Build the hardware
-
-Work with everything switched off: the Pi unplugged and the PiSugar off. Touch something metal and grounded, like a radiator or a tap, before you handle the camera board, since static can damage it.
+Work with everything switched off. Touch something metal, like a radiator or a tap, before you handle the camera board, since static can damage it.
 
 > [!WARNING]
-> A print must go on **straight, with each of the Pi's 40 pins in its own hole** in the print's socket. A print that's one pin along, one row over or turned round joins the Pi's 5 V pins to the wrong pins, and can damage the Pi. The case should guide the print so it can only go on the right way.
+> A print must always go on **straight, with each of the Pi's 40 pins in its own hole**. A print that's one pin or one row out connects 5 V to the wrong pins and can damage the Pi.
 
-### Check the parts
+### 1. Charge the PiSugar
 
-1. The display is the **HAT+ (E)**: a display on a driver board, with a black 40-hole socket on the back.
-2. You have the right **camera cable**: 15-to-15 pin for a 3B+, 3A+ or 4B, or 15-to-22 pin for a Zero 2 W. The wrong one doesn't fit.
-3. Charge the PiSugar fully over USB-C, then make sure it's off. If its four little lights are on, hold PWR until they go out.
+Charge it over USB-C, then make sure it's off: if its four little lights are on, hold **PWR** until they go out.
 
-### Mount the Pi on the PiSugar
+### 2. Mount the Pi on the PiSugar
 
-1. Peel the protective film off the PiSugar's screw posts.
-2. Put the PiSugar under the Pi, with its spring pins under the Pi's 40-pin header and its screw posts under the Pi's mounting holes.
-3. Press the Pi down gently onto the spring pins, and fit all four screws that came with the PiSugar. They matter: the case holds the PiSugar, and the Pi rides on it on these screws.
+Peel the film off the PiSugar's screw posts. Set the Pi on top, with the PiSugar's spring pins under the Pi's 40-pin header, and fit all four screws. They matter: the case holds the PiSugar, and the Pi rides on its screws.
 
-On a **Zero 2 W**, only the two posts beside the header line up with the Zero's holes. Stand the case's two printed spacers on the PiSugar, peg up, under the Zero's other two holes, then fit the two screws beside the header.
+**Zero 2 W:** only the two posts beside the header line up. Stand the case's two printed spacers under the Zero's other holes, then fit the two screws.
 
-### Connect the camera
+### 3. Connect the camera
 
-1. Find the Pi's camera connector. On a 3B+, 3A+ or 4B, it's labelled **CAMERA**, between the HDMI port and the audio jack. On a Zero 2 W, it's the narrow connector on the short edge opposite the microSD card.
-2. Gently pull up the connector's plastic flap until it stops.
-3. Push the cable in straight and all the way, with its **metal contacts facing away from the flap**. Push the flap back down.
-4. Do the same at the camera board: metal contacts facing away from the flap, towards the board.
-5. The print sits over the Pi, so lay the cable flat against the board and lead it out past the board's edge.
+Gently lift the flap on the Pi's camera connector. On a 3B+, 3A+ or 4B it's labelled **CAMERA**; on a Zero 2 W it's on the short edge. Push the cable in straight, with its **metal contacts facing away from the flap**, and press the flap down. Do the same at the camera board.
 
-### Put a print on
+### 4. Put a print on
 
-1. Hold the print display side up, turned so its board lies over the Pi rather than hanging off the side.
-2. Line the socket up over the Pi's 40-pin header, so every pin sits under a hole with none left over at either end or along either side.
-3. Press it straight down until it sits firmly.
-4. **To take it off,** pull it straight up. Don't rock it from side to side, which bends the pins.
+Line the print's socket up over the Pi's header, so no pin is left over at either end, and press straight down. To take it off, pull straight up without rocking it.
 
-### Check before powering on
+### 5. Close the case
 
-1. **The print is on straight:** look along the header from both ends and both sides. No pin is showing outside the socket.
-2. **The camera cable** is pushed fully in at both ends, with both flaps down.
+The case files are coming soon. To design your own, [HARDWARE.md](HARDWARE.md#what-the-case-has-to-do) lists what the case has to do, with every part's measurements.
 
-### What the case needs
+---
 
-The case has been designed for all four boards, and isn't published yet. If you design your own, it needs:
+## Install the software
 
-- **A guide for the print** that lines it up with the Pi's header, so it can only go on straight and the right way round, never a pin or a row out. The guide also sets how far the print presses on, and it should let you pull the print straight off.
-- **Its own case for each print,** separate from the camera body, so a print pops out like a piece of film. The display board is 89.5 × 59 mm. Leave its socket open on the back, give it a grip for pulling it off, and add pockets for magnets.
-- A window for the display.
-- **A small opening for the Pi's green light.** The Pi's small status lights sit at the edge of the board, a red one and a green one. Line the opening up with the green one. (A Zero 2 W has only the green one.)
-- **Printed caps for the PiSugar's PWR and BTN buttons,** and openings for its USB-C port and its four battery lights, which are all on one edge. BTN is the shutter, so its cap should be easy to find by touch and press cleanly. PWR's cap is best a little recessed, so it isn't pressed by accident.
-- Air around the PiSugar's charging chip, which gets hot (50 to 80 °C) while charging.
-- A window for the camera, and a way to hold the camera board square. If the camera or display ends up upside down, the setup script can flip the picture.
-- A way to reach the microSD card.
-- Every part 3D-printed, held together with no screws or glue beyond the screws that come with the PiSugar.
+This takes about half an hour, mostly waiting.
 
-[HARDWARE.md](HARDWARE.md) has every part's measurements, with links to the makers' drawings and 3D models.
+### 1. Prepare the SD card
 
-## Step 2: Prepare the SD card
+Install [Raspberry Pi Imager](https://www.raspberrypi.com/software/) on your computer, put the microSD card in, and choose:
 
-You'll use **Raspberry Pi Imager**, a free app from Raspberry Pi, to put the operating system on the microSD card and set it up to join your Wi-Fi.
+| Imager setting | Choose |
+|---|---|
+| Device | Your Pi. **Raspberry Pi 3** covers the 3B+ and 3A+ |
+| Operating system | Raspberry Pi OS (other) → **Raspberry Pi OS Lite (64-bit)** |
+| Hostname | `inkstant` |
+| Username and password | Anything you'll remember |
+| Wi-Fi | Your home Wi-Fi and your country |
+| SSH | On, with password login |
 
-1. Download and install Imager from [raspberrypi.com/software](https://www.raspberrypi.com/software/), and put the microSD card in your computer.
-2. In Imager, choose:
-   - **Device:** Raspberry Pi 3 for a 3B+ or 3A+, Raspberry Pi 4 for a 4B, or Raspberry Pi Zero 2 W.
-   - **Operating system:** Raspberry Pi OS (other) → **Raspberry Pi OS Lite (64-bit)**.
-   - **Storage:** your microSD card.
-3. When Imager offers to **customise** the settings, fill in:
-   - **Hostname:** `inkstant` (the examples below assume this name; if you pick another, use it instead).
-   - **Username and password:** anything you like. You'll need them in a minute.
-   - **Wi-Fi:** your home Wi-Fi's name and password, and your country.
-   - **Time zone** and keyboard layout.
-   - **SSH:** turn it on, with password login. SSH lets you type commands on the Pi from your computer.
-4. Write the card. Imager erases it first.
+Then write the card.
 
-## Step 3: Install the software
+### 2. Turn the camera on and connect
 
-1. Put the microSD card in the Pi, and a print on if you have one ready.
-2. **Turn the camera on:** press PWR briefly, then press and hold it. The PiSugar's lights count up from 1 to 4 and the Pi starts.
-3. **Wait about two minutes.** The first start takes a while because the Pi sets itself up. Until the software is installed, the green light just flickers now and then; that's normal.
-4. **Connect to the Pi from your computer.** Open **Terminal** on a Mac or Linux, or **PowerShell** on Windows, and type (with your username):
+Put the card in the Pi. Press **PWR** briefly, then press and hold it until the PiSugar's lights count up. Wait about two minutes while the Pi sets itself up.
 
-   ```bash
-   ssh your-username@inkstant.local
-   ```
+On your computer, open **Terminal** (Mac or Linux) or **PowerShell** (Windows), and connect with your username:
 
-   - The first time, it asks "Are you sure you want to continue connecting?". Type `yes` and press Enter.
-   - Type your password. Nothing appears on screen while you type; that's normal. Press Enter.
-   - If `inkstant.local` isn't found, wait another minute and try again. Your router's app or web page can also show the Pi's IP address, which works instead (`ssh your-username@192.168.1.23`, for example).
-5. **Run the setup command.** Copy this line, paste it into the same window, and press Enter:
+```bash
+ssh your-username@inkstant.local
+```
 
-   ```bash
-   curl -fsSL https://raw.githubusercontent.com/EnriqueNeyra/inkstant-camera/main/setup.sh | sudo bash -s -- --dev
-   ```
+Type `yes` the first time it asks, then your password. Nothing shows while you type it; that's normal.
 
-   It may ask for your password again. Then it downloads Inkstant and installs it.
+### 3. Run the setup command
 
-   `--dev` turns on **developer mode**, which keeps the camera on your home Wi-Fi so you can SSH back in if something needs fixing. It's a good idea for your first build. It uses a little more battery, and you can turn it off later in the gallery (Settings → Advanced). To install without it, use `| sudo bash` at the end instead of `| sudo bash -s -- --dev`.
+```bash
+curl -fsSL https://raw.githubusercontent.com/EnriqueNeyra/inkstant-camera/main/setup.sh | sudo bash -s -- --dev
+```
 
-6. **Answer the questions.** Press Enter to accept the suggestion in brackets:
+It asks a few questions (press Enter to accept each suggestion), then installs everything in about 15 to 25 minutes. At the end, **write down the camera's Wi-Fi name and password**: you'll need them to see your photos away from home. It restarts when you press Enter.
 
-   | Question | What to answer |
-   |---|---|
-   | Camera Wi-Fi name | The name of the Wi-Fi network the camera makes when you're away from home. Enter keeps the suggested `Inkstant-XXXX` |
-   | Camera Wi-Fi password | Enter keeps the random one it suggests. It's shown again at the end |
-   | Use "(your Wi-Fi)" for sharing at home? | Yes. Then at home your phone sees the photos over your own Wi-Fi |
-   | Wi-Fi country | Only asked if it isn't set yet: two letters, like `US` or `GB` |
-   | Is the camera mounted upside down? | No, unless your case holds it upside down |
-   | Is the display module mounted upside down? | No, unless your case holds it upside down |
-   | Developer mode? | Only asked without `--dev`. No is fine for most builds: you can turn it on later in Settings → Advanced |
+If anything goes wrong, it stops and says what to fix. Running the same command again is always safe.
 
-7. **Wait** about 15 to 25 minutes, a little longer on a Zero 2 W. It shows each step as it goes. If anything goes wrong, it stops and says what to fix. Running the same command again is always safe.
-8. **Write down the camera's Wi-Fi name and password** from the summary at the end. You'll need them to see your photos away from home. (You can also find them later in the gallery: Settings → Wi-Fi → Camera Wi-Fi.)
-9. Press Enter to restart.
+<details>
+<summary><b>The questions, and what <code>--dev</code> does</b></summary>
 
-## Step 4: First start
+<br>
 
-1. **Watch the light:** it blinks slowly while the camera starts (up to about half a minute), then stays solid. Solid means ready.
-2. **Take a photo:** with a print on, tap BTN. A moment later the light winks, then blinks slowly while the photo develops on the print, which takes about 20 seconds.
-3. **Open the gallery:** hold BTN for 2 seconds. The print shows a QR code; scan it with your phone's camera ([more below](#getting-your-photos-the-gallery)).
-4. **Run the setup check:** in the gallery, tap the **Settings** button (the sliders icon, top right), open **Advanced**, and look at **Setup check**. Every row should have a tick. If one doesn't, it says how to fix it.
+| Question | What to answer |
+|---|---|
+| Camera Wi-Fi name | The network the camera makes when you're away from home. Enter keeps `Inkstant-XXXX` |
+| Camera Wi-Fi password | Enter keeps the random one it suggests |
+| Use "(your Wi-Fi)" for sharing at home? | Yes |
+| Wi-Fi country | Only asked if it isn't set: two letters, like `US` or `GB` |
+| Is the camera mounted upside down? | No, unless your case holds it that way |
+| Is the display module mounted upside down? | No, unless your case holds it that way |
+| Developer mode? | Only asked without `--dev` |
 
-### Check the light
+`--dev` turns on **developer mode**: the camera stays on your home Wi-Fi, so you can SSH back in if something needs fixing. It's a good idea for a first build. It uses a little more battery, and you can turn it off later in the gallery (Settings → Advanced). To install without it, end the command with `| sudo bash` instead.
 
-If you can't see the light through its opening in the case, or see red, the opening isn't lined up with the Pi's green light.
+</details>
 
-### Before you close the case
+### 4. Take your first photo
+
+1. The light blinks slowly while the camera starts, then stays on: it's ready.
+2. **Tap BTN.** The light winks, then the photo develops on the print.
+3. **Hold BTN** to share, and scan the QR code on the print with your phone.
+4. In the gallery, open **Settings → Advanced → Setup check**. Every row should have a tick; if one doesn't, it says how to fix it.
+
+<details>
+<summary><b>Checklist before you close the case</b></summary>
+
+<br>
 
 - [ ] The green light is easy to see through its opening, indoors and in daylight.
-- [ ] A print goes on straight every time, and stays on when you shake the camera gently.
-- [ ] A print pulls off without bending any pins.
-- [ ] With the print off, **Show on camera** in the gallery says there's no display module; put it back on and it works.
-- [ ] Taking a print off and putting one on while the camera is on doesn't restart anything.
+- [ ] A print goes on straight every time, stays on when you shake the camera gently, and pulls off without bending pins.
+- [ ] With the print off, **Show on camera** in the gallery says there's no display module. Put the print back on and it works.
 - [ ] PWR and BTN press reliably through the case.
-- [ ] While charging, the PiSugar doesn't get too hot inside the case.
-- [ ] The screen is easy to read outdoors in the shade.
+- [ ] The PiSugar doesn't get too hot in the case while charging.
 
-## Using the camera
+</details>
+
+---
+
+## Using Inkstant
 
 ### Buttons
 
-Both buttons are on the PiSugar's edge.
+Both buttons are on the edge of the PiSugar.
 
-| Button | Press | What happens |
+| Button | Do this | What happens |
 |---|---|---|
-| **BTN** (the shutter) | Tap | Take a photo. A double tap takes one photo too. If the camera is asleep, it wakes and takes the photo a second or two later |
-| | Hold for 2 seconds | Sharing on or off: the print shows a QR code for the gallery |
-| | Double tap while sharing | Switch between home Wi-Fi and the camera's own Wi-Fi (for a guest's phone) |
-| **PWR** | Short press, then press and hold | Turn on |
-| | Long press while on | Turn off. A photo that's developing finishes first |
+| **BTN** (shutter) | Tap | Take a photo |
+| | Hold | Start or stop sharing |
+| | Double-tap while sharing | Switch between your home Wi-Fi and the camera's own Wi-Fi |
+| **PWR** | Press, then press and hold | Turn on |
+| | Hold while on | Turn off (a photo that's developing finishes first) |
 
-- **The photo is taken a moment after you tap,** not the instant you press: the PiSugar waits briefly to check it isn't a double tap. Hold still until the light winks.
-- **While a photo develops** (about 20 seconds), BTN is ignored. It works again as soon as the photo is showing.
-- **While sharing,** a tap doesn't take a photo, so one can't be taken by accident while you show the print to someone. The light blinks slowly, and the print says how to stop. Hold BTN to stop sharing, and taps take photos again once the print shows your photo.
-- Plugging in to charge doesn't turn the camera on.
+- **Hold still until the light winks.** The photo is taken a moment after you tap, while the PiSugar checks it isn't a double tap.
+- **While a photo develops, or while sharing,** BTN doesn't take photos.
+- **Charging doesn't turn the camera on.**
 
-### The status light
+### The light
 
-The Pi's green light, seen through its opening in the case, is the camera's only light, and it has just four looks:
+The Pi's green light, seen through the case, is the camera's only light.
 
 | Light | Meaning |
 |---|---|
-| Solid | On: tap BTN to take a photo |
-| Slow blink (on half a second, off half a second) | Wait, a tap won't take a photo: starting up, developing a photo, sharing, or finishing before it turns off |
-| A short wink (off for a moment) | Your photo was taken |
-| Off | The camera is off. When the slideshow changes the picture, it blinks while the Pi starts, then goes off |
+| **On** | Ready: tap BTN to take a photo |
+| **Slow blink** | Wait: starting, developing, sharing or turning off |
+| **Quick wink** | Your photo was taken |
+| **Off** | The camera is off |
 
-- **No wink when you tap BTN?** No photo was taken. Start sharing, and the gallery says why at the top of the page.
-- **Everything else shows elsewhere:** sharing shows its QR code on the print, and the battery level and any problems show in the gallery. The PiSugar's own four lights show the charge when you press PWR.
-
-The gallery has the same list under Settings → Light → What it means.
+No wink when you tapped? No photo was taken. Start sharing, and the gallery says why at the top.
 
 ### Prints
 
-- **Keep a photo:** pull the print straight off. It keeps its picture with no power.
-- **The newest photo is the one waiting to develop.** If you take five photos with no print on, then put one on, only the fifth develops. The others are all saved and in the gallery.
-- **A print you put on keeps whatever it shows,** unless a photo is waiting to develop. While the camera is off, though, the slideshow changes the print in the camera: turn the slideshow off to leave it alone.
-- **Pulling a print off while it's developing** stops it, like pulling an instant photo out early. That photo develops on the next print instead.
-- **To put any photo on the print in the camera,** open it in the gallery and tap **Show on camera**.
-- **Put prints on straight** and pull them off straight, never at an angle or a pin out ([why](#step-1-build-the-hardware)).
-- **Look after the prints** (Waveshare's advice):
-  - Keep them out of long direct sunlight, which can damage the screen for good.
-  - Use them between 0 and 40 °C. Cold can give the colours a tint.
-  - A picture left on a print for many months can burn in. To store a print, give it a white screen first: put it on the camera with the slideshow off, then turn the camera off, and the screen turns white. Waveshare suggests storing them for at most 6 months.
-  - Each print is rated for about a million picture changes.
+- **No print on?** Photos are still saved. The newest one develops on the next print you put on.
+- **Pulling a print off while it develops** stops it, like pulling an instant photo out early. That photo develops on the next print instead.
+- **Any photo can go on the print:** open it in the gallery and tap **Show on camera**.
 
-### Sleep, turning off and the battery
+<details>
+<summary><b>Looking after prints</b></summary>
 
-- **Sleep:** after 5 minutes without taking photos, the camera rests its image sensor to save battery. The light stays solid: tap BTN as usual, and the photo is taken a second or two later.
-- **Turning off:** after 10 minutes without use, the camera turns itself off. Before it does, it sets an alarm for the next slideshow picture.
-- **Battery saver** turns on by itself at 20%: the camera sleeps after 1 minute, turns off after 5, and stops sharing after 5.
-- **Low battery:** the gallery warns at 15%, and the camera turns itself off at 5%.
-- **Charging:** plug a USB-C charger into the PiSugar. Charging doesn't turn the camera on. The PiSugar's four small lights show the charge level.
-- **The PiSugar gets hot while charging:** its charging chip reaches 50 to 80 °C. Don't touch it, and leave air around it in the case.
-- **The battery keeps the camera's clock.** If the battery runs completely flat or is unplugged, the clock resets: share at home to set it from the internet, or use "Use this phone's time" in Settings.
-- The PiSugar's small round button is a reset, for emergencies only.
+<br>
 
-### Slideshow
+From Waveshare's advice for the display:
 
-While the camera is off, it wakes up every hour to put a different photo on the print in the camera, then turns off again. You can change how often, the order, and set quiet hours (for example, no changes overnight) in the gallery's settings.
+- Keep prints out of long direct sunlight, which can damage the screen for good.
+- Use them between 0 and 40 °C. Cold can tint the colours.
+- A picture left on for many months can burn in. To store a print, give it a white screen first: turn the slideshow off, then turn the camera off with the print on. Waveshare suggests storing prints for at most 6 months.
+- Each print is rated for about a million picture changes.
 
-If the camera won't wake itself again (the slideshow is off, the battery is low, or the clock isn't set), it turns the screen white as it turns off, to protect the display. **Take the print out first if you want to keep its photo.**
+</details>
 
-## Getting your photos: the gallery
+### Getting your photos
 
-The gallery is a small website that the camera runs while sharing is on. It works in any phone or computer browser: there's no app to install, no account and no internet needed.
+<p align="center"><img src="docs/images/print-share-screen.png" width="400" alt="The print showing a QR code for the gallery"></p>
 
-### At home
+**Hold BTN** and the print shows a QR code. Scan it with your phone's camera, and the gallery opens in your browser: there's nothing to install.
 
-1. **Hold BTN** on the PiSugar for 2 seconds. The camera looks for your home Wi-Fi for a few seconds.
-2. **The print shows a QR code.** Scan it with your phone's camera, and the gallery opens in your browser.
-3. **Without the QR code** (no print on, or on a laptop), open a browser on any device on the same Wi-Fi and go to the address printed next to the QR code (like `http://192.168.1.23`), or to **`http://inkstant.local`** (your hostname, followed by `.local`).
+<p align="center">
+  <img src="docs/images/gallery-photos.png" width="30%" alt="The gallery: every photo, by day">
+  &nbsp;
+  <img src="docs/images/gallery-print.png" width="30%" alt="A photo seen as the print shows it">
+  &nbsp;
+  <img src="docs/images/gallery-settings.png" width="30%" alt="The gallery's settings">
+</p>
 
-### Away from home
-
-When the camera can't find your home Wi-Fi, it makes its own Wi-Fi network instead. To use it even at home, for a guest whose phone isn't on your Wi-Fi, **double-tap BTN** while the home QR code is showing. Double-tap again to go back to home Wi-Fi.
-
-1. The print shows **two QR codes**, with the network's name and password underneath.
-2. Scan the first QR code ("1. Join Wi-Fi") to join the camera's Wi-Fi. (Or join it by hand in your phone's Wi-Fi settings, with the name and password from the end of setup.)
-3. Scan the second QR code ("2. Open photos"), or go to **`http://10.42.0.1`**.
-
-Your phone may say this Wi-Fi has no internet. That's expected: stay connected.
-
-### In the gallery
-
-- **See a photo:** tap it.
-- **Save one photo to your phone:** open it, then press and hold the photo and choose "Save to Photos" (iPhone) or "Download image" (Android).
-- **Save many:** tap **Select**, choose photos or whole days, then **Download**. They come as one ZIP file. **Download all…** in the ⋯ menu gets every photo.
-- **Delete:** tap **Select**, choose photos, then **Delete**.
-- **Show on camera:** puts the photo you're looking at on the print in the camera.
-- **See the print:** while looking at a photo, switch from **Photo** to **Print** at the top to see it as the camera's display shows it, in the display's six colours. Save or download it the same way as a photo. The gallery keeps one tile per photo; the print is stored with it.
+- **Save a photo:** open it, press and hold it, and choose "Save to Photos" (iPhone) or "Download image" (Android).
+- **Save or delete many:** tap **Select**, pick photos or whole days, then **Download** (as one ZIP) or **Delete**.
+- **See the print:** switch from **Photo** to **Print** to see a photo in the display's six colours.
 - **Settings:** the sliders icon at the top right.
 
-### Stop sharing
+**At home,** the camera shares over your own Wi-Fi. **Away from home,** it makes its own Wi-Fi network, and the print shows two QR codes: the first joins the camera's Wi-Fi, and the second opens the photos. Your phone may say this network has no internet; stay connected. Double-tap BTN while sharing to switch between the two, for example for a guest's phone.
 
-Hold BTN again for 2 seconds, tap **Stop sharing** in the gallery, or just leave it: on battery, sharing stops by itself after 10 minutes without anyone using the gallery (5 with the battery saver on). The print goes back to showing your photo, and taps take photos again once it has.
+No QR code? On the same Wi-Fi, go to **`inkstant.local`** or the address printed on the screen (like `192.168.1.23`). On the camera's own Wi-Fi, go to **`10.42.0.1`**.
+
+**To stop sharing,** hold BTN again, or tap **Stop sharing** in Settings. On battery, it also stops by itself after 10 minutes without use.
 
 > [!NOTE]
-> The gallery has no login. At home, anyone on your Wi-Fi can open it while sharing is on, including deleting photos. Sharing only runs when you turn it on, and stops by itself.
+> The gallery has no login. While sharing is on, anyone on the same Wi-Fi can open it, which includes deleting photos, changing settings and seeing the camera's Wi-Fi password. Sharing only runs when you turn it on, and stops by itself.
 
-## Settings
+### Battery, sleep and the slideshow
+
+| | |
+|---|---|
+| **Sleep** | After 5 minutes without photos, the camera rests its image sensor. The light stays on; the next photo just takes a second or two longer |
+| **Turning off** | After 10 minutes without use, the camera turns itself off |
+| **Battery saver** | Turns on by itself at 20%: the camera sleeps after 1 minute, turns off after 5, and stops sharing after 5 |
+| **Low battery** | The gallery warns at 15%, and the camera turns off at 5% |
+| **Charging** | Plug a USB-C charger into the PiSugar; its four lights show the charge. Its charging chip gets hot (50 to 80 °C), so leave air around it |
+| **Slideshow** | While off, the camera wakes every hour to show a different photo. When it can't wake itself (the slideshow is off, the battery is low, the clock isn't set, or there are no photos), the print turns white as the camera turns off. **Take the print off first** to keep its photo |
+| **Clock** | The battery keeps the camera's clock. If it runs completely flat, share at home to set the time, or use **Use this phone's time** in Settings |
+
+<details>
+<summary><b>Every setting</b></summary>
+
+<br>
 
 In the gallery, tap the sliders icon at the top right.
 
@@ -361,74 +275,83 @@ In the gallery, tap the sliders icon at the top right.
 | Change picture every | 1 hour | From 5 minutes to 24 hours |
 | Order | Shuffle | Or newest first |
 | Quiet hours | Off | No slideshow changes between two times, such as overnight |
-| Sleep after | 5 min | Rest the image sensor when you aren't shooting |
+| Sleep after | 5 min | Rest the image sensor when you aren't shooting, or never |
 | Turn off after | 10 min | Turn off when nobody is using the camera |
-| Battery saver | Off | Sleep and turn off sooner. "Turn on at 20%" switches it on by itself |
-| Stop sharing after | 10 min | On battery only. The battery saver makes it 5 min |
-| Turn off at | 5% | The low-battery level for turning off |
-| Limit charging to about 80% | Off | Longer battery life over the years; each charge lasts a bit less |
-| Home networks | Your Wi-Fi from setup | Up to five networks the camera uses for sharing at home |
-| Camera Wi-Fi | Set during setup | The camera's own Wi-Fi name and password. **Show** reveals the password |
-| Date & time | From the battery's clock | "Use this phone's time" sets the clock and time zone from your phone |
-| Software | | Your version, and **Check for updates** (when sharing at home) |
+| Battery saver | Off | Sleep and turn off sooner. "Turn on at 20%" switches it on by itself, and charging switches it off again |
+| Stop sharing after | 10 min | On battery only; 5 min with the battery saver on |
+| Turn off at | 5% | The low-battery level. The warning and the battery saver's level move up with it |
+| Limit charging to about 80% | Off | A longer battery life over the years; each charge lasts a bit less |
+| Home networks | Your Wi-Fi from setup | Up to five networks for sharing at home |
+| Camera Wi-Fi | Set during setup | The camera's own network name and password. **Show** reveals the password |
+| Date & time | From the battery's clock | **Use this phone's time** sets the clock and time zone from your phone |
+| Software | | Your version, and **Check for updates** while sharing at home. An update takes 5 to 10 minutes and needs the charger in or the battery above 30% |
 | Advanced → Developer mode | Off, unless you chose it in setup | Keeps the camera on your home Wi-Fi so SSH works, leaves the Pi's USB ports and Ethernet on, and stops it turning off while charging |
 | Advanced → Setup check | | Checks every part of the camera, with a hint for anything that fails |
 | Advanced → Logs | | Downloads the camera's logs, for reporting a problem |
+
+</details>
+
+---
 
 ## Troubleshooting
 
 | Problem | What to try |
 |---|---|
-| `ssh: Could not resolve hostname inkstant.local` | Wait a minute after turning on and try again. Check the hostname you set in Imager. Or use the Pi's IP address from your router |
-| `WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED` after re-flashing the card | Expected after a fresh install. Run `ssh-keygen -R inkstant.local`, then connect again |
-| Setup stops: "No internet" | Check the Pi joined your Wi-Fi (the name and password in Imager), wait a minute for its clock to set, then run the command again |
-| Setup stops: "No PiSugar on I2C" | The PiSugar isn't seated or is switched off. Turn everything off, check the Pi sits flat on the spring pins, press PWR, and run the command again |
-| Setup says "PiSugar firmware is too old" | The board needs firmware 1.2.4 or newer. Contact PiSugar support |
-| Setup warns "No camera found" | Turn off, then reseat the ribbon at both ends with the metal contacts facing away from the flaps. Check the cable: 15-pin at both ends for a 3B+, 3A+ or 4B, and 15-to-22 pin for a Zero 2 W |
-| Can't SSH in after setup | Expected without developer mode: the camera turns its Wi-Fi off to save battery. SSH works again while sharing at home, or turn on Settings → Advanced → Developer mode |
+| `ssh: Could not resolve hostname inkstant.local` | Wait a minute and try again, and check the hostname you set in Imager. Your router's app can also show the Pi's address, which works instead (`ssh your-username@192.168.1.23`) |
+| `REMOTE HOST IDENTIFICATION HAS CHANGED` | Expected after re-flashing the card. Run `ssh-keygen -R inkstant.local`, then connect again |
+| Setup stops: "couldn't reach GitHub" or "No internet" | Check the Pi joined your Wi-Fi (the name and password in Imager), wait a minute for its clock to set, then run the command again |
+| Setup stops: "No PiSugar on I2C" | Turn everything off, check the Pi sits flat on the spring pins, press PWR, and run the command again |
+| Setup stops: "PiSugar firmware … is too old" | It needs firmware 1.2.4 or newer. Contact PiSugar support for an update |
+| Setup warns: "No camera found" | Turn off, and reseat the cable at both ends, metal contacts facing away from the flaps. Check it's the right cable for your Pi |
+| Can't SSH in after setup | Expected without developer mode: the camera turns its Wi-Fi off to save battery. SSH works while sharing at home, or turn on Settings → Advanced → Developer mode |
 | A monitor shows nothing | Expected: setup turns HDMI off to save power. Use SSH |
-| The light doesn't wink when you tap BTN | No photo was taken. Start sharing, and the gallery shows what's wrong at the top of the page |
-| The print never updates | Open a photo in the gallery: if **Show on camera** says "No display module in the camera" with a print on, the print isn't all the way onto the header. Pull it off and press it on again, straight |
-| The light never lights | The case's opening isn't lined up with the Pi's green light. Before the software is installed, the green light only flickers now and then |
-| The gallery won't open from the QR code | Check your phone is on the same Wi-Fi (at home) or joined the camera's Wi-Fi (away). Some guest and office networks block devices from reaching each other: double-tap BTN while sharing to switch to the camera's Wi-Fi |
-| The browser says the site can't be reached, though the phone is on the right Wi-Fi | Some browsers, like Chrome on iPhone, insist on a secure (`https`) connection, which the gallery doesn't use. Open the address in Safari, or turn off the browser's "Always use secure connections" setting |
-| `inkstant.local` doesn't open on some phones | Some Android phones don't support `.local` names. Use the number address printed next to the QR code |
+| The light doesn't show through the case | The opening isn't lined up with the Pi's green light (on a Zero 2 W it doesn't show). Before the software is installed, the light only flickers now and then |
+| The print never changes | If **Show on camera** in the gallery says there's no display module, the print isn't all the way on. Pull it off and press it on again, straight |
+| The gallery won't open | Check your phone is on the same Wi-Fi as the camera, or on the camera's own Wi-Fi. Some guest networks block devices from seeing each other: double-tap BTN while sharing to switch to the camera's Wi-Fi |
+| "Can't be reached" in Chrome on iPhone | Some browsers insist on secure `https` addresses, which the gallery doesn't use. Open it in Safari, or turn off the browser's "Always use secure connections" |
+| `inkstant.local` doesn't open on Android | Some Android phones don't support `.local` names. Use the number address printed on the screen |
 
-**More help:** the gallery's Settings → Advanced → Setup check names the problem and the fix. Over SSH, `sudo inkstant-ctl selftest` runs the same check, `sudo journalctl -u inkstant` shows the camera's log, and the installer's log is in `/var/log/inkstant-install.log`.
+**More help:** the gallery's **Settings → Advanced → Setup check** names most problems and their fix. Over SSH, `sudo inkstant-ctl selftest` runs the same check, and `sudo journalctl -u inkstant` shows the camera's log.
 
-## Commands for SSH
+---
 
-These work over SSH once the software is installed (with developer mode on, or while sharing at home). Without developer mode, `share off` and `share on --hotspot` turn off or switch the Wi-Fi you're connected through, so your SSH session ends.
+## For developers
+
+[SPEC.md](SPEC.md) is the full design record: how the software behaves, every decision, and the sources behind them. [HARDWARE.md](HARDWARE.md) has every part's measurements, for designing a case.
+
+<details>
+<summary><b>Commands over SSH</b></summary>
+
+<br>
+
+These work once the software is installed, in developer mode or while sharing at home.
 
 | Command | What it does |
 |---|---|
-| `sudo inkstant-ctl status` | Everything the camera knows: battery, camera, print, sharing, storage |
+| `sudo inkstant-ctl status` | Battery, camera, print, sharing and storage |
 | `sudo inkstant-ctl selftest` | Run the setup check |
-| `sudo inkstant-ctl share on` | Start sharing, and print the gallery's address (`--hotspot` uses the camera's own Wi-Fi) |
+| `sudo inkstant-ctl share on` | Start sharing and print the gallery's address (`--hotspot` for the camera's own Wi-Fi) |
 | `sudo inkstant-ctl share off` | Stop sharing |
 | `sudo inkstant-ctl dev on` / `off` | Developer mode on or off |
 | `sudo inkstant-ctl shutdown` | Turn off cleanly (`--reboot` to restart) |
-| `sudo inkstant-ctl rollback` | Go back to the previous installed version |
+| `sudo inkstant-ctl rollback` | Go back to the previous version |
 | `sudo journalctl -u inkstant -f` | Watch the camera's log live (Ctrl+C to stop) |
 
-**Reinstall or repair:** run the setup command from [Step 3](#step-3-install-the-software) again. It keeps your photos and settings.
+Some of these end your SSH session. `share off` does, unless developer mode is on. In developer mode, when not already sharing, `share on --hotspot` moves the Wi-Fi to the camera's own network, and `dev off` turns the Wi-Fi off.
 
-**Change your setup answers** (like the camera's orientation):
+- **Repair:** run the setup command again. It keeps your photos and settings.
+- **Change your setup answers:** `sudo /opt/inkstant/current/install/install.sh --reconfigure`
+- **Uninstall** (keeps your photos; add `--purge` to delete them): `sudo /opt/inkstant/current/install/uninstall.sh`
+- **The installer's log:** `/var/log/inkstant-install.log`
 
-```bash
-sudo /opt/inkstant/current/install/install.sh --reconfigure
-```
-
-**Uninstall** (keeps your photos; add `--purge` to delete them too):
-
-```bash
-sudo /opt/inkstant/current/install/uninstall.sh
-```
+</details>
 
 <details>
-<summary><b>More setup options</b></summary>
+<summary><b>Setup options</b></summary>
 
-Options go at the end of the setup command, after `bash -s --`. For example: `curl -fsSL https://raw.githubusercontent.com/EnriqueNeyra/inkstant-camera/main/setup.sh | sudo bash -s -- --dev --yes`.
+<br>
+
+Options go at the end of the setup command, after `bash -s --`, for example `... | sudo bash -s -- --dev --yes`.
 
 | Option | What it does |
 |---|---|
@@ -441,32 +364,33 @@ Options go at the end of the setup command, after `bash -s --`. For example: `cu
 | `--home-ssid NAME`, `--home-password PW`, `--no-home` | The home network for sharing |
 | `--country CC` | The Wi-Fi country |
 | `--camera-rotate 0\|180`, `--display-rotation 0\|180` | Mounted upside down |
-| `--camera-port cam0\|cam1` | Pi 5: which camera connector |
+| `--camera-port cam0\|cam1` | Pi 5 only: which camera connector |
 | `--force-model` | Try anyway on a board that isn't supported |
 
 From a copy of this repository on the Pi, `sudo ./setup.sh` installs that copy.
 
 </details>
 
-## For developers
-
-The design notes: [SPEC.md](SPEC.md) is the full design record, with how the software behaves, every decision and the sources behind it. [HARDWARE.md](HARDWARE.md) has every part's measurements, for designing the case.
-
 <details>
 <summary><b>How the software is organised</b></summary>
 
-- **Camera app** (`src/inkstant/camera_app`): runs as `inkstant.service`. It owns the camera (Picamera2), the e-paper driver, the status light, sleep and the battery saver, the slideshow and share mode.
-- **Gallery** (`src/inkstant/gallery`): a small Flask web app, served by Waitress on port 80 as the unprivileged user `inkstant-web`. It only runs while sharing, and asks the camera app to make every change through a Unix socket.
-- **Hardware layer** (`src/inkstant/hw`): GPIO, the e-paper driver, the camera, the PiSugar, Wi-Fi through NetworkManager, and fakes of each for the tests and the simulator.
-- **Installer** (`setup.sh`, `install/`): `setup.sh` downloads the latest release (or, before the first release, the code on `main`) and runs `install/install.sh`. That installs packages and pisugar-server; `install/configure.py` writes every file, and is safe to run again.
+<br>
+
+- **Camera app** (`src/inkstant/camera_app`): runs as `inkstant.service`. It owns the camera (Picamera2), the display, the light, sleep and the battery saver, the slideshow and sharing.
+- **Imaging** (`src/inkstant/imaging`): turning a photo into a print (dithering to the display's six colours), and the share screen.
+- **Gallery** (`src/inkstant/gallery`): a small Flask app served by Waitress on port 80 as the unprivileged user `inkstant-web`. It only runs while sharing, and asks the camera app to make every change over a Unix socket.
+- **Hardware layer** (`src/inkstant/hw`): GPIO, the e-paper driver, the camera, the PiSugar and Wi-Fi (NetworkManager), each with a fake for the tests and the simulator.
+- **Installer** (`setup.sh`, `install/`): `setup.sh` downloads the latest release (or, before the first one, the code on `main`) and runs `install/install.sh`, which installs the packages and pisugar-server. `install/configure.py` writes every file, and is safe to run again.
 - **Tools** (`tools/`): a desktop simulator, bench tests for the real hardware, the palette tuner and the release builder.
 
-On the Pi, the code runs from `/opt/inkstant/current` with Raspberry Pi OS's own Python packages; photos and settings live in `/var/lib/inkstant`.
+On the Pi, the code runs from `/opt/inkstant/current` with Raspberry Pi OS's own Python packages. Photos and settings live in `/var/lib/inkstant`.
 
 </details>
 
 <details>
-<summary><b>Run the tests and the simulator</b></summary>
+<summary><b>Tests and the simulator</b></summary>
+
+<br>
 
 With [uv](https://docs.astral.sh/uv/) and Python 3.13:
 
@@ -480,14 +404,16 @@ uv venv --python 3.13 .venv && uv pip install --python .venv -r requirements-dev
 .venv/bin/python tools/sim.py --port 8080
 ```
 
-The simulator runs the real camera app with fake hardware. Type `b` and Enter to tap BTN (the shutter), `h` to hold BTN (sharing on or off), `d` for a BTN double tap, `m` to put a print on or take it off, and `q` to quit. Open `http://localhost:8080` for the gallery; the print's picture is written to `sim/display.png`.
+The simulator runs the real camera app on fake hardware, with the gallery at `http://localhost:8080` and the print's picture in `sim/display.png`. Type a key and Enter: `b` taps BTN, `h` holds it, `d` double-taps it, `p` presses PWR, `w` starts a slideshow wake, `m` puts a print on or takes it off, `c` plugs the charger in or out, `l 15` sets the battery to 15%, and `q` quits. `--no-module` starts with no print on.
 
 </details>
 
 <details>
 <summary><b>Bench tests on the real hardware</b></summary>
 
-`tools/bench/` has one script per hardware test. Stop the camera app first, run a script with `sudo python3`, and start the app again afterwards:
+<br>
+
+`tools/bench/` has one script per hardware test. Stop the camera app before running a Python script, and start it again afterwards:
 
 ```bash
 sudo systemctl stop inkstant
@@ -499,45 +425,42 @@ sudo python3 /opt/inkstant/current/tools/bench/camera_fullres.py
 sudo systemctl start inkstant
 ```
 
+The shell scripts run with `sudo sh` instead, and manage the app themselves: each one's header says how.
+
 | Script | Checks |
 |---|---|
-| `camera_fullres.py` | Full-resolution capture, camera memory, JPEG and screen-image times, sleep and wake |
+| `camera_fullres.py` | Full-resolution capture, camera memory, JPEG and print times, sleep and wake |
 | `shutter_latency.py` | Shutter delay at several frame rates, tapping BTN (`--auto` without tapping) |
 | `settle.py` | Focus, exposure and colour settling |
-| `epd_show.py` | The display: test chart, step timings, no print, pulling it out mid-update |
+| `epd_show.py` | The display: test chart, step timings, no print, pulling it off mid-update |
 | `inputs.py` | Print detect and BUSY; `--light` steps through every light pattern |
 | `pisugar_probe.py` | PiSugar socket, settings, firmware, clock, alarm, BTN taps, watchdog |
-| `poweroff_test.sh`, `wake_cycle.sh`, `boot_timing.sh` | Power cut after shutdown, slideshow wake, boot-to-ready time |
+| `poweroff_test.sh`, `wake_cycle.sh`, `boot_timing.sh` | The power cut after shutdown, the slideshow wake, boot-to-ready time |
 | `share_e2e.md` | A checklist for sharing with an iPhone and an Android phone |
 
-Results are saved in `/var/lib/inkstant/bench`. `tools/palette_tuner.py` tunes the dithering colours on the real panel.
+Results are saved in `/var/lib/inkstant/bench`. `tools/palette_tuner.py` tunes the print colours on the real panel.
 
 </details>
 
 <details>
 <summary><b>Publishing a release</b></summary>
 
+<br>
+
 Bump `VERSION`, then push a tag `v<VERSION>` (for example `v1.0.1`). CI runs the tests, builds `inkstant.tar.gz` and `SHA256SUMS` with `tools/build_release.py`, and attaches them to a GitHub release. From then on, the setup command installs the latest release, and cameras find it under Settings → Software → Check for updates.
 
 </details>
 
-## Project status
+### Project status
 
-The software is complete, with automated tests against simulated hardware. On a real Raspberry Pi 4, it's been tested taking photos with BTN, developing them on a print pushed onto the Pi's header (with colours measured on the panel), the green status light, the gallery, sharing over home Wi-Fi and over the camera's own Wi-Fi, and the slideshow waking the camera. It has since been set up on a Pi 3B+, the case's board, where the autofocus was measured and tuned. Still to test on the real hardware: the Pi 3A+ and Zero 2 W, the 3B+'s battery life with the USB ports and Ethernet switched off, the PWR button, plugging in the charger, taking a print off and putting one on while the camera is on, and seeing the light through the case. The case design and the first published release are still to come.
+The software is complete, with automated tests against simulated hardware. On a real Pi 4 it has taken photos, developed them on a print, run the light, the gallery, sharing at home and on the camera's own Wi-Fi, and the slideshow. A Pi 3B+ has run the setup and had its autofocus tuned. Still to try: the 3A+ and Zero 2 W, the battery life, the PWR button, plugging in the charger, swapping prints while the camera is on, and the light through the case. The case files and the first release are coming soon.
 
-## Credits
+---
 
-- The e-paper driver (`src/inkstant/hw/epd.py`) follows Waveshare's [epd3in6e driver](https://github.com/waveshareteam/e-Paper); their permission notice is in that file.
+## Credits and license
+
+- The e-paper driver (`src/inkstant/hw/epd.py`) follows Waveshare's [epd3in6e driver](https://github.com/waveshareteam/e-Paper), and keeps their permission notice.
 - The battery board runs PiSugar's [pisugar-server](https://github.com/PiSugar/pisugar-power-manager-rs), which the setup script downloads from PiSugar's releases.
 - Inspired by other e-paper cameras: Strange Inventions' [*I Invented Digital Film*](https://www.youtube.com/watch?v=9giyTIqTx1w), Cameron Dowd's [ESP32 e-paper Polaroid](https://liliputing.com/this-diy-e-paper-instant-camera-is-like-a-digital-polaroid-for-ephemeral-photos/), and befinitiv's [*Digital Film Cartridge for Analog Cameras*](https://www.youtube.com/watch?v=5DdQN0NVVT0).
 
-## License
-
-Inkstant is free to build, use, change and share for **noncommercial** purposes, under the [PolyForm Noncommercial License 1.0.0](LICENSE).
-
-- **You can:** build one for yourself or as a gift, or with a school, club or charity; change the code; and share your changes, as long as you pass on the license and its copyright notice.
-- **You can't:** sell cameras, kits or the software, or use it in a commercial product or service, without permission. Ask through a GitHub issue if you'd like to.
-
-Because it limits commercial use, this is "source-available" rather than "open source" in the strict sense of the [Open Source Definition](https://opensource.org/osd), which allows any use.
-
-`src/inkstant/hw/epd.py` contains code from Waveshare's e-paper driver, which keeps Waveshare's own permission notice (in that file).
+Inkstant is free to build, use, change and share for **noncommercial** purposes, under the [PolyForm Noncommercial License 1.0.0](LICENSE). Build one for yourself, as a gift, or with a school or club, and share your changes. Selling cameras, kits or the software needs permission: ask in a GitHub issue. Because it limits commercial use, it's "source-available" rather than open source.
