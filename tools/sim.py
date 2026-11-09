@@ -26,7 +26,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from inkstant import settings, state  # noqa: E402
+from inkstant import device, settings, state  # noqa: E402
 from inkstant.camera_app.app import CameraApp, Hardware  # noqa: E402
 from inkstant.hw import camera, epd, gpio, led, network, pisugar, pisugar_i2c, system  # noqa: E402
 from inkstant.paths import Paths  # noqa: E402
@@ -87,7 +87,8 @@ class Sim:
         led_w = PrintingLed()
         return Hardware(
             pins=self.pins, led_writer=led_w,
-            epd=epd.FakeEpd(self.paths.root / "display.png", self.pins.module_present, speed=0.15, log=self.log),
+            epd=epd.FakeEpd(self.paths.root / "display.png", self.pins.module_present, speed=0.15,
+                            rotation=device.load(self.paths.device_toml).display_rotation, log=self.log),
             camera_factory=lambda: camera.FakeCamera(delay=0.2, log=self.log),
             network=network.FakeNetwork(url=f"http://127.0.0.1:{self.port}/"),
             system=self.system, watchdog=pisugar_i2c.Watchdog(pisugar_i2c.FakeBus(), sleep=lambda s: None),

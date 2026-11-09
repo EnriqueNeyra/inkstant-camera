@@ -156,8 +156,10 @@ def test_device_bad_values_fall_back(tmp_path):
     f = tmp_path / "device.toml"
     f.write_text('display_rotation = 90\ncamera_fps = 99\nwifi_5ghz = "yes"\n')
     d = device.load(f)
-    assert d.display_rotation == 0 and d.camera_fps is None and d.wifi_5ghz is True
+    assert d.display_rotation == 180 and d.camera_fps is None and d.wifi_5ghz is True
     assert len(d.errors) == 3
+    f.write_text('model = "x"\n')
+    assert device.load(f).display_rotation == 180  # missing: the Inkstant case's upside-down display
 
 
 def test_family_from_model():

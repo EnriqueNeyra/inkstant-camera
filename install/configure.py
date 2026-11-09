@@ -338,7 +338,7 @@ def cmd_questions(a) -> int:
     if a.display_rotation is not None:
         ans["display_rotation"] = a.display_rotation
     elif "display_rotation" not in ans or a.reconfigure:
-        ans["display_rotation"] = 180 if ask_yes("Is the display module mounted upside down?", False, yes) else 0
+        ans["display_rotation"] = 180 if ask_yes("Is the display module mounted upside down?", True, yes) else 0
     if fam == "pi5":
         if a.camera_port:
             ans["camera_port"] = a.camera_port
@@ -473,7 +473,7 @@ def step_device(ans: dict) -> None:
         wifi_5ghz=devmod.wifi_5ghz_from_model(ans.get("model", "")),
         camera_hflip=ans.get("camera_rotate", 0) == 180,
         camera_vflip=ans.get("camera_rotate", 0) == 180,
-        display_rotation=ans.get("display_rotation", 0),
+        display_rotation=ans.get("display_rotation", 180),
         camera_port=ans.get("camera_port", "cam1"),
     )
     path = P("/etc/inkstant/device.toml")
