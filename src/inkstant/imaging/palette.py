@@ -7,21 +7,22 @@ Bump PALETTE_VERSION whenever RGB or ENHANCE change: older .epd files are rebuil
 
 from __future__ import annotations
 
-PALETTE_VERSION = 4  # 4: measured on our panel; the photo is mapped into its range before dithering
+PALETTE_VERSION = 5  # 5: Pimoroni's green; 4: measured on our panel, the photo mapped into its range
 
 NAMES = ("black", "white", "yellow", "red", "blue", "green")
 CODES = (0, 1, 2, 3, 5, 6)
 
 # Measured on our panel: the median of each swatch in a phone photo of tools/palette_tuner.py's
 # chart, indoors. Black, red, yellow and blue fall within published Spectra 6 measurements
-# (epdoptimize, esp32-photoframe); our green is lighter than theirs.
+# (epdoptimize, esp32-photoframe). Green is Pimoroni's (version 5): ours measured (85, 112, 103),
+# so pale and grey that the dither used it as the grey in white walls, which looked green.
 RGB = (
     (24, 21, 38),
     (212, 223, 225),
     (229, 214, 67),
     (114, 33, 29),
     (48, 92, 170),
-    (85, 112, 103),
+    (58, 91, 70),
 )
 
 # Pimoroni's measured values for its Spectra 6 panel (inky_e640.py), used before version 3.
