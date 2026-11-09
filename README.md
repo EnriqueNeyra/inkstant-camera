@@ -142,7 +142,7 @@ If anything goes wrong, it stops and says what to fix. Running the same command 
 | Use "(your Wi-Fi)" for sharing at home? | Yes |
 | Wi-Fi country | Only asked if it isn't set: two letters, like `US` or `GB` |
 | Is the camera mounted upside down? | No, unless your case holds it that way |
-| Is the display module mounted upside down? | No, unless your case holds it that way |
+| Is the display module mounted upside down? | Yes, in the Inkstant case. Answer No only if your own case holds it the other way |
 | Developer mode? | Only asked without `--dev` |
 
 `--dev` turns on **developer mode**: the camera stays on your home Wi-Fi, so you can SSH back in if something needs fixing. It's a good idea for a first build. It uses a little more battery, and you can turn it off later in the gallery (Settings → Advanced). To install without it, end the command with `| sudo bash` instead.

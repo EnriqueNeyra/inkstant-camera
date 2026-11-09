@@ -125,6 +125,7 @@ def test_apply_writes_everything(installed):
     assert os.readlink(r / "usr/local/bin/inkstant-ctl") == "/opt/inkstant/current/bin/inkstant-ctl"
     dev = (r / "etc/inkstant/device.toml").read_text()
     assert "camera_hflip = true" in dev and "camera_vflip = true" in dev and 'family = "pi3"' in dev
+    assert "display_rotation = 180" in dev  # --yes takes the Inkstant case's upside-down display
     s = json.loads((r / "var/lib/inkstant/settings.json").read_text())
     assert s["hotspot"] == {"ssid": "Inkstant-TEST", "password": "secretpass1"}
     st = json.loads((r / "var/lib/inkstant/install-state.json").read_text())

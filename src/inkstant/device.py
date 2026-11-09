@@ -15,7 +15,7 @@ class Device:
     wifi_5ghz: bool = True
     camera_hflip: bool = False
     camera_vflip: bool = False
-    display_rotation: int = 0  # 0 or 180
+    display_rotation: int = 180  # 0 or 180; the Inkstant case holds the display upside down
     camera_port: str = "cam1"
     camera_fps: int | None = None
     errors: tuple[str, ...] = field(default=(), compare=False)
@@ -67,7 +67,7 @@ def load(path: Path) -> Device:
         wifi_5ghz=get("wifi_5ghz", bool, True),
         camera_hflip=get("camera_hflip", bool, False),
         camera_vflip=get("camera_vflip", bool, False),
-        display_rotation=get("display_rotation", int, 0, lambda v: v in (0, 180)),
+        display_rotation=get("display_rotation", int, 180, lambda v: v in (0, 180)),
         camera_port=get("camera_port", str, "cam1", lambda v: v in ("cam0", "cam1")),
         camera_fps=fps,
         errors=tuple(errors),

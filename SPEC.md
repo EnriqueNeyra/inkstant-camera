@@ -324,6 +324,7 @@ Every product decision, with the date it was made. The user decides product beha
 | 2026-10-19 | Boards | The build is for the Pi 3B+ only, replacing the 3A+, which was hard to buy: sold out at Adafruit and PiShop.us, on backorder at SparkFun, and about $44 on Amazon (checked 2026-10-19). The Zero 2 W is short too, of chip substrates. The 3B+ is in stock widely, stays in production until at least January 2030 ✅ [product page](https://www.raspberrypi.com/products/raspberry-pi-3-model-b-plus/), has the 3A+'s chip, clock and layout plus 1 GB, and the PiSugar 3 Plus is made for it. Its USB and Ethernet chip is switched off by cutting the USB bus power, which should bring its draw close to the 3A+'s (§13.6, §14.1). The case changes: the USB and Ethernet sockets fill the space beside the Pi where the 3A+ layout put the camera. The software still supports all five boards | 15.1 |
 | 2026-10-26 | Boards | The Pi Zero 2 W is supported too, so the build runs on the 3B+, 3A+, 4B and Zero 2 W, every one on the PiSugar 3 Plus. The case already takes all four: a body per board since 2026-10-23, and since 2026-10-24 one tub that holds the PiSugar, with a deck per board. The Zero 2 W has the Pi 3's chip, so the software treats it as the `pi3` family. config.txt gains a `[pi02]` section with the camera and clock lines, since the Zero 2 W doesn't read `[pi3]`, and `pwr_led_trigger` moves into the sections of the boards that have a PWR LED. Its Wi-Fi is 2.4 GHz only. It needs the Standard–Mini camera cable and the version with headers, sits on two of the PiSugar's posts and two printed spacers, and its green light doesn't show through the case | 15.1 |
 | 2026-10-17 | Case | Each print has its own printed enclosure, separate from the camera body, so it pops out like a piece of film, with pockets for optional magnets so a kept print can go on a fridge. Every part is 3D-printed, in as few parts as possible, without excessive supports. It holds together with no extra hardware: no screws, glue or inserts beyond the screws that come with the PiSugar. No light pipe or second material: the ACT LED shines out through a small opening in the case. The display isn't shaded or recessed against sunlight; that small risk is accepted. Real 3D models are used where they exist | HARDWARE.md |
+| 2026-11-09 | Display | The display is upside down by default (`display_rotation = 180`): the Inkstant case holds it that way, so setup's "Is the display module mounted upside down?" now defaults to Yes, and a missing or bad setting falls back to 180. Cameras set up earlier keep the 0 written in their device.toml until it is changed by hand or with `--reconfigure` | 15.5 |
 
 ### 2.2 Rejected
 
@@ -673,7 +674,7 @@ family = "pi3"                # pi3, pi4 or pi5 (§15.1.2)
 wifi_5ghz = true              # false on the Pi 3B
 camera_hflip = false
 camera_vflip = false          # "camera upside down" sets both flips (a 180° rotation)
-display_rotation = 0          # 0 or 180
+display_rotation = 180        # 0 or 180; 180 in the Inkstant case
 camera_port = "cam1"          # Pi 5 only: "cam0" or "cam1"
 # camera_fps = 5              # optional override of the release's frame rate (§6.4), for experiments
 ```
@@ -2618,7 +2619,7 @@ Asked together at the start, so the rest runs without you. Defaults are shown in
 | Home network, when none was found (installed over Ethernet) | Skip (sharing then always uses the camera's Wi-Fi; one can be added later in Settings) | same | same |
 | Wi-Fi country, only if it isn't set | — | `--country` | Two-letter country code that `raspi-config` accepts |
 | Is the camera mounted upside down? | No | `--camera-rotate 0` or `180` | |
-| Is the display module mounted upside down? | No | `--display-rotation 0` or `180` | |
+| Is the display module mounted upside down? | Yes (the Inkstant case holds it that way) | `--display-rotation 0` or `180` | |
 | Camera port (Pi 5 only; asked once, again with `--reconfigure`) | CAM1 | `--camera-port cam0` or `cam1` | 0 or 1 |
 | Developer mode: join home Wi-Fi at every start so SSH keeps working? | No | `--dev` | |
 | Reboot now? (at the end) | Yes | `--yes`, `--no-reboot` | |
