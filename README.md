@@ -453,7 +453,7 @@ Bump `VERSION`, then push a tag `v<VERSION>` (for example `v1.0.1`). CI runs the
 
 ### Project status
 
-The software is complete, with automated tests against simulated hardware. On a real Pi 4 it has taken photos, developed them on a print, run the light, the gallery, sharing at home and on the camera's own Wi-Fi, and the slideshow. A Pi 3B+ has run the setup and had its autofocus tuned. Still to try: the 3A+ and Zero 2 W, the battery life, the PWR button, plugging in the charger, swapping prints while the camera is on, and the light through the case. The case files and the first release are coming soon.
+The software is complete, with automated tests against simulated hardware. On a real Pi 4 it has taken photos, developed them on a print, run the light, the gallery, sharing at home and on the camera's own Wi-Fi, and the slideshow. A Pi 3B+ has run the setup and had its autofocus tuned. Still to try: the 3A+ and Zero 2 W, the battery life, the PWR button, plugging in the charger, swapping prints while the camera is on, and the light through the case. The case files are coming soon.
 
 ---
 

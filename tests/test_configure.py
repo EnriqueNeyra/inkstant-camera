@@ -115,9 +115,10 @@ def test_preflight(tmp_path):
 
 def test_apply_writes_everything(installed):
     r = installed
+    version = (REPO / "VERSION").read_text().strip()
     cur = r / "opt/inkstant/current"
-    assert cur.is_symlink() and os.readlink(cur) == "releases/1.0.0"
-    rel = r / "opt/inkstant/releases/1.0.0"
+    assert cur.is_symlink() and os.readlink(cur) == f"releases/{version}"
+    rel = r / f"opt/inkstant/releases/{version}"
     assert (rel / "src/inkstant/camera_app/app.py").exists() and (rel / "bin/inkstant-ctl").exists()
     assert not (rel / "tests").exists() and not (rel / ".git").exists()
     assert (rel / "LICENSE").exists()  # the license travels with every copy
