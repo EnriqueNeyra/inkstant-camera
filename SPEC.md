@@ -2491,19 +2491,19 @@ Supported: the **Pi 3B+, 3A+, 4B and Zero 2 W** (the Zero 2 W since 2026-10-26),
 | **Wi-Fi** | 2.4 + 5 GHz | 2.4 GHz only (BCM43438) | 2.4 + 5 GHz | 2.4 + 5 GHz | 2.4 + 5 GHz | 2.4 GHz only | ✅ [3B product page](https://www.raspberrypi.com/products/raspberry-pi-3-model-b/) names the chip. The hotspot is 2.4 GHz on every model; on a 3B or Zero 2 W, home networks must be 2.4 GHz ([Zero 2 W product page](https://www.raspberrypi.com/products/raspberry-pi-zero-2-w/)) |
 | **Ethernet** | None | Yes | Yes | Yes | Yes | None | Not used by the camera; fine for running the install |
 | **Clock at boot** | PiSugar RTC through the kernel (`i2c-rtc,ds3231`) | same | same | same | `rtc_rtc2pi`. The Pi 5's own RTC is `rtc0` and keeps time only with a backup battery, which we don't fit | As the 3A+ | ✅ [Pi 5 RTC docs](https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/raspberry-pi/rtc.adoc), §6.7 |
-| **PiSugar 3 Plus** | Listed (as "3A") | Listed | Listed | Listed | Listed; line the PiSugar's spring pins up carefully (the Pi 5's header holes are smaller) 🧪 | Not listed: PiSugar recommends its PiSugar 3 for the Zero ✅. The build uses the 3 Plus anyway: the Zero is screwed to its two posts beside the header and stands on two printed spacers, and the spring pins meet the same header pins 📐. That it starts and charges the Zero 🧪 | ✅ [PiSugar 3 docs](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series), [PiSugar #144](https://github.com/PiSugar/PiSugar/issues/144) |
+| **PiSugar 3 Plus** | Listed (as "3A") | Listed | Listed | Listed | Listed; line the PiSugar's spring pins up carefully (the Pi 5's header holes are smaller) 🧪 | Not listed: PiSugar recommends its PiSugar 3 for the Zero ✅. The build uses the 3 Plus anyway: the Zero is screwed to its two posts beside the header and stands on two printed spacers, and the spring pins meet the same header pins 📐. A real Zero 2 W build on it works ✅ (noted 2026-11-11) | ✅ [PiSugar 3 docs](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series), [PiSugar #144](https://github.com/PiSugar/PiSugar/issues/144) |
 | **Power from the PiSugar (3 A max)** | Typical 350 mA | 400 mA | 500 mA | 600 mA | 800 mA; with a 3 A supply, USB is limited to 600 mA (we use none) | 350 mA | ✅ [Pi power docs](https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/raspberry-pi/power-supplies.adoc) |
 | **Boot firmware** | On the SD card | same | same | EEPROM (`rpi-eeprom-update` disabled; update by hand) | EEPROM (same) | On the SD card | §13.6 |
 | **Case** | The case, with its own deck | Should fit the 3B+'s deck: the same footprint ✅ | The case, with its own deck | The case, with its own deck | None | The case, with its own deck and two spacers; its green light doesn't show | HARDWARE.md (positions on the 3B+; its Other boards section has what differs) |
 | **On-time per charge** | ~9 h | ~8 h | ~6.5 h | ~5.5 h | ~4 h | ~9 h | 📐 §14.1, before the camera and Wi-Fi |
 
-**Result:** no layer stops any of the six models. Five things need checking on real boards:
+**Result:** no layer stops any of the six models. A real Zero 2 W build works (noted 2026-11-11). Five things still need checking on real boards:
 
 - the PiSugar 3 Plus fit and I2C on the Pi 5;
 - the ACT LED and module detect on every board but the Pi 4;
 - putting a module on and taking it off while the camera is on;
-- full-resolution camera memory on the 512 MB 3A+ and Zero 2 W;
-- the Zero 2 W as a whole: its frame rate and focus time, the camera's Wi-Fi on its 2.4 GHz-only chip, and the PiSugar 3 Plus on it.
+- full-resolution camera memory on the 512 MB 3A+;
+- on the Zero 2 W, the measurements: its frame rate and focus time, and the camera's Wi-Fi on its 2.4 GHz-only chip.
 
 All five are on the bench list (§19.6).
 
@@ -2964,7 +2964,7 @@ The software's checks on real hardware, in M1 and M8 (§20), and the parts and c
 - [ ] Boot-to-ready time, before and after §13's changes; `quiet`, initramfs removal and HDMI probe skips
 - [ ] Battery cost of share mode (Wi-Fi on)
 - [ ] Pi 5 with the PiSugar 3 Plus: every spring pin lands on its header pin, then I2C, power and the `rtc_rtc2pi` clock
-- [ ] Zero 2 W on the PiSugar 3 Plus, held by its two posts beside the header and the case's two spacers: spring pins, start-up, charging, I2C, BTN, power-off and the clock
+- [x] Zero 2 W on the PiSugar 3 Plus, held by its two posts beside the header and the case's two spacers: a real build works (noted 2026-11-11). Still to check one by one: charging, power-off and the clock
 - [ ] PWR and BTN press reliably through the case's caps
 - [ ] The PiSugar's charging chip inside the case while charging at full current: it reaches 50 to 80 °C, so check the case leaves it air
 
