@@ -50,9 +50,9 @@ The **3B+** is the easiest to buy, and it's the board Inkstant is built on. The 
 | Board | Camera cable | Good to know |
 |---|---|---|
 | **Pi 3B+** | 15-to-15 pin | The camera switches off its unused USB ports and Ethernet to save battery |
-| **Pi 3A+** | 15-to-15 pin | The smallest, and the lightest on the battery, but often sold out. Not tried yet |
+| **Pi 3A+** | 15-to-15 pin | The smallest, and the lightest on the battery, but often sold out |
 | **Pi 4B** | 15-to-15 pin | Focuses fastest, and uses the most battery |
-| **Pi Zero 2 W** | 15-to-22 pin | Buy the version **with headers**. It joins 2.4 GHz Wi-Fi only, and its green light doesn't show through the case. It's held by two of the PiSugar's screws plus two printed spacers. Not tried yet: check that it starts and charges from the PiSugar before you close the case |
+| **Pi Zero 2 W** | 15-to-22 pin | Buy the version **with headers**. It joins 2.4 GHz Wi-Fi only, and its green light doesn't show through the case. It's held by two of the PiSugar's screws plus two printed spacers |
 
 The Pi 3B and Pi 5 also run the software. [HARDWARE.md](HARDWARE.md#other-boards) has the measurements for every board.
 
@@ -457,7 +457,7 @@ Bump `VERSION`, then push a tag `v<VERSION>` (for example `v1.0.1`). CI runs the
 
 ### Project status
 
-The software is complete, with automated tests against simulated hardware. On a real Pi 4 it has taken photos, developed them on a print, run the light, the gallery, sharing at home and on the camera's own Wi-Fi, and the slideshow. A Pi 3B+ has run the setup and had its autofocus tuned. Still to try: the 3A+ and Zero 2 W, the battery life, the PWR button, plugging in the charger, swapping prints while the camera is on, and the light through the case. The case files are in the [Inkstant Build Pack](https://syntropylabs.io/products/inkstant-camera-build-pack).
+The software is complete, with automated tests against simulated hardware, and it's supported on the Pi 3B+, 3A+, 4B and Zero 2 W. Still to try: the battery life, the PWR button, plugging in the charger, swapping prints while the camera is on, and the light through the case. The case files are in the [Inkstant Build Pack](https://syntropylabs.io/products/inkstant-camera-build-pack).
 
 ---
 
