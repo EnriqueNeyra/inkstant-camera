@@ -4,6 +4,8 @@
 
 ### Inkstant is a Raspberry Pi instant camera. Every photo "develops" on a small colour e-paper print that pops off the back for you to keep, and every photo is also saved at full size for your phone. No app, no account and no internet needed.
 
+> **Building one?** The 3D-printable case and a step-by-step PDF guide to the whole build are in the **[Inkstant Build Pack](https://syntropylabs.io/products/inkstant-camera-build-pack)**. The software, and everything on this page, is free.
+
 **[How it works](#how-it-works) · [What you need](#what-you-need) · [Build it](#build-it) · [Install the software](#install-the-software) · [Using Inkstant](#using-inkstant) · [Troubleshooting](#troubleshooting) · [For developers](#for-developers)**
 
 ---
@@ -31,7 +33,7 @@ It goes together with **no soldering and no wiring**: the boards plug into each 
 | **Battery** | [PiSugar 3 Plus](https://docs.pisugar.com/docs/product-wiki/battery/pisugar3/pisugar-3-series) | 5000 mAh. Its two buttons are the shutter and the power button |
 | **Prints** | [Waveshare 3.6" e-Paper HAT+ (E)](https://www.amazon.com/dp/B0G656R3M9) | One per print. Get the **HAT+ (E)**, not the bare screen |
 | **microSD card** | 32 GB or larger, A1-rated | Holds thousands of photos |
-| **Case** | 3D-printed | Files coming soon |
+| **Case** | 3D-printed, from the [Inkstant Build Pack](https://syntropylabs.io/products/inkstant-camera-build-pack) | STL and STEP files, with a PDF guide to printing and assembling it |
 | **Magnets** (optional) | Small disc magnets | Put a print you keep on the fridge |
 
 You'll also need a small screwdriver, a USB-C charger, and a computer on the same Wi-Fi as the camera.
@@ -60,6 +62,8 @@ The Pi 3B and Pi 5 also run the software. [HARDWARE.md](HARDWARE.md#other-boards
 
 ## Build it
 
+This page covers connecting the electronics and installing the software. For printing and assembling the case, with photos of every step, see the guide in the [Inkstant Build Pack](https://syntropylabs.io/products/inkstant-camera-build-pack).
+
 Work with everything switched off. Touch something metal, like a radiator or a tap, before you handle the camera board, since static can damage it.
 
 > [!WARNING]
@@ -85,7 +89,7 @@ Line the print's socket up over the Pi's header, so no pin is left over at eithe
 
 ### 5. Close the case
 
-The case files are coming soon. To design your own, [HARDWARE.md](HARDWARE.md#what-the-case-has-to-do) lists what the case has to do, with every part's measurements.
+The case's STL and STEP files are in the [Inkstant Build Pack](https://syntropylabs.io/products/inkstant-camera-build-pack), with a PDF guide to printing it and putting it together. To design your own case instead, [HARDWARE.md](HARDWARE.md#what-the-case-has-to-do) lists what the case has to do, with every part's measurements.
 
 ---
 
@@ -453,7 +457,7 @@ Bump `VERSION`, then push a tag `v<VERSION>` (for example `v1.0.1`). CI runs the
 
 ### Project status
 
-The software is complete, with automated tests against simulated hardware. On a real Pi 4 it has taken photos, developed them on a print, run the light, the gallery, sharing at home and on the camera's own Wi-Fi, and the slideshow. A Pi 3B+ has run the setup and had its autofocus tuned. Still to try: the 3A+ and Zero 2 W, the battery life, the PWR button, plugging in the charger, swapping prints while the camera is on, and the light through the case. The case files are coming soon.
+The software is complete, with automated tests against simulated hardware. On a real Pi 4 it has taken photos, developed them on a print, run the light, the gallery, sharing at home and on the camera's own Wi-Fi, and the slideshow. A Pi 3B+ has run the setup and had its autofocus tuned. Still to try: the 3A+ and Zero 2 W, the battery life, the PWR button, plugging in the charger, swapping prints while the camera is on, and the light through the case. The case files are in the [Inkstant Build Pack](https://syntropylabs.io/products/inkstant-camera-build-pack).
 
 ---
 
@@ -464,3 +468,5 @@ The software is complete, with automated tests against simulated hardware. On a 
 - Inspired by other e-paper cameras: Strange Inventions' [*I Invented Digital Film*](https://www.youtube.com/watch?v=9giyTIqTx1w), Cameron Dowd's [ESP32 e-paper Polaroid](https://liliputing.com/this-diy-e-paper-instant-camera-is-like-a-digital-polaroid-for-ephemeral-photos/), and befinitiv's [*Digital Film Cartridge for Analog Cameras*](https://www.youtube.com/watch?v=5DdQN0NVVT0).
 
 Inkstant is free to build, use, change and share for **noncommercial** purposes, under the [PolyForm Noncommercial License 1.0.0](LICENSE). Build one for yourself, as a gift, or with a school or club, and share your changes. Selling cameras, kits or the software needs permission: ask in a GitHub issue. Because it limits commercial use, it's "source-available" rather than open source.
+
+The case files in the [Inkstant Build Pack](https://syntropylabs.io/products/inkstant-camera-build-pack) are sold separately and aren't part of this repository. They're for personal, noncommercial use: please don't re-upload or share them.
