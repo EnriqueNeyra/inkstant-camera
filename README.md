@@ -1,6 +1,15 @@
 # Inkstant: The Instant Camera That Never Runs Out of Film
 
-<!-- Hero photo of the finished camera goes here. -->
+<!-- Renders of the case, standing in until there are photos of a finished camera. -->
+<p align="center"><img src="docs/images/hero-pair.jpg" width="100%" alt="Inkstant from the front and from the back, with a photo on its e-paper print"></p>
+<p align="center">
+  <img src="docs/images/hero-front.jpg" width="32%" alt="The front: the lens and the vents">
+  &nbsp;
+  <img src="docs/images/hero-back.jpg" width="32%" alt="The back: the e-paper print showing a photo">
+  &nbsp;
+  <img src="docs/images/hero-print-off.jpg" width="32%" alt="The print pulled off the back of the camera">
+</p>
+<p align="center"><sub>Renders of the 3D-printed case.</sub></p>
 
 ### Inkstant is a Raspberry Pi instant camera. Every photo "develops" on a small colour e-paper print that pops off the back for you to keep, and every photo is also saved at full size for your phone. No app, no account and no internet needed.
 
